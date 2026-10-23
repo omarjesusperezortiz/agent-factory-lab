@@ -31,5 +31,77 @@
     "page": null,
     "slug": "claude-mods-assumption-review-session-tracking",
     "transcript": true
+  },
+  {
+    "id": "au2TI8sdq8E",
+    "channel": "AI LABS",
+    "date": "2026-10-13",
+    "title": "Google Just Fixed AI Design By Releasing This",
+    "summary": "Google's Stitch design tool now ships a CLI, so Claude Code can drive it directly without the Google Cloud MCP setup, and it loads into context only when needed. The video builds a workflow of an interview-generated brief.md, Stitch designs, a build from them, then two review skills (design-fidelity and responsive screenshots, then a harsh 'story review' judged against the brief). The idea worth keeping is a written brief as the single source of truth, plus separate review-skill passes that catch what the generating agents miss.",
+    "tags": [
+      "claude-code",
+      "stitch",
+      "skills",
+      "review-loops",
+      "design-workflow"
+    ],
+    "score": 4,
+    "page": "2026-10-13-stitch-cli-claude-code-design-workflow/",
+    "slug": "stitch-cli-claude-code-design-workflow",
+    "transcript": true
+  },
+  {
+    "id": "rw0fqnrZgNM",
+    "channel": "AI LABS",
+    "date": "2026-10-15",
+    "title": "GitHub's #1 Trending Skill Is Insane (5 Use Cases)",
+    "summary": "The video shows 'Reverse Engineer Anything' (REA), an MCP server with ~170 tools that lets Claude Code trace browser behavior down to the exact network requests and code, saving each capture as evidence tagged seen/guessed/unknown. It demos five uses: cloning features from other apps, competitor research, black-box feature testing (caught a price-shown vs price-charged mismatch invisible in code), performance/layout audits, and security scans for leaked keys and access-control flaws. The idea worth keeping is the evidence-labelling discipline, where every agent finding must cite captured proof, and black-box QA of a running app with no code access as a review-loop step.",
+    "tags": [
+      "reverse-engineering",
+      "mcp",
+      "claude-code",
+      "black-box-testing",
+      "evidence-grounding"
+    ],
+    "score": 4,
+    "page": null,
+    "slug": "rea-mcp-evidence-backed-agent-testing",
+    "transcript": true
+  },
+  {
+    "id": "NZjjmf3I6I4",
+    "channel": "AI LABS",
+    "date": "2026-10-17",
+    "title": "6 Insane Trending GitHub AI Design Repos You Need to Use",
+    "summary": "A roundup of six GitHub repos that give coding agents better design inputs: an Awards MCP for studying real award-winning sites, Responsively for multi-viewport screenshot checks, Genjutsu skills (including Bunshin, a sub-agent build-and-review loop), Dem Brand for extracting a site's styles into design.md, App Store Screenshots, and Brag for launch videos. The idea worth keeping is Bunshin's pattern: a lead agent sets a shared style, sub-agents build pages in parallel, and reviewer agents send problems back for fixes. The rounds stop at a round limit, when only minor issues remain, or when a round fixes nothing, though results varied by style.",
+    "tags": [
+      "design-skills",
+      "multi-agent-orchestration",
+      "review-loops",
+      "mcp",
+      "design-md"
+    ],
+    "score": 3,
+    "page": null,
+    "slug": "six-github-ai-design-repos",
+    "transcript": true
+  },
+  {
+    "id": "y2ifUC9_zuU",
+    "channel": "AI LABS",
+    "date": "2026-10-19",
+    "title": "Vercel's CEO Just Unveiled The Greatest AI Coding Workflow Ever",
+    "summary": "Vercel's CEO describes working with AI agents: test ideas in throwaway projects, track whether the work is drifting from the plan rather than how much is shipped, and use adversarial agents to stress-test, scan for security debt and act on customer feedback fast. The video (AI Labs) turns this into seven tips, with commands and agents like a direction-drift checker, a breaker agent, and a first-time-user agent restricted by a hook to only running the app. The idea worth keeping is a drift check that compares what agents built against the PRD/spec folder, since building is cheap and agents never push back on scope.",
+    "tags": [
+      "spec-drift",
+      "adversarial-agents",
+      "quality-gates",
+      "security-scanning",
+      "claude-code-commands"
+    ],
+    "score": 4,
+    "page": null,
+    "slug": "vercel-ceo-seven-agent-workflow-tips",
+    "transcript": true
   }
 ]

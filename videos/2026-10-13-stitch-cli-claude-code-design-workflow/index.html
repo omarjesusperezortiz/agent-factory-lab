@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stitch CLI + Claude Code: a design workflow that reviews itself</title>
+<style>
+:root { --bg:#f4f4f2; --fg:#151515; --muted:#666; --accent:#7c4dff; --line:#ddd; --panel:#fff;
+  --sans:"Inter", ui-sans-serif, system-ui, sans-serif; --mono:"JetBrains Mono", ui-monospace, Menlo, monospace; color-scheme:light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#0b0d0e; --fg:#ececec; --muted:#9a9a9a; --accent:#a78bfa; --line:#262a2c; --panel:#141719; color-scheme:dark; } }
+:root[data-theme="dark"] { --bg:#0b0d0e; --fg:#ececec; --muted:#9a9a9a; --accent:#a78bfa; --line:#262a2c; --panel:#141719; color-scheme:dark; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.55 var(--sans); }
+main { max-width:1180px; margin:0 auto; padding:24px 16px 64px; display:grid; gap:18px; }
+a { color:var(--accent); }
+.top { display:flex; gap:16px; flex-wrap:wrap; font-size:14px; }
+h1 { margin:0; font-size:28px; letter-spacing:-.02em; } .lede { color:var(--muted); max-width:72ch; margin:0; }
+h2 { margin:22px 0 4px; font-size:19px; }
+.ctl { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+.seg { display:inline-flex; flex-wrap:wrap; border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+.seg button { background:var(--panel); border:0; border-right:1px solid var(--line); padding:6px 12px; cursor:pointer; color:var(--muted); font:inherit; font-size:13px; }
+.seg button[aria-pressed="true"] { color:var(--fg); background:color-mix(in srgb, var(--accent) 14%, var(--panel)); }
+.play { font:inherit; font-size:13px; font-weight:600; background:var(--accent); color:var(--bg); border:0; border-radius:8px; padding:7px 13px; cursor:pointer; }
+.cap { border-left:3px solid var(--accent); padding:4px 0 4px 14px; max-width:80ch; } .cap p { margin:0 0 4px; } .cap small { color:var(--muted); }
+table.tk { border-collapse:collapse; width:100%; font-size:14px; }
+table.tk th, table.tk td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+table.tk th { color:var(--muted); font-weight:600; }
+.wrap { overflow-x:auto; }
+code { font-family:var(--mono); font-size:.9em; }
+ol.src { margin:0; padding-left:20px; color:var(--muted); } ol.src li { margin:4px 0; }
+
+/* ---- stage: always dark, its own tokens; every class is prefixed .x ---- */
+.x { --c:#8b5cf6; --or:#ff5a1f; --card:#1c1c1c; --card2:#232323; --ln:#2e2e2e; --tx:#ececec; --mu:#8d8d8d; --gr:#7bd88f; --yl:#e8c468; --rd:#f0716a;
+  background:#0e0e0e; color:var(--tx); border:1px solid #222; border-radius:14px; min-height:460px; padding:26px; position:relative; overflow:hidden;
+  display:grid; align-content:center; }
+.x .vc { background:var(--card); border:1px solid var(--ln); border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,.45); }
+.x .vi { opacity:0; transform:translateY(10px); transition:opacity .5s, transform .5s; } .x .vi.on { opacity:1; transform:none; }
+.x .row { display:flex; gap:22px; align-items:center; justify-content:center; flex-wrap:wrap; }
+.x .mu { color:var(--mu); } .x .co { color:var(--c); } .x .or { color:var(--or); } .x .gr { color:var(--gr); } .x .yl { color:var(--yl); } .x .rd { color:var(--rd); } .x .mono { font-family:var(--mono); }
+.x .pill { display:inline-flex; align-items:center; gap:8px; background:var(--card2); border:1px solid var(--ln); border-radius:99px; padding:6px 14px; font-weight:600; font-size:14px; }
+.x .win-h { display:flex; align-items:center; gap:6px; padding:9px 12px; border-bottom:1px solid var(--ln); }
+.x .win-h i { width:9px; height:9px; border-radius:50%; background:#ff5f57; } .x .win-h i:nth-child(2) { background:#febc2e; } .x .win-h i:nth-child(3) { background:#28c840; }
+.x .win-h span { margin:0 auto; font:11px var(--mono); color:var(--mu); }
+.x .lbl { font:600 11px var(--mono); letter-spacing:.08em; text-transform:uppercase; color:var(--mu); }
+
+/* scene 1: MCP vs CLI */
+.x .s1-col { width:min(400px,100%); padding:16px; display:grid; gap:12px; }
+.x .s1-steps { display:grid; gap:6px; font-size:13px; }
+.x .s1-steps div { display:flex; gap:8px; align-items:center; padding:6px 10px; background:var(--card2); border-radius:8px; transition:opacity .4s, color .4s; }
+.x .s1-steps.cut div { opacity:.35; text-decoration:line-through; }
+.x .s1-term { font:12.5px var(--mono); background:#111; border:1px solid var(--ln); border-radius:8px; padding:10px 12px; display:grid; gap:6px; min-height:96px; }
+.x .s1-ctx { display:grid; gap:4px; font-size:12px; }
+.x .s1-bar { height:12px; border-radius:99px; background:#262626; overflow:hidden; display:flex; }
+.x .s1-bar i { display:block; height:100%; width:0; transition:width .8s ease; }
+.x .s1-bar i.u { background:#4b4b4b; } .x .s1-bar i.t { background:var(--yl); } .x .s1-bar i.c { background:var(--c); }
+
+/* scene 2: skills into .claude */
+.x .s2-tree { width:min(330px,100%); padding:14px 16px; font:13px var(--mono); display:grid; gap:10px; }
+.x .s2-dir { border:1px dashed var(--ln); border-radius:10px; padding:10px; min-height:84px; display:grid; gap:6px; align-content:start; transition:border-color .4s; }
+.x .s2-dir.ok { border-color:var(--c); border-style:solid; } .x .s2-dir.bad { border-color:#5a2a2a; }
+.x .s2-chip { display:inline-flex; gap:6px; align-items:center; padding:5px 10px; border-radius:8px; background:var(--card2); border:1px solid var(--ln); width:max-content; opacity:0; transform:translateY(-14px); transition:opacity .4s, transform .4s cubic-bezier(.3,1.5,.5,1); }
+.x .s2-chip.on { opacity:1; transform:none; } .x .s2-chip.gone { opacity:0; transform:translateX(30px); }
+.x .s2-chip b { color:var(--c); }
+.x .s2-in { width:min(340px,100%); padding:16px; display:grid; gap:8px; font-size:13px; }
+.x .s2-in div { display:flex; gap:10px; align-items:baseline; }
+.x .s2-in code { color:var(--c); white-space:nowrap; }
+
+/* scene 3: interview -> brief.md */
+.x .s3 { display:grid; grid-template-columns:1fr auto 1fr; gap:18px; align-items:center; }
+.x .s3-qs { display:grid; gap:6px; font-size:12.5px; }
+.x .s3-q { padding:6px 10px; border-radius:8px; background:var(--card2); border:1px solid var(--ln); transition:opacity .5s, transform .6s ease; opacity:0; transform:translateX(-10px); }
+.x .s3-q.on { opacity:1; transform:none; } .x .s3-q.in { opacity:.25; transform:translateX(18px) scale(.96); }
+.x .s3-q span { color:var(--mu); } .x .s3-q b { color:var(--tx); font-weight:600; }
+.x .s3-arc { position:relative; width:170px; height:170px; }
+.x .s3-arc svg { width:100%; height:100%; transform:rotate(-90deg); }
+.x .s3-arc .fl { transition:stroke-dashoffset 3.2s ease; }
+.x .s3-arc .mid { position:absolute; inset:0; display:grid; place-items:center; align-content:center; text-align:center; font-size:12px; }
+.x .s3-arc .mid b { font-size:30px; font-family:var(--mono); }
+.x .s3-doc { padding:0 0 12px; font:12.5px var(--mono); }
+.x .s3-doc .ln { padding:3px 14px; }
+
+/* scene 4: generate / check loop */
+.x .s4-ring { position:relative; width:300px; height:300px; flex:none; }
+.x .s4-ring .o { position:absolute; inset:46px; border:2px dashed #333; border-radius:50%; }
+.x .s4-node { position:absolute; width:112px; padding:8px; text-align:center; font-size:12px; transform:translate(-50%,-50%); transition:border-color .3s, box-shadow .3s; }
+.x .s4-node.act { border-color:var(--c); box-shadow:0 0 0 3px rgba(139,92,246,.25); }
+.x .s4-node.bad { border-color:var(--yl); }
+.x .s4-tok { position:absolute; width:14px; height:14px; border-radius:50%; background:var(--c); transform:translate(-50%,-50%); transition:left .5s ease, top .5s ease; box-shadow:0 0 12px var(--c); }
+.x .s4-mid { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); text-align:center; }
+.x .s4-mid b { font:700 34px var(--mono); display:block; }
+.x .s4-tab { width:min(400px,100%); font-size:12.5px; }
+.x .s4-tab .r { display:grid; grid-template-columns:1fr auto; gap:10px; padding:7px 14px; border-top:1px solid var(--ln); }
+
+/* scene 5: viewport review */
+.x .s5 { display:grid; gap:16px; justify-items:center; width:100%; }
+.x .s5-track { position:relative; display:flex; align-items:flex-end; gap:14px; justify-content:center; padding-top:24px; }
+.x .s5-dev { border:2px solid #3a3a3a; border-radius:8px; background:#121212; position:relative; display:grid; place-items:center; transition:border-color .3s; }
+.x .s5-dev em { font:11px var(--mono); color:var(--mu); font-style:normal; position:absolute; bottom:-20px; left:50%; transform:translateX(-50%); white-space:nowrap; }
+.x .s5-dev .h { font:800 11px/1 var(--sans); letter-spacing:-.01em; text-align:center; } .x .s5-dev .h span { color:var(--or); }
+.x .s5-dev .st { position:absolute; top:-9px; right:-9px; width:20px; height:20px; border-radius:50%; display:grid; place-items:center; font-size:11px; color:#0e0e0e; transform:scale(0); transition:transform .3s cubic-bezier(.3,1.6,.5,1); }
+.x .s5-dev.ok { border-color:#2f5a3a; } .x .s5-dev.ok .st { background:var(--gr); transform:scale(1); }
+.x .s5-dev.warn { border-color:var(--yl); } .x .s5-dev.warn .st { background:var(--yl); transform:scale(1); }
+.x .s5-dev .box { position:absolute; right:8%; top:22%; width:34%; height:22%; border:1px solid var(--or); background:rgba(255,90,31,.15); border-radius:3px; opacity:0; transition:opacity .3s, top .5s; }
+.x .s5-dev.warn .box { opacity:1; }
+.x .s5-dev.fixed .box { top:70%; border-color:var(--gr); background:rgba(123,216,143,.12); }
+.x .s5-scan { position:absolute; top:0; width:2px; height:100%; background:var(--c); box-shadow:0 0 10px var(--c); left:0; opacity:0; transition:left .7s ease, opacity .3s; }
+.x .s5-rep { width:min(620px,100%); font-size:12.5px; }
+.x .s5-rep .r { display:flex; gap:10px; padding:7px 14px; border-top:1px solid var(--ln); align-items:baseline; transition:color .4s; }
+.x .s5-rep .r .sv { font:700 10px var(--mono); padding:2px 6px; border-radius:4px; background:#3a2f12; color:var(--yl); flex:none; }
+.x .s5-rep .r.done .sv { background:#16301f; color:var(--gr); }
+
+/* scene 6: still -> scroll story (wipe) */
+.x .s6 { width:min(760px,100%); margin:0 auto; display:grid; gap:10px; }
+.x .s6-frame { position:relative; height:280px; border-radius:12px; overflow:hidden; border:1px solid var(--ln); background:#060608; }
+.x .s6-layer { position:absolute; inset:0; padding:18px 22px; }
+.x .s6-hud { font:9.5px var(--mono); color:var(--mu); display:flex; justify-content:space-between; }
+.x .s6-hud b { color:var(--or); font-weight:400; }
+.x .s6-ttl { position:absolute; left:22px; bottom:42px; font:900 clamp(26px,5vw,44px)/.95 var(--sans); letter-spacing:-.02em; text-transform:uppercase; }
+.x .s6-ttl span { color:var(--or); }
+.x .s6-planet { position:absolute; right:12%; top:26%; width:120px; height:120px; border-radius:50%; background:radial-gradient(circle at 35% 35%, #7aa7d8, #1d3557 60%, #0b1220); box-shadow:0 0 40px rgba(122,167,216,.25); }
+.x .s6-anim { clip-path:inset(0 100% 0 0); transition:clip-path 1.6s ease; background:#060608; }
+.x .s6-anim.on { clip-path:inset(0 0 0 0); }
+.x .s6-anim .s6-planet { animation:s6drift 6s ease-in-out infinite alternate; }
+.x .s6-star { position:absolute; width:1.5px; height:18px; background:linear-gradient(transparent, #cfd8ff); opacity:.7; animation:s6streak 1.1s linear infinite; }
+.x .s6-rail { position:absolute; right:10px; top:40px; bottom:40px; width:2px; background:#333; }
+.x .s6-rail i { position:absolute; left:-4px; width:10px; height:10px; border-radius:50%; background:var(--or); top:0; transition:top .9s ease; }
+.x .s6-rail u { position:absolute; left:-3px; width:8px; height:1px; background:#666; }
+.x .s6-tl { position:absolute; left:0; bottom:10px; display:flex; gap:26px; font:10px var(--mono); color:var(--mu); white-space:nowrap; transition:transform 2.4s ease; padding-left:22px; }
+.x .s6-tl b { color:var(--tx); font-weight:500; }
+.x .s6-edge { position:absolute; top:0; bottom:0; width:2px; background:var(--c); box-shadow:0 0 12px var(--c); left:0; transition:left 1.6s ease; }
+.x .s6-tags { display:flex; justify-content:space-between; font-size:12px; gap:10px; }
+.x .s6-still .s6-ttl { color:#ddd; }
+@keyframes s6streak { from { transform:translateY(-40px); } to { transform:translateY(320px); } }
+@keyframes s6drift { from { transform:translateY(0) scale(1); } to { transform:translateY(-12px) scale(1.06); } }
+
+/* scene 7: story review scorecard */
+.x .s7 { display:grid; gap:16px; justify-items:center; width:100%; }
+.x .s7-q { position:relative; text-align:center; font-size:20px; font-weight:700; min-height:62px; }
+.x .s7-q .old { color:var(--mu); transition:color .4s; position:relative; display:inline-block; }
+.x .s7-q .old::after { content:""; position:absolute; left:0; top:52%; height:2px; width:0; background:var(--rd); transition:width .6s ease; }
+.x .s7-q .old.x2::after { width:100%; }
+.x .s7-q .new { display:block; color:var(--tx); }
+.x .s7-cards { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; width:min(760px,100%); }
+.x .s7-c { width:96px; padding:10px 8px; text-align:center; font-size:12px; display:grid; gap:4px; transition:order .1s, border-color .4s, transform .4s; }
+.x .s7-c b { font:700 15px var(--mono); }
+.x .s7-c .v { font:700 10px var(--mono); padding:2px 6px; border-radius:4px; background:#2a2a2a; color:var(--mu); justify-self:center; transition:background .4s, color .4s; }
+.x .s7-c.rw { border-color:#5a4a1e; } .x .s7-c.rw .v { background:#3a2f12; color:var(--yl); }
+.x .s7-c.br { border-color:#6a2a2a; } .x .s7-c.br .v { background:#3d1717; color:var(--rd); }
+.x .s7-c.ok { border-color:#2f5a3a; } .x .s7-c.ok .v { background:#16301f; color:var(--gr); }
+.x .s7-bar { display:inline-block; width:80px; height:8px; border-radius:99px; background:#262626; overflow:hidden; }
+.x .s7-bar i { display:block; height:100%; width:95%; background:var(--yl); transition:width 1s ease, background 1s; }
+.x .s7-meta {display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+@media (max-width:760px) {
+  .x { padding:18px 12px; min-height:0; }
+  .x .s3 { grid-template-columns:1fr; justify-items:center; }
+  .x .s3-arc { width:130px; height:130px; }
+  .x .s4-ring { transform:scale(.85); margin:-22px; }
+  .x .s5-track { gap:8px; zoom:.6; }
+  .x .s5-dev em { font-size:16px; bottom:-26px; }
+  .x .s6-frame { height:230px; } .x .s6-planet { width:80px; height:80px; }
+  .x .s7-c { width:76px; font-size:11px; }
+  .x .s7-q { font-size:16px; }
+}
+@media (prefers-reduced-motion: reduce) { .x .s6-star, .x .s6-anim .s6-planet { animation:none; } }
+</style>
+
+<main>
+  <nav class="top"><a href="../">← Video feed</a><a href="https://www.youtube.com/watch?v=au2TI8sdq8E" target="_blank" rel="noopener">▶ Watch the video (AI LABS, 13:47)</a></nav>
+  <h1>Stitch CLI + Claude Code: a design workflow that reviews itself</h1>
+  <p class="lede">Google's Stitch now has a CLI, so Claude Code can drive it directly. AI LABS wraps that in a five-step workflow (brief, generate, build, animate) with two review skills that catch what neither tool notices alone. The running example is their space-history scroll site, <i>Escape Velocity</i>.</p>
+  <div class="ctl"><div class="seg" id="steps"></div><button type="button" class="play" id="play">▶ Play all</button></div>
+  <div class="x" id="stage"></div>
+  <div class="cap" id="cap" aria-live="polite"></div>
+
+  <h2>What this means for us</h2>
+  <div class="wrap"><table class="tk">
+    <tr><th>Pattern from the video</th><th>How to apply it</th></tr>
+    <tr><td>CLI + skill instead of an always-loaded MCP</td><td>For tools we call now and then, prefer a CLI that a skill documents. The skill loads only when needed, so the tool's schema doesn't sit in context every turn.</td></tr>
+    <tr><td>Skills must land in <code>.claude/skills/</code></td><td>After any third-party skill install, check where it was written. If it isn't in <code>.claude/</code>, Claude won't load it unless you name it in the prompt.</td></tr>
+    <tr><td>Interview into <code>brief.md</code> first</td><td>Before a generative step, have the agent interview us with multiple-choice questions until it has nothing left to ask. Every later prompt then follows one written source, so the outputs stay consistent with each other.</td></tr>
+    <tr><td>Let the agent generate, check and re-prompt</td><td>Give the agent a generator plus a way to judge its output. Here that took 8 Stitch versions. Slow, but the result is better than one-shot.</td></tr>
+    <tr><td>Two separate reviewers</td><td>Run one fidelity check ("does it match the spec, at 1920/1280/768/390?") and one quality check ("is it good, judged against the brief, harshly?"). Each report lists issues worst-first, then Claude fixes them. The <code>visual-explainer</code> verify step (1470px + 400px) is the same idea.</td></tr>
+    <tr><td>Watch for over-animation</td><td>Claude adds motion on its own. Every animation needs to earn its place in the story; too many streaking stars made the page hard to watch.</td></tr>
+  </table></div>
+
+  <h2>Sources</h2>
+  <ol class="src">
+    <li><a href="https://www.youtube.com/watch?v=au2TI8sdq8E" target="_blank" rel="noopener">AI LABS: "Google Just Fixed AI Design By Releasing This"</a> (transcript and on-screen frames: install commands, the brief interview, the variant table, the review reports).</li>
+    <li><a href="https://stitch.withgoogle.com/" target="_blank" rel="noopener">Google Stitch</a>. The CLI commands here (<code>npm install -g @google/stitch</code>, <code>stitch login</code>, <code>stitch create project</code>, <code>stitch generate screen</code>, <code>stitch serve</code>) come from the quickstart shown at 1:45 in the video. They were not checked separately.</li>
+  </ol>
+</main>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const on = (el, sel) => el.querySelectorAll(sel).forEach(n => n.classList.add('on'));
+  const count = (node, from, to, ms) => { if (reduced) { node.textContent = to; return; } const t0 = performance.now(); const f = now => { const p = Math.min(1, (now - t0) / ms); node.textContent = Math.round(from + (to - from) * p); if (p < 1) requestAnimationFrame(f); }; requestAnimationFrame(f); };
+  const win = url => `<div class="win-h"><i></i><i></i><i></i><span>${url}</span></div>`;
+  const type = (t, node, s, at, sp = 32) => [...s].forEach((_, i) => t(() => { node.textContent = s.slice(0, i + 1); }, at + i * sp));
+
+  const SCENES = [
+    { k:'MCP → CLI',
+      cap:'<p><b>Stitch was a design app; now it\'s a command your agent can run.</b> The old MCP needed a Google Cloud setup and kept its tools in context every turn. The CLI is two commands, and Claude loads it only when the Stitch skill is needed.</p><small>The MCP still works. The CLI is just cheaper to set up and cheaper in tokens.</small>',
+      html:() => `<div class="row" style="align-items:stretch">
+        <div class="vc s1-col vi" data-s="1"><div class="lbl">Before · Stitch MCP</div>
+          <div class="s1-steps" id="s1old"><div>☁ Google Cloud project</div><div>⚙ Enable the API</div><div>🔑 Credentials</div><div>{ } MCP config in the agent</div></div>
+          <div class="s1-ctx"><span class="mu">context window, every turn</span><div class="s1-bar"><i class="u" data-w="38"></i><i class="t" data-w="30"></i></div><span class="yl">▮ Stitch tool schemas, always loaded</span></div></div>
+        <div class="vc s1-col vi" data-s="2"><div class="lbl co">Now · Stitch CLI</div>
+          <div class="s1-term"><div><span class="mu">$</span> <span id="s1a"></span></div><div><span class="mu">$</span> <span id="s1b"></span></div><div class="vi gr" data-s="3">✓ logged in with your Google account</div></div>
+          <div class="s1-ctx"><span class="mu">context window, every turn</span><div class="s1-bar"><i class="u" data-w="38"></i><i class="c" data-w="0" id="s1c"></i></div><span class="co" id="s1l">▮ Stitch skill: loaded only when used</span></div></div></div>`,
+      run:(t, el) => {
+        t(() => on(el, '[data-s="1"]'), 100);
+        t(() => el.querySelectorAll('[data-s="1"] .s1-bar i').forEach(i => i.style.width = i.dataset.w + '%'), 500);
+        t(() => on(el, '[data-s="2"]'), 900);
+        t(() => el.querySelectorAll('[data-s="2"] .s1-bar .u').forEach(i => i.style.width = '38%'), 1100);
+        type(t, el.querySelector('#s1a'), 'npm install -g @google/stitch', 1300, 30);
+        type(t, el.querySelector('#s1b'), 'stitch login', 2300, 45);
+        t(() => on(el, '[data-s="3"]'), 2900);
+        t(() => el.querySelector('#s1old').classList.add('cut'), 3200);
+        t(() => el.querySelector('#s1c').style.width = '14%', 3600);
+        t(() => el.querySelector('#s1c').style.width = '0%', 4600);
+        return 5000;
+      } },
+
+    { k:'Skills in .claude',
+      cap:'<p><b>Installing the CLI isn\'t enough. The agent needs the skill, in the folder Claude actually reads.</b> By default the skill installer writes somewhere Claude doesn\'t look, so you add the <code>.claude</code> target. A second skill, <i>scrollytelling</i>, goes in at the start so every Stitch prompt already uses it.</p><small>Without the right folder, Claude only finds the skill when you name it in the prompt.</small>',
+      html:() => `<div class="row" style="align-items:stretch">
+        <div class="vc s2-tree vi" data-s="1"><div class="lbl">my-project/</div>
+          <div class="s2-dir bad" id="s2bad"><span class="mu">default install folder <span class="rd">· not read by Claude</span></span><span class="s2-chip" id="s2x">📦 <b>stitch</b> skill</span></div>
+          <div class="s2-dir" id="s2ok"><span>.claude/skills/</span><span class="s2-chip" id="s2a">📦 <b>stitch</b></span><span class="s2-chip" id="s2b">📦 <b>scrollytelling</b></span></div></div>
+        <div class="vc s2-in vi" data-s="2"><div class="lbl">Inside the stitch skill</div>
+          <div class="vi" data-s="3"><code>DESIGN.md</code><span class="mu">guide: keeps colours and fonts identical across every screen</span></div>
+          <div class="vi" data-s="3"><code>vocabulary</code><span class="mu">design words that turn a plain prompt into a detailed one</span></div>
+          <div class="vi" data-s="3"><code>flow: sync</code><span class="mu">writes DESIGN.md and keeps it matched to the Stitch project</span></div>
+          <div class="vi" data-s="3"><code>flow: review</code><span class="mu">checks the running app against DESIGN.md</span></div></div></div>`,
+      run:(t, el) => {
+        t(() => on(el, '[data-s="1"]'), 100);
+        t(() => el.querySelector('#s2x').classList.add('on'), 600);
+        t(() => el.querySelector('#s2x').classList.add('gone'), 1700);
+        t(() => { el.querySelector('#s2a').classList.add('on'); el.querySelector('#s2ok').classList.add('ok'); }, 2000);
+        t(() => el.querySelector('#s2b').classList.add('on'), 2600);
+        t(() => on(el, '[data-s="2"]'), 3000);
+        el.querySelectorAll('[data-s="3"]').forEach((n, i) => t(() => n.classList.add('on'), 3300 + i * 300));
+        return 4600;
+      } },
+
+    { k:'Interview → brief.md',
+      cap:'<p><b>Claude prompts Stitch, so Claude needs the whole idea written down first.</b> It interviews you with multiple-choice questions until it has nothing left to ask, then writes <code>brief.md</code>. Every later prompt comes from that one file.</p><small>That also fixes Stitch\'s drift: its style changes from one design to the next unless every prompt shares a single brief.</small>',
+      html:() => {
+        const qa = [['Core story?', 'Human space history'], ['Purpose?', 'Pure experience'], ['Tone?', 'Awe / sublime, epic'], ['Narrator?', 'Omniscient voice'], ['Milestones?', 'Sputnik, Gagarin, Apollo 11, Voyager, ISS, JWST, Mars'], ['Length?', '3–5 min'], ['Medium?', 'Archival footage / photos']];
+        return `<div class="s3">
+          <div class="s3-qs">${qa.map(([q, a]) => `<div class="s3-q"><span>${q}</span> → <b>${a}</b></div>`).join('')}</div>
+          <div class="s3-arc"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" fill="none" stroke="#262626" stroke-width="7"/>
+            <circle class="fl" cx="50" cy="50" r="42" fill="none" stroke="#8b5cf6" stroke-width="7" stroke-linecap="round" stroke-dasharray="264" stroke-dashoffset="264"/></svg>
+            <div class="mid"><b id="s3n">7</b><span class="mu">questions left</span></div></div>
+          <div class="vc s3-doc vi" data-s="2">${win('brief.md')}
+            <div class="ln co"># Escape Velocity</div>
+            <div class="ln vi" data-s="3"><span class="mu">## Summary</span><br>Human space history as a scroll story</div>
+            <div class="ln vi" data-s="3"><span class="mu">## Story order</span><br>Ch.0 100 km → I First light → II … → VI Voyager</div>
+            <div class="ln vi" data-s="3"><span class="mu">## Feel</span><br>Awe · cinematic dark · <span class="or">orange</span> accent</div></div></div>`;
+      },
+      run:(t, el) => {
+        const qs = el.querySelectorAll('.s3-q'), n = el.querySelector('#s3n');
+        qs.forEach((q, i) => t(() => q.classList.add('on'), 150 + i * 220));
+        t(() => el.querySelector('.fl').style.strokeDashoffset = '0', 1700);
+        qs.forEach((q, i) => t(() => { q.classList.add('in'); n.textContent = qs.length - 1 - i; }, 1800 + i * 430));
+        t(() => on(el, '[data-s="2"]'), 4300);
+        el.querySelectorAll('[data-s="3"]').forEach((l, i) => t(() => l.classList.add('on'), 4600 + i * 280));
+        return 5600;
+      } },
+
+    { k:'Generate · check · re-prompt',
+      cap:'<p><b>Claude keeps re-prompting Stitch until the design holds up.</b> It creates the project from <code>brief.md</code>, asks for variants, checks each one, and asks again whenever it finds a problem. In the video that took 8 designs.</p><small>The slowest step. And the Stitch output is still static images: no scrolling, no motion yet.</small>',
+      html:() => {
+        const N = [['Claude prompts', 'from brief.md'], ['Stitch generates', 'a variant'], ['Claude checks', 'the screen'], ['Problem?', 're-prompt']];
+        const P = [[150, 34], [266, 150], [150, 266], [34, 150]];
+        const rows = [['Base: Continuous Chronicle', 'Clean', 'gr'], ['Variant: Deep Void Minimalist', 'Clean', 'gr'], ['Variant: Asymmetric Telemetry', 'Clean', 'gr'], ['Variant: 70mm Panavision', 'Headlines cut off', 'yl']];
+        return `<div class="row">
+          <div class="s4-ring"><div class="o"></div>${N.map(([a, b], i) => `<div class="vc s4-node" style="left:${P[i][0]}px;top:${P[i][1]}px"><b>${a}</b><br><span class="mu">${b}</span></div>`).join('')}
+            <div class="s4-tok" style="left:150px;top:34px"></div><div class="s4-mid"><b id="s4n">0</b><span class="mu">designs</span></div></div>
+          <div class="vc s4-tab vi" data-s="2">${win('stitch.google.com/projects/…')}${rows.map(([a, b, c]) => `<div class="r vi" data-s="3"><span>${a}</span><span class="${c}">${b}</span></div>`).join('')}</div></div>`;
+      },
+      run:(t, el) => {
+        const P = [[150, 34], [266, 150], [150, 266], [34, 150]], tok = el.querySelector('.s4-tok'), nodes = el.querySelectorAll('.s4-node'), n = el.querySelector('#s4n');
+        let k = 0;
+        for (let lap = 0; lap < 2; lap++) for (let i = 0; i < 4; i++) {
+          const at = 200 + k * 380; k++;
+          t(() => { nodes.forEach(x => x.classList.remove('act', 'bad')); nodes[i].classList.add(i === 3 ? 'bad' : 'act'); tok.style.left = P[i][0] + 'px'; tok.style.top = P[i][1] + 'px'; if (i === 1) n.textContent = +n.textContent + 1; }, at);
+        }
+        t(() => { nodes.forEach(x => x.classList.remove('act', 'bad')); count(n, 2, 8, 1200); }, 200 + k * 380);
+        t(() => on(el, '[data-s="2"]'), 3400);
+        el.querySelectorAll('[data-s="3"]').forEach((r, i) => t(() => r.classList.add('on'), 3700 + i * 250));
+        return 5000;
+      } },
+
+    { k:'Build + Stitch review',
+      cap:'<p><b>The built site matched Stitch on desktop and broke on a phone.</b> Stitch had only designed a desktop screen. So the <i>stitch-review</i> skill screenshots the live site at 1920, 1280, 768 and 390px, compares each against the Stitch design, and reports problems worst-first. Then Claude fixes them.</p><small>It checks how the page looks, not how it behaves. That needs the second review, once the site moves.</small>',
+      html:() => {
+        const D = [[1920, 200, 120], [1280, 150, 96], [768, 92, 120], [390, 52, 100]];
+        return `<div class="s5">
+          <div class="s5-track">${D.map(([w, a, b]) => `<div class="s5-dev" data-w="${w}" style="width:${a}px;height:${b}px"><div class="h">ESCAPE<br><span>VELOCITY</span></div><div class="box"></div><span class="st"></span><em>${w}px</em></div>`).join('')}<div class="s5-scan"></div></div>
+          <div class="vc s5-rep vi" data-s="2" style="margin-top:14px">${win('stitch-review report · worst first')}
+            <div class="r vi" data-s="3"><span class="sv">HIGH</span><span>Sound toggle tap target 71×15px fails WCAG 2.5.8 (all viewports)</span></div>
+            <div class="r vi" data-s="3"><span class="sv">HIGH</span><span>Apollo altitude box covers the Chapter II title at 768</span></div>
+            <div class="r vi" data-s="3"><span class="sv">MED</span><span>Type stops scaling at 1920</span></div></div></div>`;
+      },
+      run:(t, el) => {
+        const ds = el.querySelectorAll('.s5-dev'), sc = el.querySelector('.s5-scan'), tr = el.querySelector('.s5-track');
+        ds.forEach((d, i) => t(() => { sc.style.opacity = 1; sc.style.left = (d.offsetLeft + d.offsetWidth / 2) + 'px'; }, 200 + i * 700));
+        ds.forEach((d, i) => t(() => d.classList.add(d.dataset.w === '768' ? 'warn' : 'ok'), 650 + i * 700));
+        t(() => { sc.style.opacity = 0; on(el, '[data-s="2"]'); }, 3100);
+        el.querySelectorAll('[data-s="3"]').forEach((r, i) => t(() => r.classList.add('on'), 3300 + i * 250));
+        t(() => { el.querySelectorAll('.s5-rep .r').forEach(r => { r.classList.add('done'); r.querySelector('.sv').textContent = 'FIXED'; }); const w = el.querySelector('.s5-dev.warn'); w.classList.add('fixed'); w.classList.replace('warn', 'ok'); }, 4600);
+        return 5400;
+      } },
+
+    { k:'Scrollytelling',
+      cap:'<p><b>Claude turns the still Stitch comp into a story that unfolds as you scroll.</b> With the scrollytelling skill it added an opening shake, stars that streak past on scroll, a chapter marker, and a timeline that moves sideways while the rest of the page scrolls down.</p><small>Because the review step had already fixed every screen size, the animations worked on phones and tablets too.</small>',
+      html:() => {
+        const stars = Array.from({ length: 26 }, (_, i) => `<i class="s6-star" style="left:${(i * 37) % 100}%;animation-delay:-${(i * 0.13).toFixed(2)}s;animation-duration:${(0.8 + (i % 5) * 0.15).toFixed(2)}s"></i>`).join('');
+        const layer = anim => `<div class="s6-layer ${anim ? 's6-anim' : 's6-still'}">${anim ? stars : ''}
+          <div class="s6-hud"><span>MISSION // ESCAPE_VELOCITY · T: 1977 · <b>LEAVING EARTH</b></span><span>ALT: 1.0M KM · VEL: 17.0 KM/S</span></div>
+          <div class="s6-planet"></div>
+          <div class="s6-ttl">Built never<br>to come <span>back.</span></div>
+          ${anim ? `<div class="s6-rail">${[0, 1, 2, 3, 4, 5, 6].map(i => `<u style="top:${i * 16.6}%"></u>`).join('')}<i></i></div>
+          <div class="s6-tl"><span><b>1957</b> Sputnik</span><span><b>1961</b> Gagarin</span><span><b>1969</b> Apollo 11</span><span><b>1977</b> Voyager</span><span><b>2000</b> ISS</span><span><b>2021</b> JWST</span><span><b>20XX</b> Mars</span></div>` : ''}</div>`;
+        return `<div class="s6"><div class="s6-frame">${layer(false)}${layer(true)}<div class="s6-edge"></div></div>
+          <div class="s6-tags"><span class="mu">← Stitch: still images</span><span class="co">Claude + scrollytelling skill →</span></div></div>`;
+      },
+      run:(t, el) => {
+        const a = el.querySelector('.s6-anim'), e = el.querySelector('.s6-edge'), f = el.querySelector('.s6-frame');
+        t(() => { a.classList.add('on'); e.style.left = (f.offsetWidth - 2) + 'px'; }, 400);
+        t(() => e.style.opacity = 0, 2100);
+        [0, 1, 2, 3].forEach(i => t(() => el.querySelector('.s6-rail i').style.top = (i + 1) * 16.6 + '%', 1600 + i * 700));
+        t(() => el.querySelector('.s6-tl').style.transform = 'translateX(-38%)', 2000);
+        return 4800;
+      } },
+
+    { k:'Story review',
+      cap:'<p><b>A site that works on every screen can still be bad. The second review grades it as a story.</b> <i>story-review</i> checks the flow from part to part, whether each animation helps tell the story, the scroll pacing and the copy. It judges all of that against <code>brief.md</code>, as harshly as an awards jury, worst-first.</p><small>Its catch here was too much motion: so many stars flew past on a fast scroll that the page was hard to watch. After the fixes, fewer stars and smoother, less jumpy animation.</small>',
+      html:() => {
+        const C = [['0', 'Rework', 'HUD never forms'], ['I', 'Rework', 'Gagarin is a 12px caption'], ['II', 'Broken', 'zoom on a photo'], ['III', 'Rework', 'spoils VI'], ['IV', 'Rework', '2nd sideways run'], ['V', 'Rework', 'peak reads flat'], ['VI', 'Rework', 'Voyager never turns']];
+        return `<div class="s7">
+          <div class="s7-q"><span class="old" id="s7o">Does it match the Stitch design?</span><span class="new vi" data-s="1">Is it actually <span class="co">good</span>?</span></div>
+          <div class="s7-cards">${C.map(([c, v, w]) => `<div class="vc s7-c" data-v="${v}"><span class="mu">Ch.</span><b>${c}</b><span class="v">…</span><span class="mu" style="font-size:10.5px">${w}</span></div>`).join('')}</div>
+          <div class="s7-meta vi" data-s="2"><span class="pill">✦ star density <span class="s7-bar"><i id="s7s"></i></span> <span class="mono" id="s7t">too much</span></span><span class="pill">judged against <span class="co mono">brief.md</span></span></div></div>`;
+      },
+      run:(t, el) => {
+        const cs = [...el.querySelectorAll('.s7-c')];
+        t(() => el.querySelector('#s7o').classList.add('x2'), 300);
+        t(() => on(el, '[data-s="1"]'), 800);
+        cs.forEach((c, i) => t(() => { c.classList.add(c.dataset.v === 'Broken' ? 'br' : 'rw'); c.querySelector('.v').textContent = c.dataset.v; }, 1200 + i * 200));
+        t(() => cs.forEach(c => c.style.order = c.dataset.v === 'Broken' ? -1 : 0), 2800);
+        t(() => on(el, '[data-s="2"]'), 3100);
+        cs.forEach((c, i) => t(() => { c.className = 'vc s7-c ok'; c.querySelector('.v').textContent = 'Works'; }, 3600 + i * 160));
+        t(() => { const b = el.querySelector('#s7s'); b.style.width = '30%'; b.style.background = '#7bd88f'; el.querySelector('#s7t').textContent = 'calmer'; }, 3600);
+        return 5200;
+      } },
+  ];
+
+  const stage = $('stage'); let cur = 0, auto = false, timers = [];
+  const clear = () => { timers.forEach(clearTimeout); timers = []; };
+  $('steps').innerHTML = SCENES.map((s, i) => `<button type="button" data-i="${i}">${i + 1}. ${s.k}</button>`).join('');
+  function show(i) {
+    clear(); cur = i; const s = SCENES[i];
+    $('steps').querySelectorAll('button').forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
+    stage.innerHTML = s.html(); $('cap').innerHTML = s.cap;
+    const t = (fn, ms) => timers.push(setTimeout(fn, reduced ? 0 : ms));
+    const end = s.run(t, stage);
+    if (auto) t(() => i < SCENES.length - 1 ? show(i + 1) : stop(), end + 2000);
+  }
+  function stop() { auto = false; $('play').textContent = '▶ Play all'; }
+  $('steps').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { stop(); show(+b.dataset.i); } });
+  $('play').addEventListener('click', () => { if (auto) { stop(); clear(); return; } auto = true; $('play').textContent = '❚❚ Pause'; show(cur === SCENES.length - 1 ? 0 : cur); });
+  show(0);
+})();
+</script>
+</html>
