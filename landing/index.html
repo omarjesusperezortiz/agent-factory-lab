@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agent Factory Lab</title>
+<meta name="description" content="Research on orchestrating AI coding agents into a software factory. Follow one ticket down the line.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#05090a; --fg:#e2ece9; --muted:#87998f; --line:#1d2b29; --panel:rgba(13,19,21,.72);
+  --accent:#3ec7b4; --tool:#e3a64b; --err:#f0716a; --ok:#7bd88f; --human:#a99cf5;
+  --sans:"Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color-scheme: dark;
+}
+* { box-sizing:border-box; }
+html, body { margin:0; background:var(--bg); color:var(--fg); font:16px/1.55 var(--sans); }
+body { overflow-x:hidden; }
+a { color:var(--accent); }
+
+#lpGl { position:fixed; inset:0; width:100%; height:100%; display:block; pointer-events:none; z-index:0; }
+.lp-vignette { position:fixed; inset:0; pointer-events:none; z-index:1;
+  background:radial-gradient(ellipse at center, transparent 45%, rgba(5,9,10,.75) 100%); }
+
+.lp-top { position:fixed; top:0; left:0; right:0; z-index:5; display:flex; justify-content:space-between; align-items:center;
+  padding:16px 20px; font:13px var(--mono); }
+.lp-top b { letter-spacing:.04em; }
+.lp-top nav { display:flex; gap:18px; }
+.lp-top a { color:var(--muted); text-decoration:none; }
+.lp-top a:hover { color:var(--fg); }
+
+.lp-hud { position:fixed; left:20px; bottom:18px; z-index:5; font:12px var(--mono); color:var(--muted);
+  display:flex; gap:14px; align-items:center; background:var(--panel); border:1px solid var(--line); border-radius:999px; padding:7px 14px;
+  backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
+.lp-hud i { width:8px; height:8px; border-radius:50%; background:var(--accent); box-shadow:0 0 10px var(--accent); }
+.lp-hud b { color:var(--fg); font-weight:600; }
+.lp-prog { position:fixed; right:20px; top:50%; transform:translateY(-50%); z-index:5; display:grid; gap:10px; }
+.lp-prog span { width:6px; height:6px; border-radius:50%; background:var(--line); transition:background .3s, transform .3s; }
+.lp-prog span.on { background:var(--accent); transform:scale(1.5); }
+
+main { position:relative; z-index:2; }
+.lp-s { position:relative; }
+.lp-s[data-u="1"] { height:110vh; } .lp-s[data-u="3"] { height:300vh; } .lp-s[data-u="2.4"] { height:240vh; } .lp-s[data-u="2"] { height:200vh; }
+.lp-card { position:sticky; top:18vh; max-width:440px; margin-left:max(20px, 7vw); padding:22px 24px; border-radius:16px;
+  background:var(--panel); border:1px solid var(--line); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); }
+.lp-card.r { margin-left:auto; margin-right:max(20px, 7vw); }
+.lp-k { font:12px var(--mono); color:var(--accent); text-transform:uppercase; letter-spacing:.12em; }
+.lp-card h2 { margin:8px 0 10px; font-size:clamp(24px, 3vw, 34px); line-height:1.12; letter-spacing:-.02em; }
+.lp-card p { margin:0 0 10px; color:var(--muted); }
+.lp-card p b { color:var(--fg); font-weight:600; }
+.lp-steps { list-style:none; padding:0; margin:12px 0 0; display:grid; gap:6px; font:13px var(--mono); }
+.lp-steps li { display:flex; gap:10px; align-items:center; color:var(--muted); transition:color .3s; }
+.lp-steps li::before { content:""; width:7px; height:7px; border-radius:50%; background:var(--line); transition:background .3s, box-shadow .3s; }
+.lp-steps li.on { color:var(--fg); }
+.lp-steps li.on::before { background:var(--accent); box-shadow:0 0 8px var(--accent); }
+.lp-count { font:600 clamp(36px, 5vw, 56px)/1 var(--mono); color:var(--fg); margin:6px 0 8px; font-variant-numeric:tabular-nums; }
+
+.lp-hero { position:sticky; top:0; height:100vh; display:grid; align-content:center; padding:0 max(20px, 7vw); }
+.lp-hero h1 { margin:0; font-size:clamp(40px, 7.4vw, 104px); line-height:.95; letter-spacing:-.04em; max-width:11ch; }
+.lp-hero h1 em { font-style:normal; color:var(--accent); text-shadow:0 0 40px rgba(62,199,180,.35); }
+.lp-hero p { max-width:46ch; color:var(--muted); font-size:clamp(16px, 1.5vw, 19px); margin:20px 0 0; }
+.lp-cue { position:absolute; bottom:60px; left:max(20px, 7vw); font:12px var(--mono); color:var(--muted); display:flex; gap:10px; align-items:center; }
+.lp-cue::before { content:""; width:1px; height:34px; background:linear-gradient(var(--accent), transparent); animation:lpCue 1.8s infinite; }
+@keyframes lpCue { 0% { transform:scaleY(0); transform-origin:top; } 50% { transform:scaleY(1); transform-origin:top; } 51% { transform-origin:bottom; } 100% { transform:scaleY(0); transform-origin:bottom; } }
+
+.lp-doors { position:relative; height:100vh; display:grid; place-items:end center; padding:0 20px 12vh; }
+.lp-doorrow { display:grid; grid-template-columns:repeat(2, minmax(0, 340px)); gap:20px; width:100%; justify-content:center; }
+.lp-door { display:grid; gap:6px; padding:22px; border-radius:16px; text-decoration:none; color:var(--fg);
+  background:var(--panel); border:1px solid var(--line); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  transition:transform .25s, border-color .25s, box-shadow .25s; }
+.lp-door:hover, .lp-door:focus-visible { transform:translateY(-4px); }
+.lp-door.c:hover, .lp-door.c:focus-visible { border-color:var(--accent); box-shadow:0 0 40px rgba(62,199,180,.25); }
+.lp-door.r:hover, .lp-door.r:focus-visible { border-color:var(--human); box-shadow:0 0 40px rgba(169,156,245,.25); }
+.lp-door b { font-size:22px; letter-spacing:-.01em; }
+.lp-door span { color:var(--muted); font-size:14.5px; }
+.lp-door small { font:12px var(--mono); }
+.lp-door.c small { color:var(--accent); } .lp-door.r small { color:var(--human); }
+:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+
+/* No WebGL or reduced motion: same story as plain cards */
+.lp-static #lpGl, .lp-static .lp-hud, .lp-static .lp-prog { display:none; }
+.lp-static body, .lp-static { background:radial-gradient(ellipse at 30% 0%, #0f2a27 0%, var(--bg) 60%); }
+.lp-static .lp-s { height:auto !important; padding:6vh 0; }
+.lp-static .lp-card, .lp-static .lp-hero { position:relative; top:0; }
+.lp-static .lp-hero { height:auto; min-height:80vh; }
+.lp-static .lp-cue { display:none; }
+.lp-static .lp-doors { height:auto; padding:8vh 20px; }
+
+@media (max-width:700px) {
+  .lp-top nav { gap:12px; }
+  .lp-card, .lp-card.r { margin:0 16px; max-width:none; top:96px; padding:18px; }
+  .lp-card p { font-size:14.5px; }
+  .lp-prog { display:none; }
+  .lp-hud { left:16px; right:16px; bottom:auto; top:52px; justify-content:center; }
+  .lp-doorrow { grid-template-columns:minmax(0,1fr); }
+  .lp-doors { padding-bottom:8vh; }
+}
+</style>
+</head>
+<body>
+<canvas id="lpGl" aria-hidden="true"></canvas>
+<div class="lp-vignette" aria-hidden="true"></div>
+
+<header class="lp-top">
+  <b>agent-factory-lab</b>
+  <nav><a href="../#console">Console</a><a href="../#research">Research</a><a href="https://github.com/omarjesusperezortiz/agent-factory-lab" target="_blank" rel="noopener">GitHub</a></nav>
+</header>
+<div class="lp-hud" aria-hidden="true"><i id="lpDot"></i><span>ticket <b>AF-0042</b></span><span>stage <b id="lpStage">intake</b></span><span>attempt <b id="lpTry">1</b></span></div>
+<div class="lp-prog" aria-hidden="true" id="lpProg"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+
+<main>
+  <section class="lp-s" data-u="1" data-scene="0">
+    <div class="lp-hero">
+      <div class="lp-k">Research lab · AI coding agents</div>
+      <h1>A software <em>factory</em> run by agents.</h1>
+      <p>How do you turn single AI coding sessions into a line that ships tickets every day, and catches its own mistakes? Follow one ticket through it.</p>
+      <div class="lp-cue">scroll to follow the ticket</div>
+    </div>
+  </section>
+
+  <section class="lp-s" data-u="3" data-scene="1">
+    <div class="lp-card">
+      <div class="lp-k">01 · The line</div>
+      <h2>Every ticket goes through the same five stations.</h2>
+      <p>Each station is one agent with one job and only the files it needs. <b>The order lives in plain code, not in a model's memory.</b></p>
+      <ul class="lp-steps" id="lpSteps">
+        <li data-z="-20">scout · reads the ticket and the repo</li>
+        <li data-z="-40">spec · writes down the intent</li>
+        <li data-z="-60">worker · writes the code</li>
+        <li data-z="-80">tester · runs it for real</li>
+        <li data-z="-100">reviewer · a different model judges</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="lp-s" data-u="2.4" data-scene="2">
+    <div class="lp-card r">
+      <div class="lp-k" style="color:var(--err)">02 · The loop</div>
+      <h2>The tester says no. That's the system working.</h2>
+      <p>The ticket goes back to the worker with the failure attached, then tries again. <b>Loops are bounded</b>: after three rounds it goes to a person instead of spinning.</p>
+      <p>The reviewer runs on a different model, so the same blind spot doesn't approve its own work.</p>
+    </div>
+  </section>
+
+  <section class="lp-s" data-u="2" data-scene="3">
+    <div class="lp-card">
+      <div class="lp-k">03 · The ledger</div>
+      <div class="lp-count" id="lpCount">0</div>
+      <h2>Now do that for every ticket, every day.</h2>
+      <p>A ledger in code tracks each one: which station, which attempt, what it cost. <b>Nothing goes missing because nothing depends on an agent remembering.</b></p>
+    </div>
+  </section>
+
+  <section class="lp-s" data-u="2" data-scene="4">
+    <div class="lp-card r">
+      <div class="lp-k" style="color:var(--human)">04 · Two doors</div>
+      <h2>Run the factory, or read how it was designed.</h2>
+      <p>The <b>console</b> is where the line is watched and steered. The <b>research</b> is everything learned building it: patterns, videos, decisions.</p>
+    </div>
+  </section>
+
+  <section class="lp-doors" data-scene="5">
+    <div class="lp-doorrow">
+      <a class="lp-door c" href="../#console"><small>● Console</small><b>Run the factory →</b><span>Runs, traces, issues, the human inbox, evals and costs.</span></a>
+      <a class="lp-door r" href="../#research"><small>● Research</small><b>Read the lab →</b><span>Posts, animated explainers, the daily video feed and decisions.</span></a>
+    </div>
+  </section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+const root = document.documentElement;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const canvas = document.getElementById('lpGl');
+let renderer;
+try { if (!reduce) renderer = new THREE.WebGLRenderer({ canvas, antialias:true, powerPreference:'high-performance' }); } catch { renderer = null; }
+
+const $ = id => document.getElementById(id);
+const countEl = $('lpCount');
+// Scene dots on the right: which section is in view
+const secs = [...document.querySelectorAll('[data-scene]')];
+const dots = [...$('lpProg').children];
+const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) dots.forEach((d, i) => d.classList.toggle('on', i === +e.target.dataset.scene)); }), { rootMargin:'-45% 0px -45% 0px' });
+secs.forEach(s => io.observe(s));
+
+if (!renderer || !window.gsap) {
+  root.classList.add('lp-static');
+  countEl.textContent = '1,284';
+} else {
+  start();
+}
+
+function start() {
+  const C = { teal:new THREE.Color('#3ec7b4'), amber:new THREE.Color('#e3a64b'), red:new THREE.Color('#f0716a'), green:new THREE.Color('#7bd88f'), violet:new THREE.Color('#a99cf5') };
+  const small = innerWidth < 700;
+  renderer.setPixelRatio(Math.min(devicePixelRatio, small ? 1.5 : 2));
+  renderer.setSize(innerWidth, innerHeight, false);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color('#05090a');
+  scene.fog = new THREE.FogExp2('#05090a', 0.018);
+  const camera = new THREE.PerspectiveCamera(small ? 62 : 50, innerWidth / innerHeight, 0.1, 400);
+
+  scene.add(new THREE.HemisphereLight('#9fd8d0', '#05090a', 0.5));
+  const key = new THREE.DirectionalLight('#ffffff', 0.6); key.position.set(10, 20, 10); scene.add(key);
+
+  // floor grid
+  const grid = new THREE.GridHelper(400, 200, '#16302c', '#0d1c1a');
+  grid.position.set(0, 0, -80); scene.add(grid);
+
+  // conveyor: a dark belt with a scrolling stripe texture
+  const stripe = document.createElement('canvas'); stripe.width = 64; stripe.height = 64;
+  const sx = stripe.getContext('2d'); sx.fillStyle = '#0c1514'; sx.fillRect(0, 0, 64, 64); sx.fillStyle = '#183532'; sx.fillRect(0, 0, 64, 10);
+  const beltTex = new THREE.CanvasTexture(stripe); beltTex.wrapS = beltTex.wrapT = THREE.RepeatWrapping; beltTex.repeat.set(1, 70);
+  const belt = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.3, 150), new THREE.MeshStandardMaterial({ map:beltTex, roughness:.8 }));
+  belt.position.set(0, 0.15, -62); scene.add(belt);
+  for (const x of [-1.3, 1.3]) {
+    const rail = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, 150), new THREE.MeshBasicMaterial({ color:C.teal }));
+    rail.position.set(x, 0.33, -62); scene.add(rail);
+  }
+
+  // label sprites drawn on a canvas
+  function label(text, color, scale = 1) {
+    const c = document.createElement('canvas'); c.width = 512; c.height = 128;
+    const x = c.getContext('2d'); x.font = '600 56px "JetBrains Mono", monospace'; x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.fillStyle = color; x.fillText(text, 256, 64);
+    const s = new THREE.Sprite(new THREE.SpriteMaterial({ map:new THREE.CanvasTexture(c), transparent:true, depthWrite:false }));
+    s.scale.set(4 * scale, 1 * scale, 1); return s;
+  }
+
+  // five stations: an arch of three bars that lights up as the ticket passes
+  const STATIONS = [['scout', -20], ['spec', -40], ['worker', -60], ['tester', -80], ['reviewer', -100]];
+  const stations = STATIONS.map(([name, z]) => {
+    const mat = new THREE.MeshStandardMaterial({ color:'#0f1d1b', emissive:C.teal.clone(), emissiveIntensity:.15, roughness:.4 });
+    const g = new THREE.Group();
+    const post = new THREE.BoxGeometry(0.22, 3.6, 0.22);
+    const l = new THREE.Mesh(post, mat); l.position.set(-2.2, 1.8, 0);
+    const r = new THREE.Mesh(post, mat); r.position.set(2.2, 1.8, 0);
+    const top = new THREE.Mesh(new THREE.BoxGeometry(4.62, 0.22, 0.22), mat); top.position.set(0, 3.6, 0);
+    const lab = label(name, '#e2ece9', .9); lab.position.set(0, 4.4, 0);
+    g.add(l, r, top, lab); g.position.z = z; scene.add(g);
+    return { name, z, mat };
+  });
+
+  // the ticket: a thin glowing card with a bright edge
+  const tMat = new THREE.MeshStandardMaterial({ color:'#0b1716', emissive:C.teal.clone(), emissiveIntensity:1.4, roughness:.3 });
+  const ticket = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.08, 1.9), tMat);
+  const tEdge = new THREE.LineSegments(new THREE.EdgesGeometry(ticket.geometry), new THREE.LineBasicMaterial({ color:'#ffffff' }));
+  ticket.add(tEdge); scene.add(ticket);
+  const tLight = new THREE.PointLight(C.teal.clone(), 6, 9); scene.add(tLight);
+  const stamp = label('APPROVED', '#7bd88f', 1.1); stamp.material.opacity = 0; scene.add(stamp);
+
+  // the ledger: many tickets on parallel lines, revealed in scene 3
+  const N = small ? 160 : 420, LANES = small ? 14 : 22;
+  const crowd = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 0.06, 1.35), new THREE.MeshBasicMaterial({ color:'#ffffff', transparent:true, opacity:0 }), N);
+  crowd.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  const seeds = Array.from({ length:N }, (_, i) => ({ lane:i % LANES, z:Math.random() * 140, v:3 + Math.random() * 4, c:[C.teal, C.teal, C.teal, C.amber, C.green, C.red][i % 6] }));
+  seeds.forEach((s, i) => crowd.setColorAt(i, s.c));
+  crowd.frustumCulled = false; // instances move far from the origin the bounding sphere is built around
+  scene.add(crowd);
+  const laneLines = new THREE.Group();
+  for (let i = 0; i < LANES; i++) {
+    const x = (i - (LANES - 1) / 2) * 4; if (Math.abs(x) < 3) continue;
+    const ln = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.04, 150), new THREE.MeshBasicMaterial({ color:'#123532', transparent:true, opacity:0 }));
+    ln.position.set(x, 0.05, -62); laneLines.add(ln);
+  }
+  scene.add(laneLines);
+
+  // two portals at the end of the line
+  function portal(x, color) {
+    const g = new THREE.Group();
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(3.2, 0.12, 16, 120), new THREE.MeshBasicMaterial({ color }));
+    const ring2 = new THREE.Mesh(new THREE.TorusGeometry(2.7, 0.03, 8, 120), new THREE.MeshBasicMaterial({ color, transparent:true, opacity:.6 }));
+    const disc = new THREE.Mesh(new THREE.CircleGeometry(3.1, 64), new THREE.MeshBasicMaterial({ color, transparent:true, opacity:.08, side:THREE.DoubleSide }));
+    g.add(ring, ring2, disc); g.position.set(x, 3.6, -132); scene.add(g);
+    return { g, ring, ring2, disc };
+  }
+  const doors = [portal(-5, C.teal), portal(5, C.violet)];
+  const dl = label('console', '#3ec7b4', 1); dl.position.set(-5, 7.6, -132);
+  const dr = label('research', '#a99cf5', 1); dr.position.set(5, 7.6, -132);
+  scene.add(dl, dr);
+
+  // dust for depth
+  const P = small ? 600 : 1500, pos = new Float32Array(P * 3);
+  for (let i = 0; i < P; i++) { pos[i * 3] = (Math.random() - .5) * 120; pos[i * 3 + 1] = Math.random() * 40; pos[i * 3 + 2] = 20 - Math.random() * 170; }
+  const dustG = new THREE.BufferGeometry(); dustG.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const dust = new THREE.Points(dustG, new THREE.PointsMaterial({ color:'#3ec7b4', size:.08, transparent:true, opacity:.5 }));
+  scene.add(dust);
+
+  // bloom makes the emissive parts glow
+  const composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, camera));
+  const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), .7, .55, .2);
+  composer.addPass(bloom);
+  composer.addPass(new OutputPass());
+
+  // One state object; the scroll timeline tweens it and the render loop reads it
+  const S = { tz:0, ty:12, spin:1, cx:7, cy:7, cz:14, lx:0, ly:.6, lz:-4, fail:0, pass:0, stamp:0, crowd:0, portal:0, count:0, tries:1 };
+  gsap.registerPlugin(ScrollTrigger);
+  const tl = gsap.timeline({ defaults:{ ease:'none' }, scrollTrigger:{ trigger:'main', start:'top top', end:'bottom bottom', scrub:1 } });
+  // scene 0: the ticket drops onto the belt (1 unit = one section unit in CSS)
+  tl.to(S, { ty:.6, spin:0, cx:3, cy:3.2, cz:8, ease:'power2.out', duration:1 });
+  // scene 1: down the line
+  tl.to(S, { tz:-80, cz:-71, lz:-86, duration:3 }, '>');
+  tl.to(S, { keyframes:{ cx:[3, -3, 3] }, duration:3 }, '<');
+  // scene 2: tester fails it, back to the worker, retry, pass, review
+  tl.to(S, { fail:1, duration:.35 });
+  tl.to(S, { tz:-60, cz:-50, lz:-64, keyframes:{ ty:[.6, 3.4, .6] }, duration:.7 });
+  tl.to(S, { tries:2, duration:.01 }, '<');
+  tl.to(S, { fail:0, duration:.25 });
+  tl.to(S, { tz:-80, cz:-71, lz:-86, duration:.45 });
+  tl.to(S, { pass:1, duration:.2 });
+  tl.to(S, { tz:-100, cz:-91, lz:-106, duration:.3 });
+  tl.to(S, { stamp:1, duration:.15 });
+  // scene 3: pull up over the ledger
+  tl.to(S, { cx:0, cy:46, cz:-38, lx:0, ly:0, lz:-72, crowd:1, count:1284, stamp:0, duration:2, ease:'power1.inOut' });
+  // scene 4: fly down to the two doors
+  tl.to(S, { cy:4.5, cz:-112, ly:3.6, lz:-135, crowd:.25, portal:1, tz:-126, duration:2, ease:'power1.inOut' });
+
+  // each card fades in as its section arrives and out before the next one, so two never overlap
+  document.querySelectorAll('.lp-s .lp-card').forEach(card => {
+    const sec = card.closest('.lp-s');
+    gsap.timeline({ scrollTrigger:{ trigger:sec, start:'top 75%', end:'bottom 25%', scrub:true } })
+      .fromTo(card, { autoAlpha:0, y:30 }, { autoAlpha:1, y:0, duration:.18 })
+      .to(card, { autoAlpha:1, duration:.64 })
+      .to(card, { autoAlpha:0, y:-30, duration:.18 });
+  });
+  gsap.to('.lp-hero', { autoAlpha:0, scrollTrigger:{ trigger:'.lp-s', start:'top top', end:'60% top', scrub:true } });
+
+  const stepEls = [...document.querySelectorAll('#lpSteps li')];
+  const stageEl = $('lpStage'), tryEl = $('lpTry'), dotEl = $('lpDot');
+  let lastStage = '', lastCount = -1;
+  const tmpC = new THREE.Color(), m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), v3 = new THREE.Vector3(), sc = new THREE.Vector3();
+  const clock = new THREE.Clock();
+
+  function frame() {
+    const dt = Math.min(clock.getDelta(), .05), t = clock.elapsedTime;
+    beltTex.offset.y -= dt * .6;
+
+    // ticket position and colour: teal, red when failing, green once it passes
+    ticket.position.set(0, S.ty + Math.sin(t * 2) * .04, S.tz);
+    ticket.rotation.set(S.spin * 1.2, S.spin * 2.5 + Math.sin(t) * .03, 0);
+    tmpC.copy(C.teal).lerp(C.red, S.fail).lerp(C.green, S.pass);
+    tMat.emissive.copy(tmpC); tLight.color.copy(tmpC); tLight.position.set(0, S.ty + 1.2, S.tz);
+    ticket.visible = S.portal < .98;
+    stamp.position.set(0, 2.2, S.tz); stamp.material.opacity = S.stamp;
+
+    // a station glows while the ticket is under it; the tester pulses red on failure
+    let stage = S.ty > 3 ? 'intake' : 'belt';
+    for (const st of stations) {
+      const d = Math.abs(S.tz - st.z), near = Math.max(0, 1 - d / 9);
+      st.mat.emissiveIntensity = .15 + near * 1.5;
+      st.mat.emissive.copy(st.name === 'tester' ? C.teal.clone().lerp(C.red, S.fail) : C.teal);
+      if (d < 6) stage = st.name;
+    }
+    if (S.portal > .5) stage = 'shipped';
+    if (stage !== lastStage) {
+      lastStage = stage; stageEl.textContent = stage;
+      stepEls.forEach(li => li.classList.toggle('on', Math.abs(+li.dataset.z - S.tz) < 6));
+    }
+    tryEl.textContent = Math.round(S.tries);
+    dotEl.style.background = '#' + tmpC.getHexString();
+
+    // ledger crowd flows along its lanes
+    crowd.material.opacity = S.crowd * .9;
+    laneLines.children.forEach(l => { l.material.opacity = S.crowd * .7; });
+    if (S.crowd > .01) {
+      seeds.forEach((s, i) => {
+        s.z = (s.z + s.v * dt) % 140;
+        const x = (s.lane - (LANES - 1) / 2) * 4;
+        const hide = Math.abs(x) < 3 ? 0 : 1;
+        v3.set(x, .12, 8 - s.z); sc.setScalar(hide * S.crowd); m4.compose(v3, q, sc); crowd.setMatrixAt(i, m4);
+      });
+      crowd.instanceMatrix.needsUpdate = true;
+    }
+    const c = Math.round(S.count);
+    if (c !== lastCount) { lastCount = c; countEl.textContent = c.toLocaleString('en-US'); }
+
+    // portals breathe and spin
+    doors.forEach((d, i) => {
+      const k = .3 + S.portal * .7;
+      d.ring.rotation.z = t * (i ? -.3 : .3); d.ring2.rotation.z = -t * (i ? -.5 : .5);
+      d.disc.material.opacity = .05 + S.portal * (.12 + Math.sin(t * 2 + i) * .04);
+      d.g.scale.setScalar(k);
+    });
+    dust.rotation.y = t * .01;
+
+    camera.position.set(S.cx, S.cy, S.cz);
+    camera.lookAt(S.lx, S.ly, S.lz);
+    composer.render();
+    requestAnimationFrame(frame);
+  }
+  frame();
+
+  addEventListener('resize', () => {
+    camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth, innerHeight, false); composer.setSize(innerWidth, innerHeight);
+  });
+}
+</script>
+</body>
+</html>
