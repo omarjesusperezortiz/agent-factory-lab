@@ -7,7 +7,7 @@ https://omarjesusperezortiz.github.io/agent-factory-lab/
 
 - `src/dashboard.html`: the dashboard source. Edit this file, never `index.html`.
 - `./build.sh`: wraps the source into `index.html` for GitHub Pages. Run it before every commit.
-- **The same source is also a private claude.ai Artifact:** https://claude.ai/artifact/VuqFn39k8otRnaSJihfQCK
+- **The same source is also a private claude.ai Artifact:** https://claude.ai/artifact/Bws2CJPVkzxv91UvDupScq (Learning Heroes account; the old personal-account artifact is retired)
   - From a new session, read it with the Artifact tool first.
   - Then publish `src/dashboard.html` with that `url` so the link stays the same.
 - `research/`: sources and videos. `decisions/`: one file per decision. `handoffs/`: session handoffs, newest first.
