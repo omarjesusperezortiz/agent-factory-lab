@@ -5,6 +5,8 @@
 <title>Research · Agent Factory Lab</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap">
+<script>try { document.documentElement.dataset.theme = localStorage.getItem('rs-theme') || 'light'; } catch { document.documentElement.dataset.theme = 'light'; }</script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: sidebar nav + routed views (console, traces, inbox, evals, costs, learn) */
@@ -675,70 +677,155 @@ pre.diff .del { background:color-mix(in srgb, var(--err) 14%, transparent); colo
   .nv-toggle { white-space:nowrap; padding:7px 8px; border-radius:7px; } .nv-toggle .label { display:inline; padding:0; } }
 @media (max-width:620px) { .vd-card { grid-template-columns:minmax(0,1fr); } }
 
-/* Research blog shell (.rs-) */
-body { padding:0; }
-.rs-top { position:sticky; top:0; z-index:20; display:flex; flex-wrap:wrap; gap:10px 20px; align-items:center; justify-content:space-between;
-  padding:12px max(16px, calc((100vw - 1180px) / 2)); background:color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border-bottom:1px solid var(--line); }
-.rs-brand { display:flex; gap:10px; align-items:center; color:var(--fg); text-decoration:none; font-size:14px; }
-.rs-brand i { font-style:normal; color:var(--muted); font-family:var(--mono); font-size:12px; }
-.rs-top nav { display:flex; flex-wrap:wrap; gap:4px; }
-.rs-top nav a { color:var(--muted); text-decoration:none; font-size:13.5px; padding:5px 10px; border-radius:7px; }
-.rs-top nav a:hover { color:var(--fg); background:var(--panel2); }
-.rs-top nav a[aria-current="page"] { color:var(--fg); background:var(--panel2); font-weight:600; }
-.rs-main { max-width:1180px; margin:0 auto; padding:28px 16px 40px; display:grid; gap:14px; }
-.rs-hero { display:grid; gap:10px; padding:20px 0 8px; }
-.rs-hero h1 { font-size:clamp(30px, 4.4vw, 48px); line-height:1.05; letter-spacing:-.03em; margin:0; max-width:18ch; }
-.rs-hero .lede { max-width:68ch; }
-.rs-feature { display:grid; gap:8px; padding:22px 24px; border-radius:14px; text-decoration:none; color:var(--fg);
-  background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 16%, var(--panel)), var(--panel) 60%); border:1px solid color-mix(in srgb, var(--accent) 35%, var(--line)); }
-.rs-feature:hover { border-color:var(--accent); }
-.rs-feature b { font-size:22px; letter-spacing:-.01em; }
-.rs-feature span { color:var(--muted); max-width:80ch; }
-.rs-feature small, .rs-card small { font:11.5px var(--mono); color:var(--accent); text-transform:uppercase; letter-spacing:.08em; }
-.rs-h { display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-top:18px; }
-.rs-h h2 { margin:0; font-size:20px; }
-.rs-h span, .rs-h a { font:12.5px var(--mono); color:var(--muted); }
-.rs-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:12px; }
-.rs-card { display:grid; align-content:start; gap:7px; padding:18px; border-radius:12px; background:var(--panel); border:1px solid var(--line);
-  text-decoration:none; color:var(--fg); transition:border-color .2s, transform .2s; }
-.rs-card:hover { border-color:var(--edge); transform:translateY(-2px); }
-.rs-card b { font-size:16.5px; line-height:1.3; }
-.rs-card span { color:var(--muted); font-size:13.5px; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
-.rs-card em { font-style:normal; font:12px var(--mono); color:var(--muted); margin-top:auto; }
-.rs-card img { width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:8px; background:var(--panel2); }
-.rs-back { display:none; align-items:center; justify-content:space-between; gap:12px; font:13px var(--mono); }
-.rs-back.on { display:flex; }
+/* Research blog shell (.rs-): Medium-style reading layout, light by default */
+:root[data-theme="light"] { --bg:#ffffff; --panel:#ffffff; --panel2:#f5f7f6; --line:#e6ebe9; --edge:#c9d3d0; --fg:#1d2423; --muted:#6b7773; }
+:root { --serif:"Source Serif 4", Charter, Georgia, "Times New Roman", serif; }
+body { padding:0; background:var(--bg); }
+.rs-progress { position:fixed; top:0; left:0; right:0; height:3px; z-index:30; pointer-events:none; }
+.rs-progress i { display:block; height:100%; width:0; background:var(--accent); }
+.rs-top { position:sticky; top:0; z-index:20; display:flex; gap:12px 22px; align-items:center; padding:12px 24px;
+  background:color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); border-bottom:1px solid var(--line); }
+.rs-brand { display:flex; gap:10px; align-items:center; color:var(--fg); text-decoration:none; }
+.rs-brand b { font:700 19px/1 var(--serif); letter-spacing:-.02em; }
+.rs-logo { width:30px; height:30px; border-radius:50%; display:grid; place-items:center; background:var(--fg); color:var(--bg); font:700 13px var(--mono); }
+.rs-search { display:flex; align-items:center; gap:8px; background:var(--panel2); border-radius:999px; padding:7px 14px; width:min(260px, 30vw); }
+.rs-search svg, .rs-theme svg { width:16px; height:16px; fill:none; stroke:var(--muted); stroke-width:1.6; flex:none; }
+.rs-search input { border:0; background:none; outline:none; width:100%; font-size:14px; color:var(--fg); }
+.rs-top nav { display:flex; align-items:center; gap:2px; margin-left:auto; }
+.rs-top nav a { color:var(--muted); text-decoration:none; font-size:14px; padding:6px 11px; border-radius:999px; }
+.rs-top nav a:hover { color:var(--fg); }
+.rs-top nav a[aria-current="page"] { color:var(--fg); font-weight:600; }
+.rs-theme { display:grid; place-items:center; width:34px; height:34px; border-radius:50%; border:1px solid var(--line); background:none; cursor:pointer; margin-left:6px; }
+.rs-theme:hover svg { stroke:var(--fg); }
+
+.rs-main { max-width:1192px; margin:0 auto; padding:0 24px 40px; display:block; }
+.rs-main > .view { gap:0; }
+.rs-dim { color:var(--muted); font-size:13px; }
+
+/* home: feed + sidebar */
+.rs-cols { display:grid; grid-template-columns:minmax(0, 1fr) 320px; gap:0 64px; }
+.rs-feed { padding-top:28px; min-width:0; }
+.rs-tabs { display:flex; gap:22px; border-bottom:1px solid var(--line); overflow-x:auto; scrollbar-width:none; }
+.rs-tabs button { background:none; border:0; padding:0 0 14px; font-size:14px; color:var(--muted); cursor:pointer; white-space:nowrap; border-bottom:1px solid transparent; margin-bottom:-1px; }
+.rs-tabs button[aria-selected="true"] { color:var(--fg); border-bottom-color:var(--fg); }
+.rs-story { display:grid; grid-template-columns:minmax(0, 1fr) 160px; gap:8px 40px; padding:30px 0; border-bottom:1px solid var(--line); text-decoration:none; color:var(--fg); }
+.rs-by { grid-column:1 / -1; display:flex; align-items:center; gap:8px; font-size:13px; color:var(--fg); }
+.rs-by i { font-style:normal; color:var(--muted); }
+.rs-av { width:22px; height:22px; border-radius:50%; display:grid; place-items:center; background:linear-gradient(135deg, var(--accent), var(--human)); color:#fff; font:700 9.5px var(--sans); flex:none; }
+.rs-story h2 { margin:0; font:700 22px/1.25 var(--sans); letter-spacing:-.015em; border:0; padding:0; }
+.rs-story p { margin:6px 0 0; font:15.5px/1.45 var(--sans); color:var(--muted); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.rs-txt { min-width:0; }
+.rs-meta { display:flex; flex-wrap:wrap; align-items:center; gap:6px 12px; margin-top:14px; font-size:13px; color:var(--muted); }
+.rs-chip { display:inline-block; padding:3px 10px; border-radius:999px; background:var(--panel2); color:var(--fg); font-size:12.5px; }
+.rs-thumb { width:160px; aspect-ratio:3/2; border-radius:4px; overflow:hidden; background:var(--panel2); align-self:start; }
+.rs-thumb svg, .rs-thumb img { width:100%; height:100%; display:block; object-fit:cover; }
+.rs-story:hover h2 { text-decoration:underline; text-decoration-thickness:1px; text-underline-offset:3px; }
+.rs-none { padding:40px 0; color:var(--muted); }
+
+.rs-side { border-left:1px solid var(--line); padding:28px 0 0 32px; }
+.rs-blk { margin-bottom:34px; }
+.rs-blk h3 { margin:0 0 14px; font:600 15px var(--sans); }
+.rs-pick { display:grid; gap:6px; text-decoration:none; color:var(--fg); }
+.rs-pick b { font:700 16px/1.3 var(--sans); }
+.rs-pick span { font-size:13.5px; color:var(--muted); }
+.rs-pick:hover b { text-decoration:underline; }
+.rs-chips { display:flex; flex-wrap:wrap; gap:8px; }
+.rs-chips button { border:0; background:var(--panel2); color:var(--fg); border-radius:999px; padding:7px 14px; font-size:13.5px; cursor:pointer; }
+.rs-chips button[aria-pressed="true"] { background:var(--fg); color:var(--bg); }
+.rs-vid { display:grid; grid-template-columns:minmax(0,1fr) 64px; gap:12px; margin-bottom:16px; text-decoration:none; color:var(--fg); }
+.rs-vid b { font:600 14px/1.3 var(--sans); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.rs-vid small { display:block; margin-top:4px; font-size:12.5px; color:var(--muted); }
+.rs-vid img { width:64px; aspect-ratio:1; object-fit:cover; border-radius:4px; }
+.rs-more { font-size:13.5px; color:var(--accent); text-decoration:none; }
+.rs-about p { font-size:13.5px; color:var(--muted); margin:0 0 8px; }
+
+/* post: prose in a reading column, figures and tables break out wider */
+.rs-art { --col:min(680px, 100%); display:grid; grid-template-columns:[full-start] minmax(0,1fr) [wide-start] minmax(0,200px) [main-start] var(--col) [main-end] minmax(0,200px) [wide-end] minmax(0,1fr) [full-end];
+  gap:0; padding:44px 0 0; }
+.rs-art > *, .rs-art > :is(section, div:not([class]), header) > * { grid-column:main; min-width:0; }
+.rs-art > :is(section, div:not([class]), header) { grid-column:full; display:grid; grid-template-columns:subgrid; row-gap:18px; margin-top:44px; }
+.rs-art > div:not([class]):first-of-type, .rs-art > header:first-child { margin-top:0; }
+.rs-art > :is(section, div:not([class])) > :is(div, figure, iframe, details):not(.eyebrow, .rs-byline),
+.rs-art > :is(figure, .figs, div[class]:not(.rs-back)) { grid-column:wide; }
+.rs-art h1 { font:700 clamp(32px, 4.6vw, 44px)/1.15 var(--sans); letter-spacing:-.025em; margin:0; max-width:none; }
+.rs-art .lede { font:400 21px/1.45 var(--sans); color:var(--muted); max-width:none; margin:2px 0 0; }
+.rs-art .eyebrow { color:var(--muted); }
+.rs-art h2 { font:700 26px/1.25 var(--sans); letter-spacing:-.015em; margin:12px 0 0; padding:0; border:0; }
+.rs-art p, .rs-art ul.finds li, .rs-art ol.srcs li, .rs-art ul.srcs li { font-family:var(--serif); font-size:19.5px; line-height:1.62; }
+.rs-art p.claim { max-width:none; }
+.rs-art .tcard, .rs-art figure { font-family:var(--sans); }
+.rs-art .tcard p, .rs-art figure p, .rs-art [class*="sp-"] p, .rs-art [class*="or-"] p, .rs-art .x p { font-family:var(--sans); font-size:inherit; line-height:inherit; }
+.rs-art nav.toc { margin-top:4px; }
+.rs-art :is(h1, h2) { max-width:none; }
+.rs-art > :is(section, div:not([class]), header) > p:not(.lede) { color:var(--fg); }
+.rs-art p.claim b, .rs-art p b { color:var(--fg); }
+.rs-share button { white-space:nowrap; }
+
+.rs-byline { display:flex; align-items:center; gap:12px; padding:18px 0; margin:8px 0 6px; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+.rs-byline .rs-av { width:40px; height:40px; font-size:14px; }
+.rs-byline b { display:block; font:600 15px var(--sans); }
+.rs-byline small { font-size:13.5px; color:var(--muted); }
+.rs-share { margin-left:auto; display:flex; gap:6px; }
+.rs-share button, .rs-share a { display:inline-flex; align-items:center; gap:6px; border:1px solid var(--line); background:none; border-radius:999px; padding:6px 13px; font-size:13px; color:var(--muted); cursor:pointer; text-decoration:none; }
+.rs-share button:hover, .rs-share a:hover { color:var(--fg); border-color:var(--edge); }
+
+.rs-back { display:none; padding-top:24px; font-size:14px; }
+.rs-back.on { display:flex; justify-content:space-between; max-width:1080px; margin:0 auto; }
 .rs-back a { color:var(--muted); text-decoration:none; } .rs-back a:hover { color:var(--fg); }
-.rs-back span { color:var(--accent); text-transform:uppercase; letter-spacing:.08em; font-size:11.5px; }
+.rs-back span { color:var(--muted); }
 .rs-next { display:none; }
-.rs-next.on { display:grid; margin-top:30px; }
-.rs-next a { display:grid; gap:4px; padding:18px 20px; border-radius:12px; background:var(--panel); border:1px solid var(--line); text-decoration:none; color:var(--fg); }
-.rs-next a:hover { border-color:var(--accent); }
-.rs-next small { font:12px var(--mono); color:var(--muted); }
-.rs-next b { font-size:17px; }
-.rs-foot { max-width:1180px; margin:0 auto; padding:20px 16px 40px; border-top:1px solid var(--line); font:12.5px var(--mono); color:var(--muted); }
-.rs-foot a { color:var(--muted); }
-@media (max-width:620px) { .rs-grid { grid-template-columns:minmax(0,1fr); } .rs-top { padding:10px 16px; } .rs-brand i { display:none; } }
+.rs-next.on { display:grid; gap:14px; max-width:680px; margin:64px auto 0; padding-top:28px; border-top:1px solid var(--line); }
+.rs-next h3 { margin:0; font:600 15px var(--sans); color:var(--muted); }
+.rs-next .rs-story { padding:10px 0 0; border:0; }
+
+/* video feed view keeps its card list, centred like a post */
+#v-videos { max-width:880px; margin:0 auto; padding-top:40px; gap:16px; }
+
+@media (max-width:1000px) {
+  .rs-cols { grid-template-columns:minmax(0,1fr); }
+  .rs-side { border:0; padding:24px 0 0; border-top:1px solid var(--line); }
+}
+@media (max-width:700px) {
+  .rs-top { padding:10px 16px; gap:10px; }
+  .rs-brand b { display:none; }
+  .rs-search { width:auto; flex:1; }
+  .rs-top nav a[href="../console/"], .rs-top nav a[target] { display:none; }
+  .rs-main { padding:0 16px 40px; }
+  .rs-story { grid-template-columns:minmax(0,1fr) 88px; gap:6px 16px; padding:22px 0; }
+  .rs-thumb { width:88px; aspect-ratio:1; }
+  .rs-story h2 { font-size:17px; }
+  .rs-story p { font-size:14px; }
+  .rs-art { padding-top:24px; }
+  .rs-art p, .rs-art ul.finds li { font-size:18px; }
+  .rs-art .lede { font-size:18px; }
+  .rs-share span { display:none; }
+}
 </style>
 
+<div class="rs-progress" aria-hidden="true"><i id="rsProg"></i></div>
 <header class="rs-top">
-  <a class="rs-brand" href="../"><svg width="26" height="26" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="8" fill="var(--panel2)" stroke="var(--line)"/><circle cx="10" cy="17" r="3.5" fill="var(--accent)"/><circle cx="24" cy="10" r="3" fill="var(--human)"/><circle cx="24" cy="24" r="3" fill="var(--tool)"/><path d="M13 16l8-5M13 18l8 5" stroke="var(--edge)" stroke-width="1.5"/></svg><span><b>agent-factory-lab</b> <i>research</i></span></a>
-  <nav><a href="#" data-r="home">Posts</a><a href="#videos" data-r="videos">Videos</a><a href="../console/">Console</a><a href="https://github.com/omarjesusperezortiz/agent-factory-lab" target="_blank" rel="noopener">GitHub ↗</a></nav>
+  <a class="rs-brand" href="../" aria-label="agent-factory-lab home"><span class="rs-logo" aria-hidden="true">af</span><b>agent-factory-lab</b></a>
+  <label class="rs-search"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3.5 3.5"/></svg><input id="rsQ" type="search" placeholder="Search posts" aria-label="Search posts"></label>
+  <nav><a href="#" data-r="home">Posts</a><a href="#videos" data-r="videos">Videos</a><a href="../console/">Console</a><a href="https://github.com/omarjesusperezortiz/agent-factory-lab" target="_blank" rel="noopener">GitHub</a>
+    <button type="button" class="rs-theme" id="rsTheme" aria-label="Switch to dark mode" title="Switch theme"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 9.5A5.5 5.5 0 1 1 6.5 2.5a4.5 4.5 0 0 0 7 7z"/></svg></button></nav>
 </header>
 
 <main class="rs-main">
   <!-- ============ HOME ============ -->
   <section class="view" id="v-home">
-    <div class="rs-hero">
-      <div class="eyebrow">Research · orchestrating AI coding agents</div>
-      <h1>Notes from building a software factory</h1>
-      <p class="lede">Each post answers one question we hit while designing the <a href="../console/">console</a>: how tickets move, how agents remember, how specs stop guesses, how to orchestrate it all. Most sources are vendor posts, so each claim is labelled with how strong its evidence is.</p>
+    <div class="rs-cols">
+      <div class="rs-feed">
+        <div class="rs-tabs" role="tablist" id="rsTabs"><button type="button" role="tab" data-t="" aria-selected="true">All posts</button></div>
+        <div id="rsStories"></div>
+      </div>
+      <aside class="rs-side">
+        <div class="rs-blk"><h3>Start here</h3><a class="rs-pick" id="rsPick"></a></div>
+        <div class="rs-blk"><h3>Topics</h3><div class="rs-chips" id="rsTopics"></div></div>
+        <div class="rs-blk"><h3>From the video feed</h3><div id="rsVids"><p class="rs-dim">Loading…</p></div><a class="rs-more" href="#videos">See all videos</a></div>
+        <div class="rs-blk rs-about"><p>Research on orchestrating AI coding agents into a software factory. The <a href="../console/">console</a> is a mockup of how it will run.</p>
+          <p class="rs-dim"><a href="../">Home</a> · <a href="../console/">Console</a> · <a href="https://github.com/omarjesusperezortiz/agent-factory-lab" target="_blank" rel="noopener">GitHub</a></p></div>
+      </aside>
     </div>
-    <a class="rs-feature" id="rsFeature"></a>
-    <div class="rs-h"><h2>Posts</h2><span id="rsPostCount"></span></div>
-    <div class="rs-grid" id="rsPosts"></div>
-    <div class="rs-h"><h2>From the video feed</h2><a href="#videos">All videos →</a></div>
-    <div class="rs-grid" id="rsVids"><div class="vd-empty">Loading…</div></div>
   </section>
 
   <!-- ============ VIDEOS ============ -->
@@ -2265,7 +2352,6 @@ def researcher(state):
   </section>
   <nav class="rs-next" id="rsNext" aria-label="Next post"></nav>
 </main>
-<footer class="rs-foot"><a href="../">agent-factory-lab</a> · <a href="../console/">Console</a> · <a href="https://github.com/omarjesusperezortiz/agent-factory-lab" target="_blank" rel="noopener">GitHub</a></footer>
 
 <script>
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -2756,37 +2842,113 @@ Branch per start-task, draft PR, a person merges. Report the branch and PR URL.`
   setHo('file');
 })();
 
-// ---- Research blog: home, posts, video feed and explainers ----
+// ---- Research blog: Medium-style home, posts, video feed and explainers ----
 const $ = s => document.querySelector(s);
 const SITE = 'https://omarjesusperezortiz.github.io/agent-factory-lab/';
+const AUTHOR = 'Omar Pérez Ortiz', INITIALS = 'OP';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c]);
 const strip = h => (h || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+
+// ---- theme: light by default, like a reading site; the choice is remembered per browser ----
+const themeBtn = $('#rsTheme');
+function setTheme(t) {
+  document.documentElement.dataset.theme = t;
+  themeBtn.setAttribute('aria-label', t === 'light' ? 'Switch to dark mode' : 'Switch to light mode');
+  try { localStorage.setItem('rs-theme', t); } catch {}
+  syncFrameTheme();
+}
+themeBtn.setAttribute('aria-label', document.documentElement.dataset.theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode');
+themeBtn.addEventListener('click', () => setTheme(document.documentElement.dataset.theme === 'light' ? 'dark' : 'light'));
+
 // newest first; the first entry is the pinned "start here" post
 const POSTS = [['research', 'Start here'], ['amb', 'Prompting'], ['know', 'Knowledge'], ['orch', 'Orchestration'], ['spec', 'Specs'],
   ['iceberg', 'Concepts'], ['teams', 'Teams'], ['rag', 'Retrieval'], ['devsetup', 'Setup'], ['harness', 'Harness'], ['flow', 'Orchestration'], ['learn', 'Observability']]
   .map(([id, cat]) => {
     const v = document.getElementById('v-' + id);
+    v.classList.add('rs-art');
     const lede = v.querySelector('.lede') || v.querySelector('.vhead p');
     const eb = strip(v.querySelector('.eyebrow')?.innerHTML);
-    return { id, cat, title:strip(v.querySelector('h1').innerHTML), lede:strip(lede?.innerHTML), round:(eb.match(/round \d+/i) || [''])[0] };
+    const words = (v.textContent.match(/\S+/g) || []).length;
+    return { id, cat, title:strip(v.querySelector('h1').innerHTML), lede:strip(lede?.innerHTML), ledeEl:lede,
+      round:(eb.match(/round \d+/i) || [''])[0].replace(/^r/, 'R'), mins:Math.max(2, Math.round(words / 230)) };
   });
 const POST_IDS = POSTS.map(p => p.id);
 const VIEWS = ['home', 'videos', ...POST_IDS];
+const CATS = [...new Set(POSTS.slice(1).map(p => p.cat))];
 
-function card(p) {
-  return `<a class="rs-card" href="#${p.id}"><small>${esc(p.cat)}</small><b>${esc(p.title)}</b><span>${esc(p.lede)}</span><em>${p.round ? esc(p.round) + ' · ' : ''}read →</em></a>`;
+// Generated cover art: a small factory-line motif, seeded by the post id so it never changes
+function art(seed, w = 240, h = 160) {
+  let x = [...seed].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+  const rnd = () => ((x = (x * 1103515245 + 12345) >>> 0) / 2 ** 32);
+  const hues = [172, 38, 250, 140, 8, 210];
+  const h1 = hues[Math.floor(rnd() * hues.length)], h2 = (h1 + 40 + Math.floor(rnd() * 80)) % 360;
+  const n = 4 + Math.floor(rnd() * 3), y0 = h * (.35 + rnd() * .3);
+  let nodes = '', links = '';
+  for (let i = 0; i < n; i++) {
+    const cx = w * (.12 + .76 * i / (n - 1)), cy = y0 + (rnd() - .5) * h * .35, r = 6 + rnd() * 10;
+    nodes += `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${r.toFixed(1)}" fill="hsl(${i % 2 ? h2 : h1} 70% 62%)"/>`;
+    if (i) links += ` L${cx.toFixed(1)} ${cy.toFixed(1)}`; else links = `M${cx.toFixed(1)} ${cy.toFixed(1)}`;
+  }
+  const loop = Math.floor(rnd() * (n - 2)) + 1;
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs><linearGradient id="g${seed}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl(${h1} 45% 14%)"/><stop offset="1" stop-color="hsl(${h2} 40% 8%)"/></linearGradient></defs>
+    <rect width="${w}" height="${h}" fill="url(#g${seed})"/>
+    ${Array.from({ length:7 }, (_, i) => `<line x1="0" x2="${w}" y1="${(h / 7 * i + 8).toFixed(1)}" y2="${(h / 7 * i + 8).toFixed(1)}" stroke="hsl(${h1} 40% 30%)" stroke-opacity=".25"/>`).join('')}
+    <path d="${links}" fill="none" stroke="hsl(${h1} 60% 70%)" stroke-width="2" stroke-opacity=".7"/>
+    <path d="M${(w * (.12 + .76 * (loop + 1) / (n - 1))).toFixed(1)} ${(y0 - 22).toFixed(1)} Q ${(w * (.12 + .76 * (loop + .5) / (n - 1))).toFixed(1)} ${(y0 - 62).toFixed(1)} ${(w * (.12 + .76 * loop / (n - 1))).toFixed(1)} ${(y0 - 22).toFixed(1)}" fill="none" stroke="hsl(8 80% 68%)" stroke-width="1.6" stroke-dasharray="4 4"/>
+    ${nodes}</svg>`;
 }
-const [pin, ...rest] = POSTS;
-$('#rsFeature').href = '#' + pin.id;
-$('#rsFeature').innerHTML = `<small>${esc(pin.cat)}</small><b>${esc(pin.title)}</b><span>${esc(pin.lede)}</span>`;
-$('#rsPosts').innerHTML = rest.map(card).join('');
-$('#rsPostCount').textContent = rest.length + ' posts';
+const by = extra => `<div class="rs-by"><span class="rs-av">${INITIALS}</span>${AUTHOR}${extra ? ` <i>· ${esc(extra)}</i>` : ''}</div>`;
+const story = p => `<a class="rs-story" href="#${p.id}">${by(p.round)}
+  <div class="rs-txt"><h2>${esc(p.title)}</h2><p>${esc(p.lede)}</p>
+    <div class="rs-meta"><span class="rs-chip">${esc(p.cat)}</span><span>${p.mins} min read</span><span>Oct 2026</span></div></div>
+  <div class="rs-thumb">${art(p.id)}</div></a>`;
+
+// ---- home ----
+const [pin, ...feed] = POSTS;
+let topic = '', query = '';
+$('#rsPick').href = '#' + pin.id;
+$('#rsPick').innerHTML = `${by()}<b>${esc(pin.title)}</b><span>${esc(pin.lede)}</span>`;
+$('#rsTopics').innerHTML = CATS.map(c => `<button type="button" data-c="${esc(c)}">${esc(c)}</button>`).join('');
+$('#rsTabs').innerHTML = ['', ...CATS.slice(0, 4)].map(c => `<button type="button" role="tab" data-t="${esc(c)}">${c ? esc(c) : 'All posts'}</button>`).join('');
+function renderFeed() {
+  const q = query.toLowerCase();
+  const shown = feed.filter(p => (!topic || p.cat === topic) && (!q || (p.title + ' ' + p.lede + ' ' + p.cat).toLowerCase().includes(q)));
+  $('#rsStories').innerHTML = shown.length ? shown.map(story).join('') : `<p class="rs-none">No posts match${query ? ` “${esc(query)}”` : ''}.</p>`;
+  $('#rsTabs').querySelectorAll('button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.t === topic)));
+  $('#rsTopics').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.c === topic)));
+}
+const pickTopic = c => { topic = c === topic ? '' : c; renderFeed(); };
+$('#rsTabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { topic = b.dataset.t; renderFeed(); } });
+$('#rsTopics').addEventListener('click', e => { const b = e.target.closest('button'); if (b) pickTopic(b.dataset.c); });
+$('#rsQ').addEventListener('input', e => {
+  query = e.target.value.trim();
+  if (location.hash && location.hash !== '#') location.hash = ''; else renderFeed();
+});
+renderFeed();
+
+// ---- post byline, share and "read next" ----
+POSTS.forEach(p => {
+  if (!p.ledeEl) return;
+  const b = document.createElement('div');
+  b.className = 'rs-byline';
+  b.innerHTML = `<span class="rs-av">${INITIALS}</span><div><b>${AUTHOR}</b><small>${p.mins} min read${p.round ? ' · ' + esc(p.round) : ''} · Oct 2026</small></div>
+    <div class="rs-share"><button type="button" data-copy="${p.id}"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M6.5 9.5 9.5 6.5M7 4.5l1.2-1.2a2.8 2.8 0 0 1 4 4L11 8.5M9 11.5l-1.2 1.2a2.8 2.8 0 0 1-4-4L5 7.5"/></svg><span>Copy link</span></button></div>`;
+  p.ledeEl.after(b);
+});
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-copy]'); if (!b) return;
+  const url = location.href.split('#')[0] + '#' + b.dataset.copy;
+  (navigator.clipboard?.writeText(url) ?? Promise.reject()).then(() => { b.querySelector('span').textContent = 'Copied'; setTimeout(() => { b.querySelector('span').textContent = 'Copy link'; }, 1600); }, () => prompt('Copy this link', url));
+});
 
 // ---- video feed (videos/index.json, written by the daily job) ----
 let vdRows = null, vdTag = '', vdBase = '';
 // page is "<folder>/" (an explainer under videos/) or "../#tab" (a post here)
 const vdHref = r => !r.page ? '' : r.page.startsWith('../#') ? r.page.slice(3) : '#videos/' + r.page.replace(/\/$/, '');
 const yt = r => `https://www.youtube.com/watch?v=${esc(r.id)}`;
+const thumb = r => `https://i.ytimg.com/vi/${esc(r.id)}/mqdefault.jpg`;
+const failNote = `<p class="rs-dim">The feed couldn't load here. <a href="${SITE}research/#videos" target="_blank" rel="noopener">Open it on the live site ↗</a></p>`;
 async function vdLoad() {
   if (vdRows) return vdRows;
   // On GitHub Pages the file is one folder up; in an Artifact, fetch it from the live site
@@ -2797,18 +2959,16 @@ async function vdLoad() {
     } catch {}
   }
   vdRows ||= [];
-  // only tags shared by 2+ videos make useful filters
   const n = {}; vdRows.forEach(r => (r.tags || []).forEach(t => { n[t] = (n[t] || 0) + 1; }));
   $('#vdTags').innerHTML = ['', ...Object.keys(n).filter(t => n[t] > 1).sort()].map(t => `<button type="button" data-t="${esc(t)}">${t ? '#' + esc(t) : 'all'}</button>`).join('');
-  $('#rsVids').innerHTML = vdRows.length ? vdRows.slice(0, 3).map(r => `<a class="rs-card" href="${r.page ? vdHref(r) : yt(r)}"${r.page ? '' : ' target="_blank" rel="noopener"'}>
-      <img loading="lazy" alt="" src="https://i.ytimg.com/vi/${esc(r.id)}/mqdefault.jpg"><small>${esc(r.channel)} · ${esc(r.date)}</small><b>${esc(r.title)}</b><span>${esc(r.summary)}</span><em>${r.page ? 'animated explainer →' : 'watch on YouTube ↗'}</em></a>`).join('')
-    : `<div class="vd-empty">The feed couldn't load here. <a href="${SITE}research/#videos" target="_blank" rel="noopener">Open it on the live site ↗</a></div>`;
+  $('#rsVids').innerHTML = vdRows.length ? vdRows.slice(0, 4).map(r => `<a class="rs-vid" href="${r.page ? vdHref(r) : yt(r)}"${r.page ? '' : ' target="_blank" rel="noopener"'}>
+      <div><b>${esc(r.title)}</b><small>${esc(r.channel)} · ${r.page ? 'explainer' : 'video'}</small></div><img loading="lazy" alt="" src="${thumb(r)}"></a>`).join('') : failNote;
   return vdRows;
 }
 function vdRender() {
-  if (!vdRows.length) { $('#vdList').innerHTML = `<div class="vd-empty">The feed couldn't load here. <a href="${SITE}research/#videos" target="_blank" rel="noopener">Open it on the live site ↗</a></div>`; return; }
+  if (!vdRows.length) { $('#vdList').innerHTML = failNote; return; }
   $('#vdList').innerHTML = vdRows.filter(r => !vdTag || (r.tags || []).includes(vdTag)).map(r => `<article class="vd-card">
-      <a href="${r.page ? vdHref(r) : yt(r)}"${r.page ? '' : ' target="_blank" rel="noopener"'}><img loading="lazy" alt="" src="https://i.ytimg.com/vi/${esc(r.id)}/mqdefault.jpg"></a>
+      <a href="${r.page ? vdHref(r) : yt(r)}"${r.page ? '' : ' target="_blank" rel="noopener"'}><img loading="lazy" alt="" src="${thumb(r)}"></a>
       <div>
         <h2><a href="${yt(r)}" target="_blank" rel="noopener">${esc(r.title)}</a></h2>
         <div class="vd-meta"><span>${esc(r.channel)}</span><time>${esc(r.date)}</time>
@@ -2826,14 +2986,25 @@ $('#vdTags').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   vdTag = b.dataset.t === vdTag ? '' : b.dataset.t; vdRender();
 });
-// Same-origin frame (GitHub Pages): drop the explainer's own back links and grow the frame to its content
+// Same-origin frame (GitHub Pages): drop the explainer's own back links, match the theme, grow to its content
+function syncFrameTheme() {
+  try { const d = $('#vdFrame').contentDocument; if (d?.documentElement) d.documentElement.dataset.theme = document.documentElement.dataset.theme; } catch {}
+}
 $('#vdFrame').addEventListener('load', () => {
   const f = $('#vdFrame'); let d; try { d = f.contentDocument; } catch { return; }
   if (!d?.body) return;
   d.querySelector('nav.top')?.remove();
+  syncFrameTheme();
   const fit = () => { f.style.height = d.documentElement.scrollHeight + 'px'; };
   fit(); new ResizeObserver(fit).observe(d.body);
 });
+
+// ---- reading progress ----
+const prog = $('#rsProg');
+addEventListener('scroll', () => {
+  const max = document.documentElement.scrollHeight - innerHeight;
+  prog.style.width = (POST_IDS.some(id => !document.getElementById('v-' + id).hidden) && max > 0 ? scrollY / max * 100 : 0) + '%';
+}, { passive:true });
 
 // ---- routing ----
 const back = $('#rsBack'), next = $('#rsNext');
@@ -2847,8 +3018,9 @@ function show(v) {
     sec.before(back); sec.after(next);
     $('#rsCat').textContent = post.cat;
     const i = POSTS.indexOf(post), nx = POSTS[(i + 1) % POSTS.length];
-    next.innerHTML = `<a href="#${nx.id}"><small>Next post · ${esc(nx.cat)}</small><b>${esc(nx.title)} →</b></a>`;
+    next.innerHTML = `<h3>Read next</h3>${story(nx)}`;
   }
+  prog.style.width = '0';
   document.title = (post ? post.title + ' · ' : v === 'videos' ? 'Videos · ' : '') + 'Research · Agent Factory Lab';
 }
 async function route() {
@@ -2870,7 +3042,7 @@ async function route() {
   const v = host ? host.id.slice(2) : VIEWS.includes(h) ? h : 'home';
   show(v);
   if (v === 'videos') { $('#vdFeed').hidden = false; $('#vdPlayer').hidden = true; $('#vdFrame').removeAttribute('src'); await vdLoad(); vdRender(); }
-  if (v === 'home') vdLoad();
+  if (v === 'home') { renderFeed(); vdLoad(); }
   if (host) target.scrollIntoView(); else scrollTo(0, 0);
 }
 addEventListener('hashchange', route);
