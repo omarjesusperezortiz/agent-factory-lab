@@ -162,9 +162,25 @@ def main():
                     log(f"explainer built at videos/{row['page']}")
                 except Exception as e:
                     failures += 1
+                    row['explainer_failed'] = True
                     log(f"explainer failed for {v['id']}: {e}")
             rows.append(row)
             INDEX.write_text(json.dumps(rows, indent=2, ensure_ascii=False) + '\n')  # save after each video so a crash keeps earlier work
+
+        # Catch up on high scorers that missed an explainer (the per-run cap), oldest first. One try each.
+        for row in sorted(rows, key=lambda r: r['date']):
+            if explainers >= MAX_EXPLAINERS:
+                break
+            if row['score'] >= 4 and not row.get('page') and not row.get('explainer_failed'):
+                try:
+                    row['page'] = build_explainer(row, tmp)
+                    explainers += 1
+                    log(f"backfilled explainer at videos/{row['page']}")
+                except Exception as e:
+                    failures += 1
+                    row['explainer_failed'] = True
+                    log(f"backfill explainer failed for {row['id']}: {e}")
+                INDEX.write_text(json.dumps(rows, indent=2, ensure_ascii=False) + '\n')
     return 1 if failures else 0
 
 
