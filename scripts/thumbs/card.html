@@ -1,0 +1,23 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@700&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;width:1280px;height:720px;overflow:hidden;background:#0d1315;font-family:"Instrument Sans",sans-serif}
+.bg{position:absolute;right:0;top:0;height:100%;width:var(--w,64%);object-fit:cover;object-position:var(--pos,50% 50%);filter:saturate(1.15)}
+.shade{position:absolute;inset:0;background:linear-gradient(90deg,#0d1315 0%,#0d1315 40%,rgba(13,21,23,.8) 52%,rgba(13,21,23,.15) 72%,rgba(13,21,23,0) 100%)}
+.txt{position:absolute;left:64px;top:0;bottom:0;display:flex;flex-direction:column;justify-content:center;max-width:640px}
+.k{font:600 26px "JetBrains Mono",monospace;color:var(--c,#3ec7b4);letter-spacing:.06em;text-transform:uppercase;margin-bottom:18px}
+h1{margin:0;font-size:112px;line-height:.92;letter-spacing:-.045em;color:#fff}
+h1 em{font-style:normal;color:var(--c,#3ec7b4)}
+.bar{position:absolute;left:0;top:0;bottom:0;width:14px;background:var(--c,#3ec7b4)}
+</style></head><body>
+<img class="bg" id="bg" alt=""><div class="shade"></div><div class="bar"></div>
+<div class="txt"><div class="k" id="k"></div><h1 id="t"></h1></div>
+<script>
+const p=new URLSearchParams(location.search);
+document.getElementById('bg').src=p.get('img');
+if(p.get('w'))document.documentElement.style.setProperty('--w',p.get('w'));
+document.documentElement.style.setProperty('--c',p.get('c')||'#3ec7b4');
+if(p.get('pos'))document.documentElement.style.setProperty('--pos',p.get('pos'));
+document.getElementById('k').textContent=p.get('k');
+document.getElementById('t').innerHTML=p.get('t');
+</script></body></html>

@@ -597,7 +597,7 @@ pre.diff .del { background:color-mix(in srgb, var(--err) 14%, transparent); colo
 .v2 .spec { width:92px; height:86px; display:grid; place-items:center; align-content:center; gap:4px; position:relative; font-size:11px; color:var(--mu); text-align:center; transition:border-color .3s; }
 .v2 .spec .ck { position:absolute; top:-6px; right:-6px; width:16px; height:16px; border-radius:50%; background:var(--gr); color:#0e0e0e; font-size:10px; display:grid; place-items:center; transform:scale(0); transition:transform .3s cubic-bezier(.3,1.6,.5,1); }
 .v2 .spec.on { border-color:#2f5a3a; } .v2 .spec.on .ck { transform:scale(1); }
-.v2 .spec.run { border-color:var(--c); }
+.v2 .spec.busy { border-color:var(--c); } /* not .run: that global class styles the console's run list */
 .v2 .quality { width:min(560px, 100%); padding:12px 16px; display:flex; align-items:center; gap:14px; font-size:13px; }
 .v2 .quality .segs { flex:1; display:grid; grid-template-columns:repeat(6,1fr); gap:5px; }
 .v2 .quality .segs i { height:8px; border-radius:99px; background:#2a2a2a; transition:background .3s; }
@@ -695,6 +695,27 @@ body { padding:0; }
 .rs-feature b { font-size:22px; letter-spacing:-.01em; }
 .rs-feature span { color:var(--muted); max-width:80ch; }
 .rs-feature small, .rs-card small { font:11.5px var(--mono); color:var(--accent); text-transform:uppercase; letter-spacing:.08em; }
+.rs-featured { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:20px; margin-top:6px; }
+.rs-fc { display:grid; align-content:start; gap:6px; text-decoration:none; color:var(--fg); }
+.rs-fc img, .rs-row img { width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:10px; border:1px solid var(--line); background:var(--panel2); display:block; transition:border-color .2s; }
+.rs-fc:hover img, .rs-row:hover img { border-color:var(--edge); }
+.rs-fc img, .rs-row img { align-self:start; height:auto; }
+.rs-fc small, .rs-row small { font:11.5px var(--mono); color:var(--accent); text-transform:uppercase; letter-spacing:.08em; margin-top:6px; }
+.rs-fc b { font-size:19px; line-height:1.25; letter-spacing:-.01em; }
+.rs-fc span, .rs-row span { color:var(--muted); font-size:14px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.rs-list { display:grid; }
+.rs-row { display:grid; grid-template-columns:220px minmax(0, 1fr); gap:4px 22px; padding:16px 0; border-bottom:1px solid var(--line); text-decoration:none; color:var(--fg); align-items:start; }
+.rs-row img { grid-row:span 4; }
+.rs-row small { margin-top:2px; }
+.rs-row b { font-size:18px; line-height:1.3; }
+.rs-row em { font-style:normal; font:12px var(--mono); color:var(--muted); }
+.rs-fc:hover b, .rs-row:hover b { color:var(--accent); }
+@media (max-width:760px) {
+  .rs-featured { grid-template-columns:minmax(0,1fr); }
+  .rs-row { grid-template-columns:120px minmax(0,1fr); gap:2px 14px; }
+  .rs-row b { font-size:15.5px; }
+  .rs-row span { display:none; }
+}
 .rs-h { display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-top:18px; }
 .rs-h h2 { margin:0; font-size:20px; }
 .rs-h span, .rs-h a { font:12.5px var(--mono); color:var(--muted); }
@@ -719,11 +740,271 @@ body { padding:0; }
 .rs-foot { max-width:1180px; margin:0 auto; padding:20px 16px 40px; border-top:1px solid var(--line); font:12.5px var(--mono); color:var(--muted); }
 .rs-foot a { color:var(--muted); }
 @media (max-width:620px) { .rs-grid { grid-template-columns:minmax(0,1fr); } .rs-top { padding:10px 16px; } .rs-brand i { display:none; } }
+
+/* nav bar: sections on the left, console call to action on the right */
+.rs-top { gap:10px 28px; }
+.rs-brand b { font-size:14.5px; }
+.rs-nav { display:flex; align-items:center; gap:2px; margin-right:auto; }
+.rs-nav > a, .rs-dd > button { display:inline-flex; align-items:center; gap:5px; color:var(--muted); text-decoration:none; font:inherit; font-size:14px; padding:7px 12px; border-radius:8px; background:none; border:0; cursor:pointer; }
+.rs-nav > a:hover, .rs-dd > button:hover { color:var(--fg); background:var(--panel2); }
+.rs-nav [aria-current="page"] { color:var(--fg); font-weight:600; }
+.rs-dd { position:relative; }
+.rs-dd svg { width:12px; height:12px; fill:none; stroke:currentColor; stroke-width:1.6; transition:transform .2s; }
+.rs-dd button[aria-expanded="true"] svg { transform:rotate(180deg); }
+.rs-menu { position:absolute; top:calc(100% + 8px); left:0; min-width:240px; padding:6px; background:var(--panel); border:1px solid var(--line); border-radius:12px; box-shadow:0 18px 40px rgba(0,0,0,.35); display:grid; z-index:40; }
+.rs-menu a { display:flex; justify-content:space-between; gap:16px; padding:8px 10px; border-radius:8px; color:var(--fg); text-decoration:none; font-size:14px; }
+.rs-menu a:hover, .rs-menu a[aria-current="page"] { background:var(--panel2); }
+.rs-menu a span { font:12px var(--mono); color:var(--muted); }
+.rs-menu hr { border:0; border-top:1px solid var(--line); margin:4px 2px; }
+.rs-right { display:flex; align-items:center; gap:10px; }
+.rs-gh { display:grid; place-items:center; width:34px; height:34px; border-radius:8px; color:var(--muted); }
+.rs-gh:hover { color:var(--fg); background:var(--panel2); }
+.rs-gh svg { width:18px; height:18px; fill:currentColor; }
+.rs-cta { display:inline-flex; gap:6px; align-items:center; padding:7px 14px; border-radius:8px; background:var(--accent); color:var(--bg); font-weight:600; font-size:13.5px; text-decoration:none; }
+.rs-cta:hover { filter:brightness(1.08); }
+@media (max-width:620px) { .rs-brand b { display:none; } .rs-cta { padding:7px 11px; } .rs-cta span { display:none; } .rs-nav > a, .rs-dd > button { padding:7px 9px; } .rs-menu { left:auto; right:-90px; } }
+
+/* topic filter on the article list */
+.rs-filtered #rsFeatured, .rs-filtered .rs-hero { display:none; }
+#rsListTitle a { font:12.5px var(--mono); color:var(--muted); margin-left:10px; }
+
+
+.rs-main .view > section[id] { scroll-margin-top:84px; }
+
+/* posts reveal as they scroll in */
+@media (prefers-reduced-motion: no-preference) {
+  .rs-rv { opacity:0; transform:translateY(18px); transition:opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1); }
+  .rs-rv.rs-in { opacity:1; transform:none; }
+}
+
+/* our own page for a video that has no explainer yet */
+.vd-page { display:grid; gap:14px; max-width:960px; }
+.vd-page h1 { margin:0; font-size:clamp(24px, 3vw, 34px); line-height:1.15; letter-spacing:-.02em; }
+.vd-embed { position:relative; aspect-ratio:16/9; border-radius:12px; overflow:hidden; border:1px solid var(--line); background:#000; }
+.vd-embed iframe { position:absolute; inset:0; width:100%; height:100%; border:0; }
+.vd-page p { margin:0; font-size:16px; color:var(--fg); max-width:72ch; }
+.vd-note { font-size:13.5px; color:var(--muted); }
+
+/* UI fixes */
+body { margin:0; }
+#vdTags { margin:6px 0 4px; }
+@media (max-width:620px) {
+  .rs-top { flex-wrap:nowrap; gap:6px; padding:10px 12px; }
+  .rs-gh { display:none; }
+  .rs-nav { gap:0; }
+  .rs-cta { font-size:13px; padding:7px 10px; white-space:nowrap; }
+}
+
+.rs-dots { display:block; width:84px; height:30px; }
+.rs-dots line { stroke:var(--edge); stroke-width:1.2; }
+.rs-dots circle { fill:var(--panel2); stroke:var(--edge); stroke-width:1.2; }
+@media (prefers-reduced-motion: no-preference) {
+  .rs-dots circle { animation:rsPulse 3.2s ease-in-out infinite; }
+  .rs-dots circle:nth-of-type(2) { animation-delay:.4s; } .rs-dots circle:nth-of-type(3) { animation-delay:.8s; } .rs-dots circle:nth-of-type(4) { animation-delay:1.2s; } .rs-dots circle:nth-of-type(5) { animation-delay:1.6s; }
+}
+@keyframes rsPulse { 0%, 70%, 100% { fill:var(--panel2); stroke:var(--edge); } 15% { fill:var(--accent); stroke:var(--accent); } }
+
+/* ---- post layout: one grid, three tracks ----
+   [contents 200px] [article, flexible] [details 248px]. The side tracks are sticky grid items in normal flow:
+   they scroll with the page and stop under the header, and nothing is positioned over the article.
+   Below 1440px the details track drops under the article; below 1100px the contents track goes too
+   (each post keeps its topic chips at the top). */
+body.rs-wide .rs-main, body.rs-wide .rs-foot { max-width:1472px; }
+body.rs-wide .rs-top { padding-left:max(16px, calc((100vw - 1472px) / 2 + 16px)); padding-right:max(16px, calc((100vw - 1472px) / 2 + 16px)); }
+.rs-post { display:grid; grid-template-columns:minmax(0, 1fr); gap:28px 40px; align-items:start; }
+.rs-post[hidden] { display:none; }
+.rs-col { min-width:0; display:grid; gap:14px; }
+.rs-col > *, .rs-col > .view > * { min-width:0; } /* grid items default to min-width:auto; let the track set the width */
+.rs-col .seg { flex-wrap:wrap; } /* scene buttons wrap on narrow screens instead of widening the article */
+.rs-toc { display:none; }
+.rs-toc, .rs-rail { position:sticky; top:84px; max-height:calc(100vh - 100px); overflow-y:auto; scrollbar-width:thin; }
+@media (min-width:1100px) {
+  .rs-post { grid-template-columns:200px minmax(0, 1fr); }
+  .rs-toc { display:block; }
+  .rs-post.no-toc { grid-template-columns:minmax(0, 1fr); }
+  .rs-post.no-toc .rs-toc { display:none; }
+  .rs-rail { grid-column:2; position:static; max-height:none; overflow:visible; }
+  .rs-post.no-toc .rs-rail { grid-column:1; }
+  .rs-post .view.doc > div:first-child > nav.toc { display:none; } /* the contents track replaces the chips */
+  .rs-post.no-toc .view.doc > div:first-child > nav.toc { display:flex; }
+}
+@media (min-width:1440px) {
+  .rs-post { grid-template-columns:200px minmax(0, 1fr) 248px; }
+  .rs-post.no-toc { grid-template-columns:minmax(0, 1fr) 248px; }
+  .rs-rail, .rs-post.no-toc .rs-rail { grid-column:auto; position:sticky; max-height:calc(100vh - 100px); overflow-y:auto; }
+}
+.rs-toc b { display:block; font:11.5px var(--mono); color:var(--muted); text-transform:uppercase; letter-spacing:.08em; margin:4px 0 10px; }
+.rs-toc ol { list-style:none; margin:0; padding:0; border-left:1px solid var(--line); display:grid; }
+.rs-toc a { display:block; padding:6px 0 6px 14px; margin-left:-1px; border-left:2px solid transparent; color:var(--muted); text-decoration:none; font-size:13.5px; line-height:1.35; transition:color .2s, border-color .2s; }
+.rs-toc a:hover { color:var(--fg); }
+.rs-toc a.on { color:var(--fg); border-left-color:var(--accent); font-weight:600; }
+
+/* details track: a grid of two blocks, post facts then related articles */
+.rs-rail { display:grid; gap:16px; align-content:start; }
+.rs-rail .rs-box { border:1px solid var(--line); border-radius:12px; background:var(--panel); padding:14px; }
+.rs-rail dl { display:grid; grid-template-columns:auto 1fr; gap:8px 14px; margin:0; font-size:13px; }
+.rs-rail dt { color:var(--muted); }
+.rs-rail dd { margin:0; color:var(--fg); }
+.rs-rail dd a { color:var(--fg); }
+.rs-rail .rs-rhead { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:12px; }
+.rs-rail h3 { margin:0; font-size:14px; white-space:nowrap; }
+.rs-rail .rs-rels { display:grid; gap:12px; }
+.rs-rail .rs-rel { display:grid; grid-template-columns:88px minmax(0, 1fr); gap:10px; align-items:center; text-decoration:none; color:var(--fg); }
+.rs-rail .rs-rel img { width:100%; height:auto; aspect-ratio:16/9; object-fit:cover; border-radius:6px; border:1px solid var(--line); display:block; }
+.rs-rail .rs-rel b { font-size:13px; line-height:1.3; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+.rs-rail .rs-rel:hover b { color:var(--accent); }
+.rs-rail .rs-more { display:inline-block; margin-top:12px; font-size:12.5px; color:var(--muted); text-decoration:none; }
+.rs-rail .rs-more:hover { color:var(--fg); }
+@media (min-width:1100px) and (max-width:1439px) { /* under the article: facts and related side by side */
+  .rs-rail { grid-template-columns:minmax(0, 220px) minmax(0, 1fr); }
+  .rs-rail .rs-rels { grid-template-columns:repeat(3, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .rs-rail .rs-box { opacity:0; transform:translateY(12px); transition:opacity .6s ease, transform .6s ease; }
+  .rs-rail .rs-box + .rs-box { transition-delay:.12s; }
+  .rs-rail.rs-show .rs-box { opacity:1; transform:none; }
+}
+
+/* one gutter for header, content and footer: the page width changes (1180 lists, 1472 posts),
+   the gutter scales with the screen, and the header lines up with whichever width is showing */
+:root { --gut:clamp(20px, 3.4vw, 48px); --page-w:1180px; }
+body.rs-wide { --page-w:1472px; }
+.rs-main { max-width:var(--page-w); padding-left:var(--gut); padding-right:var(--gut); box-sizing:border-box; }
+.rs-foot { max-width:var(--page-w); padding-left:var(--gut); padding-right:var(--gut); box-sizing:border-box; }
+.rs-top, body.rs-wide .rs-top { padding-left:max(var(--gut), calc((100vw - var(--page-w)) / 2 + var(--gut))); padding-right:max(var(--gut), calc((100vw - var(--page-w)) / 2 + var(--gut))); }
+@media (max-width:620px) { .rs-top, body.rs-wide .rs-top { padding-left:var(--gut); padding-right:var(--gut); } }
+
+.dz, .dz * { box-sizing:border-box; }
+/* Design tools post (.dz): stage in the video's look, dark cards, Claude coral accent; every class prefixed dz- */
+.dz-play { font:inherit; font-size:13px; font-weight:600; background:#d97757; color:#0e0e0e; border:0; border-radius:8px; padding:7px 13px; cursor:pointer; }
+.dz-cap { border-left:3px solid #d97757; padding:4px 0 4px 14px; max-width:80ch; } .dz-cap p { margin:0 0 4px; } .dz-cap small { color:var(--muted); }
+.dz { --c:#d97757; --card:#1b1b1b; --card2:#242424; --ln:#2e2e2e; --tx:#ececec; --mu:#8d8d8d; --gr:#7bd88f; --yl:#e8c468; --rd:#f0716a; --pk:#ff90e8;
+  background:#0e0e0e; color:var(--tx); border:1px solid #222; border-radius:14px; min-height:460px; padding:26px; position:relative; overflow:hidden; display:grid; align-content:center; font-family:var(--sans); }
+.dz .dz-vc { background:var(--card); border:1px solid var(--ln); border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,.45); }
+.dz .dz-vi { opacity:0; transform:translateY(10px); transition:opacity .5s, transform .5s; } .dz .dz-vi.on { opacity:1; transform:none; }
+.dz .dz-row { display:flex; gap:22px; align-items:center; justify-content:center; flex-wrap:wrap; }
+.dz .dz-mu { color:var(--mu); } .dz .dz-co { color:var(--c); } .dz .dz-gr { color:var(--gr); } .dz .dz-rd { color:var(--rd); } .dz .dz-mono { font-family:var(--mono); }
+.dz .dz-pl { display:inline-flex; align-items:center; gap:8px; background:var(--card2); border:1px solid var(--ln); border-radius:99px; padding:5px 12px; font-weight:600; font-size:13px; white-space:nowrap; }
+.dz .dz-wh { display:flex; align-items:center; gap:6px; padding:8px 11px; border-bottom:1px solid var(--ln); }
+.dz .dz-wh i { width:8px; height:8px; border-radius:50%; background:#ff5f57; } .dz .dz-wh i:nth-child(2) { background:#febc2e; } .dz .dz-wh i:nth-child(3) { background:#28c840; }
+.dz .dz-wh span { margin:0 auto; font:10.5px var(--mono); color:var(--mu); }
+.dz .dz-mascot { width:30px; height:22px; display:inline-block; vertical-align:middle; }
+
+/* 1 references → agent → page */
+.dz .dz-refs { display:grid; gap:10px; width:200px; }
+.dz .dz-ref { padding:10px 12px; display:grid; gap:4px; font-size:12px; opacity:0; transform:translateX(-18px); transition:opacity .45s, transform .45s; }
+.dz .dz-ref.on { opacity:1; transform:none; } .dz .dz-ref b { font-size:13px; } .dz .dz-ref small { color:var(--mu); }
+.dz .dz-ref .dz-sw { height:26px; border-radius:6px; }
+.dz .dz-agent { width:132px; padding:14px; display:grid; gap:8px; justify-items:center; text-align:center; font-size:12px; }
+.dz .dz-agent .dz-mascot { width:54px; height:40px; }
+.dz .dz-page { width:min(300px, 100%); }
+.dz .dz-pg { padding:12px; display:grid; gap:8px; min-height:190px; }
+.dz .dz-pg i { display:block; border-radius:5px; background:#2a2a2a; height:10px; transition:background .6s, height .6s, width .6s; }
+.dz .dz-pg .dz-h1 { height:22px; width:70%; } .dz .dz-pg .dz-h2 { width:50%; } .dz .dz-pg .dz-btn { height:16px; width:34%; }
+.dz .dz-pg .dz-tiles { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; } .dz .dz-pg .dz-tiles i { height:38px; }
+.dz .dz-pg.dz-v2 .dz-h1 { background:linear-gradient(90deg, var(--c), #f2b27e); height:26px; } .dz .dz-pg.dz-v2 .dz-btn { background:var(--c); }
+.dz .dz-pg.dz-v2 .dz-tiles i { background:linear-gradient(160deg, #3a2a52, #1f3a35); animation:dzFloat 2.4s ease-in-out infinite; } .dz .dz-pg.dz-v2 .dz-tiles i:nth-child(2) { animation-delay:.3s; } .dz .dz-pg.dz-v2 .dz-tiles i:nth-child(3) { animation-delay:.6s; }
+@keyframes dzFloat { 50% { transform:translateY(-5px); } }
+.dz .dz-score { display:flex; gap:10px; align-items:center; justify-content:center; font-size:13px; }
+
+/* 2 three screens */
+.dz .dz-devs { display:flex; gap:18px; align-items:flex-end; justify-content:center; flex-wrap:wrap; }
+.dz .dz-dev { position:relative; padding:8px; border-radius:14px; background:#151515; border:1px solid var(--ln); transition:border-color .4s; }
+.dz .dz-dev.bad { border-color:var(--rd); } .dz .dz-dev.dz-good { border-color:#2f5a3a; }
+.dz .dz-scr { background:#f4efe6; border-radius:7px; overflow:hidden; position:relative; display:grid; align-content:start; gap:6px; padding:9px; }
+.dz .dz-scr b { display:block; color:#111; font:700 13px/1.1 var(--sans); white-space:nowrap; transition:font-size .5s; }
+.dz .dz-scr i { display:block; height:7px; border-radius:4px; background:#d9d1c4; }
+.dz .dz-scr .dz-cta { width:44%; height:12px; background:#d97757; }
+.dz .dz-phone .dz-scr { width:92px; height:170px; } .dz .dz-tab .dz-scr { width:150px; height:200px; } .dz .dz-lap .dz-scr { width:250px; height:150px; }
+.dz .dz-phone.bad .dz-scr b { color:var(--rd); }
+.dz .dz-tab .dz-scr b, .dz .dz-lap .dz-scr b { white-space:normal; } /* only the phone overflows, on purpose */
+.dz .dz-flag { position:absolute; top:-10px; right:-10px; width:22px; height:22px; border-radius:50%; display:grid; place-items:center; font-size:12px; font-weight:700; color:#0e0e0e; transform:scale(0); transition:transform .3s cubic-bezier(.3,1.6,.5,1); }
+.dz .dz-dev.bad .dz-flag { background:var(--rd); transform:scale(1); } .dz .dz-dev.dz-good .dz-flag { background:var(--gr); transform:scale(1); }
+.dz .dz-dev small { display:block; text-align:center; margin-top:6px; font:10.5px var(--mono); color:var(--mu); }
+.dz .dz-shot { position:absolute; inset:0; border-radius:14px; background:#fff; opacity:0; pointer-events:none; }
+.dz .dz-shot.on { animation:dzFlash .5s ease-out; } @keyframes dzFlash { 0% { opacity:.55; } 100% { opacity:0; } }
+
+/* 3 bunshin ring + refinement */
+.dz .dz-ring { position:relative; width:min(380px, 84vw); aspect-ratio:1; }
+.dz .dz-hub { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:118px; text-align:center; padding:9px 8px; display:grid; gap:4px; justify-items:center; font:12px var(--mono); }
+.dz .dz-hub b { font:600 13px var(--mono); }
+.dz .dz-sub { position:absolute; width:74px; margin:-24px 0 0 -37px; padding:7px 6px; text-align:center; font-size:11px; display:grid; gap:2px; justify-items:center;
+  opacity:0; transform:scale(.6); transition:opacity .4s, transform .4s, border-color .4s; }
+.dz .dz-sub.on { opacity:1; transform:none; } .dz .dz-sub.busy { border-color:var(--c); } .dz .dz-sub.done { border-color:#2f5a3a; }
+.dz .dz-sub .dz-mascot { width:24px; height:18px; }
+.dz .dz-ref2 { width:250px; padding:14px; display:grid; gap:10px; }
+.dz .dz-ref2 h4 { margin:0; font-size:13px; display:flex; justify-content:space-between; align-items:center; }
+.dz .dz-bars { display:flex; align-items:flex-end; gap:14px; height:110px; padding:0 4px; border-bottom:1px dashed #444; }
+.dz .dz-bars div { flex:1; display:grid; justify-items:center; gap:4px; font:11px var(--mono); color:var(--mu); }
+.dz .dz-bars i { display:block; width:100%; height:0; border-radius:4px 4px 0 0; background:#e0607e; transition:height .6s ease; }
+.dz .dz-bars i.dz-minor { background:#555; }
+.dz .dz-stops { display:grid; gap:6px; font-size:12px; color:var(--mu); }
+.dz .dz-stops span { display:flex; gap:8px; align-items:center; } .dz .dz-stops span::before { content:""; width:12px; height:12px; border-radius:50%; border:1px solid #555; transition:background .3s, border-color .3s; }
+.dz .dz-stops span.on { color:var(--tx); } .dz .dz-stops span.on::before { background:var(--gr); border-color:var(--gr); }
+
+/* 4 DESIGN.md + drift gate */
+.dz .dz-term { width:min(330px, 100%); font:12px var(--mono); }
+.dz .dz-term .dz-b { padding:10px 13px; display:grid; gap:7px; min-height:120px; }
+.dz .dz-md { width:min(250px, 100%); font:11.5px var(--mono); }
+.dz .dz-md .dz-b { padding:10px 13px; display:grid; gap:4px; }
+.dz .dz-md .dz-ln { display:flex; gap:7px; align-items:center; opacity:0; transition:opacity .3s, color .3s; } .dz .dz-md .dz-ln.on { opacity:1; }
+.dz .dz-md .dz-ln i { width:10px; height:10px; border-radius:2px; display:inline-block; }
+.dz .dz-md .dz-ln.bad { color:var(--rd); }
+.dz .dz-gum { width:min(230px, 100%); }
+.dz .dz-gum .dz-pg { background:#fff; border-radius:0 0 12px 12px; min-height:170px; }
+.dz .dz-gum .dz-pg b { color:#111; font:700 16px/1.15 var(--sans); }
+.dz .dz-gum .dz-pg mark { background:#ffc900; padding:0 3px; transition:background .6s; } .dz .dz-gum.drift .dz-pg mark { background:#ffb000; }
+.dz .dz-gum .dz-pg .dz-st { width:46px; height:40px; background:var(--pk); transform:rotate(-8deg); border:1px solid #111; }
+
+/* 5 storyboard + timeline */
+.dz .dz-board { width:min(290px, 100%); }
+.dz .dz-board .dz-b { padding:10px; display:grid; gap:7px; }
+.dz .dz-shotrow { display:grid; grid-template-columns:76px 1fr auto; gap:10px; align-items:center; font-size:12.5px; opacity:0; transform:translateY(6px); transition:opacity .35s, transform .35s; }
+.dz .dz-shotrow.on { opacity:1; transform:none; }
+.dz .dz-shotrow .dz-th { height:40px; border-radius:6px; background:linear-gradient(140deg, #e9f2e6, #cfe3c8); border:1px solid #333; }
+.dz .dz-shotrow.bad .dz-th { outline:2px solid var(--yl); }
+.dz .dz-shotrow .dz-mono { color:var(--mu); }
+.dz .dz-tl { width:min(330px, 100%); padding:14px; display:grid; gap:12px; font-size:12.5px; }
+.dz .dz-track { position:relative; height:12px; border-radius:99px; background:#262626; overflow:hidden; display:flex; }
+.dz .dz-track i { display:block; height:100%; width:0; transition:width .5s ease; border-right:2px solid #0e0e0e; }
+.dz .dz-track i:nth-child(1) { background:var(--c); } .dz .dz-track i:nth-child(2) { background:#c9a2ff; } .dz .dz-track i:nth-child(3) { background:var(--yl); } .dz .dz-track i:nth-child(4) { background:var(--gr); }
+.dz .dz-warn { border:1px solid #5a4a1c; background:#211c0e; color:var(--yl); border-radius:10px; padding:9px 11px; font-size:12px; }
+.dz .dz-modes { display:flex; gap:8px; }
+.dz .dz-modes .dz-pl.on { border-color:var(--c); color:var(--c); }
+
+/* 6 our design line */
+.dz .dz-line { display:flex; align-items:stretch; gap:8px; flex-wrap:wrap; justify-content:center; }
+.dz .dz-stg { width:122px; padding:10px 9px; display:grid; gap:6px; align-content:start; font-size:11.5px; position:relative; transition:border-color .3s; }
+.dz .dz-stg b { font:600 13px var(--mono); } .dz .dz-stg small { color:var(--mu); line-height:1.35; }
+.dz .dz-stg .dz-tool { font:10.5px var(--mono); color:var(--c); opacity:0; transition:opacity .4s; }
+.dz .dz-stg.busy { border-color:var(--c); } .dz .dz-stg.done { border-color:#2f5a3a; } .dz .dz-stg.done .dz-tool, .dz .dz-stg.busy .dz-tool { opacity:1; }
+.dz .dz-stg .dz-ex { position:absolute; top:-8px; right:-6px; font:600 9.5px var(--mono); background:var(--gr); color:#0e0e0e; border-radius:99px; padding:1px 6px; opacity:0; transition:opacity .3s; }
+.dz .dz-stg.done .dz-ex { opacity:1; }
+.dz .dz-meter { width:min(560px, 100%); padding:11px 15px; display:flex; gap:14px; align-items:center; font-size:12.5px; }
+.dz .dz-meter .dz-segs { flex:1; display:grid; grid-auto-flow:column; gap:5px; } .dz .dz-meter .dz-segs i { height:8px; border-radius:99px; background:#2a2a2a; transition:background .3s; } .dz .dz-meter .dz-segs i.on { background:var(--gr); } .dz .dz-meter .dz-segs i.dz-llm.on { background:var(--c); }
+
+@media (max-width:760px) {
+  .dz { padding:18px 12px; min-height:0; }
+  .dz .dz-refs { width:100%; grid-template-columns:repeat(3, minmax(0,1fr)); } .dz .dz-ref { padding:8px; font-size:11px; }
+  .dz .dz-phone .dz-scr { width:70px; height:130px; } .dz .dz-tab .dz-scr { width:104px; height:150px; } .dz .dz-lap .dz-scr { width:180px; height:110px; }
+  .dz .dz-stg { width:calc(50% - 8px); }
+  .dz .dz-sub { width:62px; margin:-22px 0 0 -31px; font-size:10px; }
+}
+@media (prefers-reduced-motion: reduce) { .dz *, .dz *::before { animation:none !important; transition:none !important; } }
 </style>
 
 <header class="rs-top">
-  <a class="rs-brand" href="../"><svg width="26" height="26" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="8" fill="var(--panel2)" stroke="var(--line)"/><circle cx="10" cy="17" r="3.5" fill="var(--accent)"/><circle cx="24" cy="10" r="3" fill="var(--human)"/><circle cx="24" cy="24" r="3" fill="var(--tool)"/><path d="M13 16l8-5M13 18l8 5" stroke="var(--edge)" stroke-width="1.5"/></svg><span><b>agent-factory-lab</b> <i>research</i></span></a>
-  <nav><a href="#" data-r="home">Posts</a><a href="#videos" data-r="videos">Videos</a><a href="../console/">Console</a><a href="https://github.com/omarjesusperezortiz/agent-factory-lab" target="_blank" rel="noopener">GitHub ↗</a></nav>
+  <a class="rs-brand" href="../"><svg width="26" height="26" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="8" fill="var(--panel2)" stroke="var(--line)"/><circle cx="10" cy="17" r="3.5" fill="var(--accent)"/><circle cx="24" cy="10" r="3" fill="var(--human)"/><circle cx="24" cy="24" r="3" fill="var(--tool)"/><path d="M13 16l8-5M13 18l8 5" stroke="var(--edge)" stroke-width="1.5"/></svg><b>agent-factory-lab</b></a>
+  <nav class="rs-nav" aria-label="Research">
+    <a href="#" data-r="home">Articles</a>
+    <div class="rs-dd"><button type="button" id="rsTopicsBtn" data-r="topic" aria-expanded="false" aria-controls="rsMenu">Topics<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5 6 7.5l3-3"/></svg></button>
+      <div class="rs-menu" id="rsMenu" hidden></div></div>
+    <a href="#videos" data-r="videos">Videos</a>
+  </nav>
+  <div class="rs-right">
+    <a class="rs-gh" href="https://github.com/omarjesusperezortiz/agent-factory-lab" target="_blank" rel="noopener" aria-label="GitHub repository"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 .2a8 8 0 0 0-2.5 15.6c.4 0 .5-.2.5-.4v-1.5c-2.2.5-2.7-1-2.7-1-.4-.9-.9-1.2-.9-1.2-.7-.5.1-.5.1-.5.8.1 1.2.8 1.2.8.7 1.3 1.9.9 2.3.7.1-.5.3-.9.5-1.1-1.8-.2-3.6-.9-3.6-4 0-.9.3-1.6.8-2.1-.1-.2-.4-1 .1-2.1 0 0 .7-.2 2.2.8a7.6 7.6 0 0 1 4 0c1.5-1 2.2-.8 2.2-.8.5 1.1.2 1.9.1 2.1.5.6.8 1.3.8 2.1 0 3.1-1.9 3.7-3.6 3.9.3.3.6.8.6 1.5v2.2c0 .2.1.5.6.4A8 8 0 0 0 8 .2z"/></svg></a>
+    <a class="rs-cta" href="../console/">Open console <span aria-hidden="true">→</span></a>
+  </div>
 </header>
 
 <main class="rs-main">
@@ -734,9 +1015,9 @@ body { padding:0; }
       <h1>Notes from building a software factory</h1>
       <p class="lede">Each post answers one question we hit while designing the <a href="../console/">console</a>: how tickets move, how agents remember, how specs stop guesses, how to orchestrate it all. Most sources are vendor posts, so each claim is labelled with how strong its evidence is.</p>
     </div>
-    <a class="rs-feature" id="rsFeature"></a>
-    <div class="rs-h"><h2>Posts</h2><span id="rsPostCount"></span></div>
-    <div class="rs-grid" id="rsPosts"></div>
+    <div class="rs-featured" id="rsFeatured"></div>
+    <div class="rs-h"><h2 id="rsListTitle">All articles</h2><span id="rsPostCount"></span></div>
+    <div class="rs-list" id="rsPosts"></div>
     <div class="rs-h"><h2>From the video feed</h2><a href="#videos">All videos →</a></div>
     <div class="rs-grid" id="rsVids"><div class="vd-empty">Loading…</div></div>
   </section>
@@ -754,8 +1035,13 @@ body { padding:0; }
       <div class="vd-bar"><a href="#videos">← All videos</a><a id="vdWatch" target="_blank" rel="noopener">▶ Watch on YouTube</a><a id="vdOpen" target="_blank" rel="noopener">Open full page ↗</a></div>
       <iframe class="vd-frame" id="vdFrame" title="Video explainer"></iframe>
     </div>
+    <div class="vd-page" id="vdVideo" hidden></div>
   </section>
 
+  <!-- ============ POST LAYOUT: contents | article | details, as one grid ============ -->
+  <div class="rs-post" id="rsPost" hidden>
+  <aside class="rs-toc" id="rsToc" aria-label="On this page"></aside>
+  <article class="rs-col">
   <div class="rs-back" id="rsBack"><a href="#">← All posts</a><span id="rsCat"></span></div>
   <!-- ============ TICKET FLOW ============ -->
   <section class="view doc" id="v-flow" hidden>
@@ -2002,268 +2288,67 @@ exit 2   # blocks the call; stderr goes to Claude</pre>
     </section>
   </section>
 
-  <!-- ============ RESEARCH NOTES ============ -->
-  <section class="view doc" id="v-research" hidden>
+  <!-- ============ DESIGN TOOLS ============ -->
+  <section class="view doc" id="v-design" hidden>
     <div>
-      <div class="eyebrow">Research notes · Oct 2026</div>
-      <h1>What we found and what we decided</h1>
-      <p class="lede">Findings from the searches behind this console, the design decisions they led to, and every source. Most sources are vendor posts, so treat feature claims as marketing until you try the product.</p>
+      <div class="eyebrow">Research round 9 · AI design tools · Oct 2026</div>
+      <h1>Six repos that give agents design taste</h1>
+      <p class="lede">Switching models does not stop a page looking AI-made; the tools you give the agent do. <a href="https://www.youtube.com/watch?v=NZjjmf3I6I4" target="_blank" rel="noopener">AI Labs tested six GitHub repos</a> on one landing page, Skillbay, a store for agent skills. Below, each one is animated with the video's own motion graphics, checked against its README, and placed on our ticket pipeline.</p>
+      <nav class="toc" aria-label="Sections"><a href="#dz-scenes">The six repos</a><a href="#dz-fit">Where they plug in</a><a href="#dz-first">Our first step</a><a href="#dz-src">Sources</a></nav>
     </div>
 
-    <section>
-      <h2>Decisions so far</h2>
+    <section id="dz-scenes">
+      <h2>One landing page, six tools</h2>
+      <p class="claim">Press play, or pick a repo. Every scene builds the same page, <b>Skillbay</b>, so the tools compare like for like.</p>
+      <div class="sp-ctl"><div class="seg" id="dzSteps"></div><button type="button" class="dz-play" id="dzPlay">▶ Play all</button></div>
+      <div class="dz" id="dzStage"></div>
+      <div class="dz-cap" id="dzCap" aria-live="polite"></div>
+    </section>
+
+    <section id="dz-fit">
+      <h2>Where each one plugs into our pipeline</h2>
+      <p class="claim">Read as stages, not as a shopping list. <b>Two are exact checks</b> (Dembrandt's drift gate and Awwwards' <code>verify_build</code>), so they run before any LLM review, like typecheck and tests.</p>
       <div class="tcard"><table>
-        <thead><tr><th>Question</th><th>Decision</th><th>Where</th></tr></thead>
+        <thead><tr><th>Repo</th><th>Stage</th><th>Use it for</th><th>Watch out</th><th>Verdict</th></tr></thead>
         <tbody>
-          <tr><td>Supervisor or fixed workflow for tickets?</td><td>Keep your fixed sequence (orchestrator → scout/spec → approval → worker → tester → reviewer) and add bounded loops back, including a "wrong spec" route.</td><td><a href="#flow">Ticket flow</a></td></tr>
-          <tr><td>Why does the orchestrator miss tickets?</td><td>An LLM is tracking the list. Move tracking into code: a ticket ledger, one run per row, a reconcile check and a sweeper.</td><td><a href="#flow">Ticket flow</a></td></tr>
-          <tr><td>Is the triage LLM a supervisor?</td><td>No. It only sees failures that reconcile reports and suggests retry, re-spec or escalate. Optional.</td><td><a href="#flow">Ticket flow</a></td></tr>
-          <tr><td>How should stages share context?</td><td>Pass each stage's output, not the conversation. One worktree per ticket, permissions per role.</td><td><a href="#h-handoffs">Harness playbook</a></td></tr>
-          <tr><td>RAG over the codebase?</td><td>Search code live. Use retrieval for past tickets, specs, design docs and incidents.</td><td><a href="#h-context">Harness playbook</a></td></tr>
-          <tr><td>How do we check work?</td><td>Typecheck, lint and tests before any LLM review. The reviewer is never the model that wrote the code.</td><td><a href="#h-checks">Harness playbook</a></td></tr>
-          <tr><td>How do we know a change helped?</td><td>Replay 20 to 50 closed tickets and compare with the last good run.</td><td><a href="#h-evals">Harness playbook</a></td></tr>
-          <tr><td>Console layout</td><td>Sidebar, sticky runs column, graph with the inspector below it.</td><td><a href="../console/#console">Console</a></td></tr>
-          <tr><td>Build the ledger by hand or use an engine?</td><td>The ledger plus sweeper is a hand-rolled durable workflow. Use an engine that already gives retries, resume and human waits, and keep big LLM outputs outside its history.</td><td><a href="#r2-durable">Round 2</a></td></tr>
-          <tr><td>What should the spec contain?</td><td>Requirements, design notes, a task list and acceptance criteria, plus a clarify step where the scout asks you questions before approval.</td><td><a href="#r2-spec">Round 2</a></td></tr>
-          <tr><td>How do we lay out the repo?</td><td>Roles as subagents, procedures as skills, guardrails as hooks and permissions, orchestrator as plain code that runs <code>claude -p --agent</code> per stage.</td><td><a href="#devsetup">Dev setup</a></td></tr>
-          <tr><td>Where do scheduled jobs run?</td><td>Sweeper and orchestrator on your own infra (they need minutes, not hours). Nightly reports and PR reviews as cloud scheduled tasks.</td><td><a href="#d-sched">Dev setup</a></td></tr>
-          <tr><td>Do we need a vector database for code?</td><td>Not at first. Agentic search plus AGENTS.md and a notes file per ticket; a hybrid index for tickets, PRs and ADRs; a semantic code index only if replays show misses.</td><td><a href="#rag">RAG &amp; context</a></td></tr>
-          <tr><td>How much do humans supervise?</td><td>Four tiers by risk: run freely, review after, ask before, never by an agent. Loosen a tier only with a track record.</td><td><a href="#s-ladder">Teams</a></td></tr>
-          <tr><td>How do we share skills and guardrails?</td><td>Repo <code>.claude/</code> for now; an org plugin marketplace plus managed settings when more teams join.</td><td><a href="#s-layers">Teams</a></td></tr>
-          <tr><td>How do we keep up with agent PRs?</td><td>One ticket per PR with spec, tests and verdict attached, a named human owner, routing by risk, short review blocks.</td><td><a href="#s-review">Teams</a></td></tr>
-          <tr><td>Claude Code subagents or agent teams?</td><td>Subagents with worktree isolation, started by code, one per ticket. Agent teams only when workstreams must talk to each other.</td><td><a href="#r2-claude">Round 2</a></td></tr>
+          <tr><td><b>Awwwards MCP</b><br><small>MIT · 302 ★</small></td><td>Scout · tester</td><td>Real award sites as references before a UI ticket; <code>verify_build</code> scores the build against the reference (0–100, pass/warn/fail)</td><td>Young project. In the video one reference site was not enough: mix parts from several</td><td><span class="lim">try on one UI ticket</span></td></tr>
+          <tr><td><b>Responsively App</b><br><small>AGPL-3.0 · 25.5k ★</small></td><td>Tester</td><td>Its MCP server screenshots every screen size, so the agent finds what breaks on a phone and re-checks the fix</td><td>A desktop app; we already check 1470px and 400px with Playwright. Adds side-by-side views, not new coverage</td><td><span class="lim">optional</span></td></tr>
+          <tr><td><b>Genjutsu</b><br><small>no standard license · 651 ★</small></td><td>Worker</td><td><code>cast</code> for one interaction, <code>paint</code> for a whole page, <code>bunshin</code> for a site built by parallel subagents under one shared style</td><td>Bunshin states its cost and asks twice before it runs; great with illustrative styles, generic with minimal ones. Check the license first</td><td><span class="lim">try on a design spike</span></td></tr>
+          <tr><td><b>Dembrandt</b><br><small>MIT · 3.8k ★</small></td><td>Spec · CI</td><td>Pull a site's tokens into <code>DESIGN.md</code> for the spec; <code>--compare</code> is a drift gate that exits 1 when tokens move</td><td>Reads computed styles, so it needs the page to render (Playwright)</td><td><span class="yes">adopt the drift gate</span></td></tr>
+          <tr><td><b>App Store Screenshots</b><br><small>MIT · 7.6k ★</small></td><td>Launch</td><td>Turns real app screenshots into store images for iOS, Android and Mac, in an editor that stays on disk</td><td>We have no mobile app</td><td><span class="no">skip for now</span></td></tr>
+          <tr><td><b>Brag</b><br><small>MIT · 17.8k ★</small></td><td>Launch</td><td>A ~20 s launch video plus a post, planned from the project itself. <code>/brag-slim</code> leaves more choices to bigger models</td><td>It can rebuild screens and add clicks that never happened: a person checks it against the real app before it ships</td><td><span class="lim">try for releases</span></td></tr>
         </tbody>
       </table></div>
     </section>
 
-    <section>
-      <h2>What 2026 agent dashboards have in common</h2>
-      <ul class="finds">
-        <li><b>Conversation views of traces.</b> LangSmith added a Messages View (May) and Trajectories (Sept). Built here as the Messages tab. <small>LangChain</small></li>
-        <li><b>Failure clustering with suggested fixes.</b> LangSmith Engine clusters production failures and opens PRs with fixes. Built here as Issues with "Draft fix with Claude". <small>LangChain; a competitor criticised its lack of issue lifecycle</small></li>
-        <li><b>Two graph modes.</b> Langfuse (July) shows an aggregated structure view and a per-run execution view. Built here as "This run / 24h traffic". <small>Langfuse changelog</small></li>
-        <li><b>Service maps of agent → sub-agent → tool calls.</b> Monte Carlo, Datadog and New Relic all added them in early 2026. <small>vendor articles</small></li>
-        <li><b>Timelines that show parallel work.</b> Langfuse's timeline and Honeycomb's agent swim lanes with a "failures only" filter. Built here as Lanes and the runs filter. <small>Langfuse, Honeycomb</small></li>
-        <li><b>OpenTelemetry GenAI conventions</b> are reported as stable in 2026, so traces move between tools. <small>one vendor blog; unconfirmed</small></li>
-        <li><b>Trace-linked evals and datasets.</b> Several tools turn failing traces into eval datasets. Built here as "Create eval dataset". <small>Braintrust, Confident AI</small></li>
-        <li><b>Layout.</b> LangGraph Studio keeps the thread picker compact and gives the graph the space; its docs place threads at the top of the right pane. <small>LangChain docs</small></li>
-      </ul>
-    </section>
-
-    <section>
-      <h2>Round 2 · orchestration internals</h2>
-      <p class="claim">Five more searches on running a spec → build → test → review pipeline in production. Mostly practitioner blogs and vendor comparisons, plus a few research papers. <b>What it changes for us</b> is in bold.</p>
-
-      <div class="tcard" id="r2-durable"><table>
-        <thead><tr><th colspan="2">Durable execution engines</th></tr></thead>
-        <tbody>
-          <tr><td>Finding</td><td>Temporal, Restate, Inngest, DBOS, Vercel Workflow and LangGraph's checkpointer all give retries, resume after a crash and long human waits. Temporal is treated as the mature default and shipped an OpenAI Agents SDK integration in April 2026. DBOS fits teams already on Postgres. Restate and Inngest are source-available, not OSI open source.</td></tr>
-          <tr><td>Known pitfall</td><td>Large LLM payloads fill up workflow history. Inngest bills per step, so retries and multi-model calls add up.</td></tr>
-          <tr><td>For us</td><td><b>The ledger plus sweeper we designed is a hand-built version of this.</b> Pick an engine instead of writing it: the human spec approval becomes a signal or awaited event, and the sweeper becomes built-in retries. Store spec, diff and test report as files and pass references, not contents, through the engine.</td></tr>
-        </tbody>
-      </table></div>
-
-      <div class="tcard" id="r2-spec"><table>
-        <thead><tr><th colspan="2">Spec-driven development</th></tr></thead>
-        <tbody>
-          <tr><td>Finding</td><td>Every major coding tool now ships a spec workflow. GitHub Spec Kit runs constitution → specify → clarify → plan → tasks → implement, writing a markdown file at each step. Kiro produces requirements, design and a task list. Critics call it "waterfall 2.0" when specs get heavy.</td></tr>
-          <tr><td>For us</td><td><b>Your scout/spec stage is this pattern.</b> Borrow two pieces: a <b>clarify step</b>, where the scout lists open questions before you approve, and a <b>constitution</b>, the project rules every spec must respect (your AGENTS.md). Keep specs to one page so approval stays fast.</td></tr>
-        </tbody>
-      </table></div>
-
-      <div class="tcard"><table>
-        <thead><tr><th colspan="2">Multi-agent coding pipelines</th></tr></thead>
-        <tbody>
-          <tr><td>Finding</td><td>Practitioners and one arXiv paper found file-based handoffs work better than agents messaging each other. The tester should write and run tests but not fix code; one author says false positives disappeared after that split. Use a different model to review than to write. A research pipeline caps revision loops at 3 rounds. A figure attributed to Anthropic, which we couldn't verify, puts multi-agent systems at about 15× the tokens of chat.</td></tr>
-          <tr><td>For us</td><td><b>Confirms the playbook</b>: output handoffs, a tester that can't edit source, a separate reviewer and loops capped at 3. Expect real token cost, so track cost per ticket from day one.</td></tr>
-        </tbody>
-      </table></div>
-
-      <div class="tcard" id="r2-claude"><table>
-        <thead><tr><th colspan="2">Claude Code: subagents, agent teams, worktrees</th></tr></thead>
-        <tbody>
-          <tr><td>Finding</td><td>Subagents delegate one way and share no state. Agent teams add peer messaging and a shared task list, but are described as experimental and about 7× the tokens of a normal session. <code>isolation: worktree</code> in a subagent's frontmatter gives it its own worktree. Guides report 4 to 8 parallel worktrees per developer. One note says <code>/resume</code> doesn't restore teammates. These come from third-party guides, so check them against Anthropic's docs.</td></tr>
-          <tr><td>For us</td><td><b>Use subagents with worktree isolation, one per ticket, started by code.</b> Skip agent teams for ticket batches. The resume gap is one more reason the ledger must live outside the agent session.</td></tr>
-        </tbody>
-      </table></div>
-
-      <div class="tcard"><table>
-        <thead><tr><th colspan="2">Evaluating on your own tickets</th></tr></thead>
-        <tbody>
-          <tr><td>Finding</td><td>Public SWE-bench is treated as a floor. Private replay of your own last ~50 merged PRs is the strongest signal, with tasks held out, fixed budgets, and scoring of the whole run rather than only the final diff. Final-state-only checks let many broken solutions pass in one benchmark study. SWE-Together adds scenarios where the user corrects the agent mid-task.</td></tr>
-          <tr><td>For us</td><td><b>Build the replay set from closed tickets with their merged PRs.</b> Score each stage (spec approved, first-pass tests, review verdict, cost), and include tickets where you rejected the first spec, so the clarify and rewrite path gets tested too.</td></tr>
-        </tbody>
-      </table></div>
-    </section>
-
-    <section>
-      <h2>Open questions for your setup</h2>
-      <ul class="finds">
-        <li>Is your orchestrator an LLM agent or code, and does it page through every ticket from the tracker?</li>
-        <li>Which tracker (Jira, Linear, GitHub issues) and which runtime (Claude Code subagents, LangGraph, custom)?</li>
-        <li>Where do runs log today, so the console can show real data instead of samples?</li>
-      </ul>
-    </section>
-
-    <section>
-      <h2>Sources</h2>
-      <ol class="srcs">
-        <li><a href="https://www.braintrust.dev/articles/best-ai-agent-observability-tools-2026" target="_blank" rel="noopener">Braintrust: best AI agent observability tools 2026</a></li>
-        <li><a href="https://www.braintrust.dev/articles/agent-observability-complete-guide-2026" target="_blank" rel="noopener">Braintrust: agent observability guide 2026</a></li>
-        <li><a href="https://futureagi.com/blog/trace-debug-multi-agent-systems-observability-guide/" target="_blank" rel="noopener">Future AGI: multi-agent tracing 2026</a></li>
-        <li><a href="https://latitude.so/blog/15-ai-agent-observability-platforms-2026-agentic-complexity" target="_blank" rel="noopener">Latitude: 15 agent observability platforms</a></li>
-        <li><a href="https://www.confident-ai.com/knowledge-base/compare/best-ai-agent-observability-tools-2026" target="_blank" rel="noopener">Confident AI: top agent observability platforms</a></li>
-        <li><a href="https://montecarlo.ai/blog-agent-observability-tools" target="_blank" rel="noopener">Monte Carlo: agent observability tools</a></li>
-        <li><a href="https://laminar.sh/article/top-6-agent-observability-platforms" target="_blank" rel="noopener">Laminar: top agent observability platforms</a></li>
-        <li><a href="https://laminar.sh/blog/2026-02-13-laminar-vs-langfuse-why-we-prefer-laminar" target="_blank" rel="noopener">Laminar vs Langfuse</a></li>
-        <li><a href="https://aimultiple.com/agentic-monitoring" target="_blank" rel="noopener">AIMultiple: agentic monitoring</a></li>
-        <li><a href="https://www.langchain.com/blog/interrupt-2026-overview" target="_blank" rel="noopener">LangChain: Interrupt 2026 overview</a></li>
-        <li><a href="https://blog.langchain.com/insights-agent-multiturn-evals-langsmith" target="_blank" rel="noopener">LangChain: Insights Agent and multi-turn evals</a></li>
-        <li><a href="https://www.langchain.com/blog/langsmith-engine-agents-fine-tuning-trajectories" target="_blank" rel="noopener">LangChain: Engine and Trajectories</a></li>
-        <li><a href="https://docs.langchain.com/langsmith/changelog.md" target="_blank" rel="noopener">LangSmith changelog</a></li>
-        <li><a href="https://docs.langchain.com/langsmith/use-studio" target="_blank" rel="noopener">LangGraph Studio docs</a></li>
-        <li><a href="https://langfuse.com/changelog/2026-07-13-graph-view-modes.md" target="_blank" rel="noopener">Langfuse: graph view modes (July 2026)</a></li>
-        <li><a href="https://langfuse.com/blog/2026-07-31-langfuse-july-update" target="_blank" rel="noopener">Langfuse July 2026 update</a></li>
-        <li><a href="https://langfuse.com/changelog/2026-08-28-responsive-timeline" target="_blank" rel="noopener">Langfuse: responsive timeline (Aug 2026)</a></li>
-        <li><a href="https://langfuse.com/docs/observability/features/agent-graphs.md" target="_blank" rel="noopener">Langfuse: agent graphs docs</a></li>
-        <li><a href="https://www.honeycomb.io/platform/agent-timeline" target="_blank" rel="noopener">Honeycomb: Agent Timeline</a></li>
-        <li><a href="https://www.honeycomb.io/blog/agent-timeline-flight-recorder-for-your-ai-agents" target="_blank" rel="noopener">Honeycomb: agent timeline blog</a></li>
-        <li><a href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" target="_blank" rel="noopener">OpenTelemetry GenAI semantic conventions</a></li>
-        <li><a href="https://cadenya.com/other-content/durable-execution-for-ai-agents" target="_blank" rel="noopener">Cadenya: durable execution for AI agents compared</a></li>
-        <li><a href="https://comuvia.ai/articles/durable-execution-for-ai-agents-temporal-vs-inngest-vs-restate-vs-prefect" target="_blank" rel="noopener">Comuvia: Temporal vs Inngest vs Restate vs Prefect</a></li>
-        <li><a href="https://appscale.blog/en/blog/durable-execution-llm-agents-temporal-langgraph-checkpointing-2026" target="_blank" rel="noopener">AppScale: Temporal + LangGraph checkpointing</a></li>
-        <li><a href="https://particula.tech/blog/durable-execution-ai-agents-temporal-inngest-restate" target="_blank" rel="noopener">Particula: durable execution for agents</a></li>
-        <li><a href="https://zylos.ai/research/2026-04-27-durable-execution-agent-runtimes/" target="_blank" rel="noopener">Zylos: durable execution for agent runtimes</a></li>
-        <li><a href="https://turion.ai/blog/temporal-vs-restate-vs-hatchet-vs-inngest-durable-execution-agents-2026/" target="_blank" rel="noopener">Turion: Temporal vs Restate vs Hatchet vs Inngest</a></li>
-        <li><a href="https://www.diagrid.io/infrastructure/10-best-temporal-alternatives-2026" target="_blank" rel="noopener">Diagrid: Temporal alternatives 2026</a></li>
-        <li><a href="https://www.augmentcode.com/tools/best-spec-driven-development-tools" target="_blank" rel="noopener">Augment: spec-driven development tools</a></li>
-        <li><a href="https://dev.to/krlz/spec-driven-development-in-2026-what-it-is-the-tooling-and-how-teams-actually-use-it-2fk2" target="_blank" rel="noopener">DEV: spec-driven development in 2026</a></li>
-        <li><a href="https://dev.to/alexcloudstar/spec-driven-development-in-2026-the-future-of-ai-coding-or-waterfall-20-2mfg" target="_blank" rel="noopener">DEV: SDD, future or waterfall 2.0?</a></li>
-        <li><a href="https://omidsaffari.com/blog/spec-driven-development" target="_blank" rel="noopener">Spec Kit and Kiro compared</a></li>
-        <li><a href="https://ricardolara.dev/blog/multi-agent-ai-development-pipeline/" target="_blank" rel="noopener">A multi-agent AI development pipeline</a></li>
-        <li><a href="https://dev.to/madebymonogram/how-to-engineer-a-multi-agent-pipeline-for-production-reliability-1n2p" target="_blank" rel="noopener">DEV: multi-agent pipeline reliability</a></li>
-        <li><a href="https://www.augmentcode.com/guides/single-agent-vs-multi-agent-ai" target="_blank" rel="noopener">Augment: single vs multi-agent</a></li>
-        <li><a href="https://arxiv.org/pdf/2507.19902" target="_blank" rel="noopener">AgentMesh (arXiv)</a></li>
-        <li><a href="https://aq.dev/guides/claude-code-agent-teams/" target="_blank" rel="noopener">Claude Code agent teams vs parallel sessions</a></li>
-        <li><a href="https://www.claudedirectory.org/blog/claude-code-worktrees-guide" target="_blank" rel="noopener">Claude Code worktrees guide</a></li>
-        <li><a href="https://www.mindstudio.ai/blog/claude-code-agent-teams-shared-task-list" target="_blank" rel="noopener">Claude Code shared task list</a></li>
-        <li><a href="https://futureagi.com/blog/evaluating-coding-agents-2026/" target="_blank" rel="noopener">Future AGI: evaluating coding agents</a></li>
-        <li><a href="https://www.appliedtechnologyindex.com/research/2026-comparative-analysis-coding-agent-evaluation-harnesses-after-swe-bench/" target="_blank" rel="noopener">Eval harnesses after SWE-bench saturation</a></li>
-        <li><a href="https://arxiv.org/pdf/2606.29957" target="_blank" rel="noopener">SWE-Together (arXiv)</a></li>
-        <li><a href="https://arxiv.org/pdf/2605.17829" target="_blank" rel="noopener">Interactive evaluation requires a design science (arXiv)</a></li>
-        <li><a href="https://code.claude.com/docs/en/skills" target="_blank" rel="noopener">Claude Code docs: skills</a></li>
-        <li><a href="https://code.claude.com/docs/en/sub-agents" target="_blank" rel="noopener">Claude Code docs: subagents</a></li>
-        <li><a href="https://code.claude.com/docs/en/hooks" target="_blank" rel="noopener">Claude Code docs: hooks</a></li>
-        <li><a href="https://code.claude.com/docs/en/routines" target="_blank" rel="noopener">Claude Code docs: scheduled tasks</a></li>
-        <li><a href="https://computingforgeeks.com/claude-code-dot-claude-directory-guide/" target="_blank" rel="noopener">The .claude directory guide</a></li>
-        <li><a href="https://github.com/shanraisshan/claude-code-best-practice" target="_blank" rel="noopener">claude-code-best-practice (GitHub)</a></li>
-        <li><a href="https://www.morphllm.com/claude-code-github-actions" target="_blank" rel="noopener">Claude Code GitHub Actions guide</a></li>
-        <li><a href="https://www.alexdunlop.com/writing/claude-code-scheduled-tasks" target="_blank" rel="noopener">Scheduled tasks vs routines: what each runs and bills</a></li>
-        <li><a href="https://www.mpt.solutions/the-five-hooks-that-change-how-you-ship-with-claude-code/" target="_blank" rel="noopener">Five hooks that change how you ship</a></li>
-        <li><a href="https://dev.to/nimay_04/rag-is-not-always-the-answer-anymore-how-ai-agents-search-code-in-2026-43m3" target="_blank" rel="noopener">DEV: how AI agents search code in 2026</a></li>
-        <li><a href="https://buzzgrewal.medium.com/ai-agents-dont-need-vector-search-anymore-inside-the-agentic-search-stack-replacing-rag-in-2026-58efcabe4f6f" target="_blank" rel="noopener">Inside the agentic search stack</a></li>
-        <li><a href="https://github.com/steveash/hitchhikers-guide-to-ai-native-engineering/issues/3546" target="_blank" rel="noopener">Agentic traversal vs RAG index (debate)</a></li>
-        <li><a href="https://arxiv.org/pdf/2510.04905" target="_blank" rel="noopener">Retrieval-augmented code generation survey (arXiv)</a></li>
-        <li><a href="https://www.morphllm.com/agentic-search" target="_blank" rel="noopener">Morph: agentic search</a></li>
-        <li><a href="https://atlan.com/know/advanced-rag-techniques/" target="_blank" rel="noopener">Atlan: advanced RAG techniques</a></li>
-        <li><a href="https://arxiv.org/pdf/2404.01037" target="_blank" rel="noopener">ARAGOG (arXiv)</a></li>
-        <li><a href="https://www.turingpost.com/p/ragtypes" target="_blank" rel="noopener">Turing Post: RAG types</a></li>
-        <li><a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents" target="_blank" rel="noopener">Anthropic: effective context engineering</a></li>
-        <li><a href="https://www.morphllm.com/context-engineering" target="_blank" rel="noopener">Morph: context engineering</a></li>
-        <li><a href="https://arxiv.org/pdf/2608.22752" target="_blank" rel="noopener">The compaction cliff (arXiv)</a></li>
-        <li><a href="https://code.claude.com/docs/en/plugins/org" target="_blank" rel="noopener">Claude Code docs: plugins for organizations</a></li>
-        <li><a href="https://claude.com/docs/plugins/admin" target="_blank" rel="noopener">Claude docs: manage plugins for your organization</a></li>
-        <li><a href="https://www.developersdigest.tech/blog/claude-code-plugins-for-teams-2026" target="_blank" rel="noopener">Plugins for teams: share, require, lock down</a></li>
-        <li><a href="https://rootly.com/blog/how-engineering-leaders-rethink-code-review-in-the-ai-era" target="_blank" rel="noopener">Rootly: nobody wants to review 1,000 lines</a></li>
-        <li><a href="https://www.optinode.com.tr/en/blog/ai-written-code-review-bottleneck-lessons" target="_blank" rel="noopener">How Claude Code's team reviews AI code</a></li>
-        <li><a href="https://www.kore1.com/ai-code-review-engineering-teams/" target="_blank" rel="noopener">KORE1: AI code review for teams</a></li>
-        <li><a href="https://www.swarmia.com/blog/should-humans-still-review-code/" target="_blank" rel="noopener">Swarmia: should humans still review code?</a></li>
-        <li><a href="https://www.cio.com/article/4134741/how-agentic-ai-will-reshape-engineering-workflows-in-2026.html" target="_blank" rel="noopener">CIO: agentic AI and engineering workflows</a></li>
-        <li><a href="https://arxiv.org/pdf/2608.14611" target="_blank" rel="noopener">2026 Singapore Consensus on AI safety (arXiv)</a></li>
-        <li><a href="https://arxiv.org/pdf/2607.23438" target="_blank" rel="noopener">Separating capability from permission (arXiv)</a></li>
-        <li><a href="https://arxiv.org/pdf/2604.08224" target="_blank" rel="noopener">Externalization in LLM agents (arXiv)</a></li>
-        <li><a href="https://arxiv.org/pdf/2604.04604" target="_blank" rel="noopener">AI agents under EU law (arXiv)</a></li>
-        <li><a href="https://www.digitalapplied.com/blog/agentic-ai-regulated-industries-oversight-patterns" target="_blank" rel="noopener">Five oversight patterns in regulated industries</a></li>
-        <li><a href="https://www.arthur.ai/column/human-in-the-loop-governance-for-ai-agents" target="_blank" rel="noopener">Arthur: human-in-the-loop governance</a></li>
-        <li><a href="https://arxiv.org/html/2610.11179v1" target="_blank" rel="noopener">Who pays the review cost? (arXiv)</a></li>
-        <li><a href="https://arxiv.org/pdf/2605.02273" target="_blank" rel="noopener">How humans review AI-generated PRs (arXiv)</a></li>
-        <li><a href="https://blog.codacy.com/ai-breaking-code-review-how-engineering-teams-survive-pr-bottleneck" target="_blank" rel="noopener">Codacy: AI is breaking code review</a></li>
-        <li><a href="https://factory.com/articles/reviewing-agent-generated-pull-requests" target="_blank" rel="noopener">Factory: reviewing agent PRs at scale</a></li>
-        <li><a href="https://atomicrobot.com/blog/ai-review-fatigue/" target="_blank" rel="noopener">Atomic Robot: AI review fatigue</a></li>
-        <li><a href="https://www.aipolicydesk.com/blog/ai-generated-pull-request-review-policy-2026" target="_blank" rel="noopener">AI Policy Desk: AI PR review policy</a></li>
-        <li><a href="https://medium.com/engineering-playbook/i-reviewed-100-ai-generated-pull-requests-the-same-5-problems-kept-appearing-76f3f41f2953" target="_blank" rel="noopener">I reviewed 100 AI-generated PRs</a></li>
-        <li><a href="https://atlan.com/know/ai-agent/ai-agent-skills/what-are-agent-skills/" target="_blank" rel="noopener">Atlan: Agent Skills explained</a></li>
-        <li><a href="https://github.com/agentskills/agentskills/discussions/415" target="_blank" rel="noopener">SemVer proposal for Agent Skills</a></li>
-        <li><a href="https://mlflow.org/blog/evaluating-improving-agent-skills/" target="_blank" rel="noopener">MLflow: evaluating agent skills</a></li>
-        <li><a href="https://futureagi.com/blog/agent-skill-regression-testing/" target="_blank" rel="noopener">Future AGI: skill regression testing</a></li>
-        <li><a href="https://arxiv.org/pdf/2603.28815" target="_blank" rel="noopener">SkillTester (arXiv)</a></li>
-        <li><a href="https://arxiv.org/pdf/2603.00195" target="_blank" rel="noopener">Supply chain security for agent skills (arXiv)</a></li>
-        <li><a href="https://arxiv.org/pdf/2607.09065" target="_blank" rel="noopener">Inside the skill market (arXiv)</a></li>
+    <section id="dz-first">
+      <h2>Our first step</h2>
+      <ol class="order">
+        <li><div><b>Put a drift gate on this site</b><span>Save <code>dembrandt … --dtcg</code> output for the research blog as a baseline, then run <code>--compare</code> in the build. A layout change that quietly shifts a colour or radius fails the build instead of reaching Pages. It is exact, cheap and needs no model.</span></div></li>
+        <li><div><b>Give UI tickets a reference step</b><span>For tickets that touch a page, the scout pulls 2–3 references (Awwwards MCP) and the spec records which part each one is for: layout from one, motion from another. That is what fixed the bland first version in the video.</span></div></li>
+        <li><div><b>Keep the two-width check, and automate it</b><span>We already verify at ~1470px and 400px by hand. Wire the same screenshots into the tester stage, so a phone overflow fails the ticket like a failing test.</span></div></li>
       </ol>
     </section>
-  </section>
 
-  <!-- ============ LEARN ============ -->
-  <section class="view" id="v-learn" hidden>
-    <div class="vhead"><div><h1>OpenTelemetry</h1><p>The open standard that lets one agent trace show up in any of these dashboards.</p></div></div>
-    <section class="panel"><div class="pbody prose">
-      <p><b>OpenTelemetry (OTel)</b> is an open-source, vendor-neutral standard for telemetry: traces, metrics and logs. It is a CNCF project with SDKs for Python, JS, Go, Java and more. Your code records what happened. An exporter ships that data over the <b>OTLP</b> protocol to whichever backend you pick. If you switch vendors, you change the exporter and leave your code alone.</p>
-      <p>For agents, the useful part is <b>tracing</b>. One run of the graph is a <b>trace</b>. Every node, model call and tool call inside it is a <b>span</b> with a start time, a duration, a parent and attributes. The <b>GenAI semantic conventions</b> standardize attribute names such as <code>gen_ai.request.model</code> and <code>gen_ai.usage.input_tokens</code>, so Langfuse, Phoenix, LangSmith or Datadog can all read cost and token usage the same way.</p>
-    </div></section>
-    <section class="panel">
-      <div class="phead"><span class="label">How data flows</span></div>
-      <div class="pbody pipe">
-        <div><b>Your agent</b><span>LangGraph + OTel SDK, or auto-instrumentation (OpenLLMetry, OpenInference)</span></div>
-        <div class="arr">→</div>
-        <div><b>OTLP export</b><span>Spans batched over gRPC or HTTP</span></div>
-        <div class="arr">→</div>
-        <div><b>Collector</b> <span>Optional. Sampling, PII redaction, fan-out to several backends</span></div>
-        <div class="arr">→</div>
-        <div><b>Backend</b><span>Langfuse · Phoenix · LangSmith · Jaeger · Datadog · Grafana Tempo</span></div>
-      </div>
-    </section>
-    <div class="cols2">
-      <section class="panel">
-        <div class="phead"><span class="label">Minimal Python span</span></div>
-        <div class="pbody"><pre class="code">from opentelemetry import trace
-
-tracer = trace.get_tracer("refund_agent")
-
-def researcher(state):
-    with tracer.start_as_current_span("chat claude-sonnet-5-5") as span:
-        span.set_attribute("gen_ai.operation.name", "chat")
-        span.set_attribute("gen_ai.request.model", "claude-sonnet-5-5")
-        resp = llm.invoke(state["messages"])
-        usage = resp.usage_metadata
-        span.set_attribute("gen_ai.usage.input_tokens", usage["input_tokens"])
-        span.set_attribute("gen_ai.usage.output_tokens", usage["output_tokens"])
-        return {"messages": [resp]}</pre></div>
-      </section>
-      <section class="panel">
-        <div class="phead"><span class="label">Glossary</span></div>
-        <div class="pbody"><dl class="gloss">
-          <dt>trace</dt><dd>One end-to-end run, such as a full graph invocation.</dd>
-          <dt>span</dt><dd>One timed step inside a trace. Spans nest into a tree.</dd>
-          <dt>attribute</dt><dd>A key/value fact on a span: model, tokens, tool name.</dd>
-          <dt>exporter</dt><dd>Sends spans out of your process, usually over OTLP.</dd>
-          <dt>collector</dt><dd>A standalone service that receives, filters and forwards telemetry.</dd>
-          <dt>context</dt><dd>The trace id carried across calls and services so spans join up.</dd>
-        </dl></div>
-      </section>
-    </div>
-    <section class="panel">
-      <div class="phead"><span class="label">Field guide · real agent dashboards worth studying</span></div>
-      <div class="guide">
-        <a href="https://smith.langchain.com" target="_blank" rel="noopener"><b>LangSmith</b><span>Trace trees, run waterfalls, datasets and online evals for LangChain/LangGraph.</span></a>
-        <a href="https://langchain-ai.github.io/langgraph/concepts/langgraph_studio/" target="_blank" rel="noopener"><b>LangGraph Studio</b><span>Live graph view, step-through, state editing and interrupts.</span></a>
-        <a href="https://langfuse.com" target="_blank" rel="noopener"><b>Langfuse</b><span>Open-source tracing, cost dashboards and prompt versions. Accepts OTLP.</span></a>
-        <a href="https://phoenix.arize.com" target="_blank" rel="noopener"><b>Arize Phoenix</b><span>OTel-native traces, span inspection and eval runs.</span></a>
-        <a href="https://www.agentops.ai" target="_blank" rel="noopener"><b>AgentOps</b><span>Session replays and multi-agent timelines.</span></a>
-        <a href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" target="_blank" rel="noopener"><b>OTel GenAI conventions</b><span>The spec for gen_ai.* span names and attributes.</span></a>
-      </div>
+    <section id="dz-src">
+      <h2>Sources</h2>
+      <ul class="or-src">
+        <li><a href="https://www.youtube.com/watch?v=NZjjmf3I6I4" target="_blank" rel="noopener">AI Labs: 6 trending GitHub AI design repos</a> (sponsored by Cline; the demos used open-weight models through ClinePass)</li>
+        <li><a href="https://github.com/INSANE0777/Awwwards-mcp" target="_blank" rel="noopener">INSANE0777/Awwwards-mcp</a>: tools incl. <code>verify_build</code>, <code>compare_sites</code>, <code>record_site_motion</code></li>
+        <li><a href="https://github.com/responsively-org/responsively-app" target="_blank" rel="noopener">responsively-org/responsively-app</a></li>
+        <li><a href="https://github.com/AThevon/genjutsu" target="_blank" rel="noopener">AThevon/genjutsu</a>: <code>cast</code>, <code>paint</code>, <code>bunshin</code></li>
+        <li><a href="https://github.com/dembrandt/dembrandt" target="_blank" rel="noopener">dembrandt/dembrandt</a> and <a href="https://github.com/dembrandt/dembrandt-skills" target="_blank" rel="noopener">dembrandt-skills</a>: <code>--design-md</code>, <code>--compare</code> drift gate</li>
+        <li><a href="https://github.com/ParthJadhav/app-store-screenshots" target="_blank" rel="noopener">ParthJadhav/app-store-screenshots</a></li>
+        <li><a href="https://github.com/latent-spaces/brag" target="_blank" rel="noopener">latent-spaces/brag</a>: <code>/brag</code> (Hyperframes) and <code>/brag-slim</code></li>
+      </ul>
+      <p class="sp-small">Star counts and licenses read from GitHub on 23 Oct 2026. Scores and timings inside the scenes are illustrative unless the caption says they come from the video.</p>
     </section>
   </section>
+
   <nav class="rs-next" id="rsNext" aria-label="Next post"></nav>
+  </article>
+  <aside class="rs-rail" id="rsRail" aria-label="About this post"></aside>
+  </div>
 </main>
 <footer class="rs-foot"><a href="../">agent-factory-lab</a> · <a href="../console/">Console</a> · <a href="https://github.com/omarjesusperezortiz/agent-factory-lab" target="_blank" rel="noopener">GitHub</a></footer>
 
@@ -2636,7 +2721,7 @@ The system SHALL keep a session for 30 days when the user ticks "Remember me".
       run:(t, el) => {
         t(() => on(el, '[data-s="1"]'), 100); t(() => on(el, '[data-s="2"]'), 800); t(() => on(el, '[data-s="3"]'), 1500);
         const sp = el.querySelectorAll('.spec'), sg = el.querySelectorAll('.segs i');
-        sp.forEach((s, i) => { t(() => s.classList.add('run'), 1900 + i * 550); t(() => { s.classList.remove('run'); s.classList.add('on'); sg[i].classList.add('on'); }, 2300 + i * 550); });
+        sp.forEach((s, i) => { t(() => s.classList.add('busy'), 1900 + i * 550); t(() => { s.classList.remove('busy'); s.classList.add('on'); sg[i].classList.add('on'); }, 2300 + i * 550); });
         t(() => count($('v2tm'), 160, 3300, v => `${Math.floor(v / 60)}h ${String(v % 60).padStart(2, '0')}m`), 1900);
         t(() => on(el, '[data-s="9"]'), 5400);
         return 6200;
@@ -2756,14 +2841,154 @@ Branch per start-task, draft PR, a person merges. Report the branch and PR URL.`
   setHo('file');
 })();
 
+// Design tools post: six scenes, one running example (the Skillbay landing page from the video)
+(() => {
+  const stage = document.getElementById('dzStage'); if (!stage) return;
+  const $ = id => document.getElementById(id);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const on = (el, sel) => el.querySelectorAll(sel).forEach(n => n.classList.add('on'));
+  const count = (node, to, ms, fmt = v => v) => {
+    if (reduced) { node.textContent = fmt(to); return; }
+    const t0 = performance.now(), from = +node.dataset.v || 0;
+    const f = now => { const p = Math.min(1, (now - t0) / ms), v = Math.round(from + (to - from) * p); node.textContent = fmt(v); if (p < 1) requestAnimationFrame(f); else node.dataset.v = to; };
+    requestAnimationFrame(f);
+  };
+  const win = url => `<div class="dz-wh"><i></i><i></i><i></i><span>${url}</span></div>`;
+  const M = '<svg class="dz-mascot" viewBox="0 0 11 8" aria-hidden="true"><path fill="#d97757" d="M2 0h7v1h1v1h1v2h-1v1H9v1H2V5H1V4H0V2h1V1h1zm1 2v2h1V2zm4 0v2h1V2zM2 6h1v2H2zm2 0h1v2H4zm2 0h1v2H6zm2 0h1v2H8z"/></svg>';
+  const page = (v2 = false) => `<div class="dz-pg${v2 ? ' dz-v2' : ''}"><i class="dz-h1"></i><i class="dz-h2"></i><i class="dz-btn"></i><div class="dz-tiles"><i></i><i></i><i></i></div><i></i><i class="dz-h2"></i></div>`;
+
+  const SCENES = [
+    { k:'References', cap:'<p><b>Give the agent real sites to study, not adjectives.</b> Awwwards MCP searches award-winning sites, returns screenshots and each site\'s design details, and can record how a page moves. In the video, layout came from one site (Wispr Flow) and motion from another (butter.video), and the bland first version came back with real animation.</p><small>One reference was not enough; they had to mix parts from several. The score below is illustrative: <code>verify_build</code> rates a build 0–100 against its reference.</small>',
+      html:() => `<div class="dz-row" style="gap:26px">
+        <div class="dz-refs">${[['Site of the Day', 'awwwards.com · 4.59 / 10', '#2a2018'], ['Wispr Flow', 'layout: the product in the page', '#1d2b3a'], ['butter.video', 'motion: scroll + hover', '#2b1d33']]
+          .map(([n, s, c]) => `<div class="dz-vc dz-ref"><b>${n}</b><small>${s}</small><span class="dz-sw" style="background:linear-gradient(120deg, ${c}, #111)"></span></div>`).join('')}</div>
+        <div class="dz-vc dz-agent dz-vi" data-s="2">${M}<b>agent</b><span class="dz-mu dz-mono">+ awwwards-mcp</span></div>
+        <div style="display:grid;gap:10px;justify-items:center">
+          <div class="dz-vc dz-page">${win('skillbay.dev · <span id="dzVer">v1</span>')}${page()}</div>
+          <div class="dz-score dz-vi" data-s="4"><span class="dz-pl">verify_build <b class="dz-mono" id="dzScore">0</b></span><span class="dz-pl dz-gr" id="dzVerdict">pass</span></div>
+        </div></div>`,
+      run:(t, el) => {
+        t(() => el.querySelector('.dz-pg').style.opacity = '.75', 100);
+        el.querySelectorAll('.dz-ref').forEach((r, i) => t(() => r.classList.add('on'), 600 + i * 450));
+        t(() => on(el, '[data-s="2"]'), 1700);
+        t(() => { el.querySelector('.dz-pg').classList.add('dz-v2'); el.querySelector('.dz-pg').style.opacity = '1'; $('dzVer').textContent = 'v2'; }, 2700);
+        t(() => { on(el, '[data-s="4"]'); count($('dzScore'), 86, 900); }, 3200);
+        return 4400;
+      } },
+
+    { k:'Every screen', cap:'<p><b>The agent checks every screen size, not just the laptop.</b> Responsively shows the page at several sizes side by side, and its MCP server sends the agent a screenshot of each one, so it can find what breaks on a phone, fix it and check again.</p><small>We already check 1470px and 400px by hand with Playwright; this automates the same idea inside the agent\'s loop.</small>',
+      html:() => `<div style="display:grid;gap:18px;justify-items:center">
+        <div class="dz-devs">${[['dz-phone', 'iPhone · 390'], ['dz-tab', 'iPad · 820'], ['dz-lap', 'MacBook · 1440']].map(([c, n]) => `<div class="dz-dev ${c}">
+          <div class="dz-scr"><b>Teach your agent anything.</b><i style="width:80%"></i><i style="width:60%"></i><i class="dz-cta"></i><i style="width:90%"></i><i style="width:70%"></i></div>
+          <span class="dz-flag"></span><span class="dz-shot"></span><small>${n}</small></div>`).join('')}</div>
+        <div class="dz-pl dz-vi" data-s="3"><span class="dz-mono">responsively_screenshot</span><span class="dz-mu" id="dzFix">3 views</span></div></div>`,
+      run:(t, el) => {
+        const devs = [...el.querySelectorAll('.dz-dev')], ph = el.querySelector('.dz-phone');
+        t(() => on(el, '[data-s="3"]'), 200);
+        devs.forEach((d, i) => t(() => { const s = d.querySelector('.dz-shot'); s.classList.remove('on'); void s.offsetWidth; s.classList.add('on'); }, 600 + i * 350));
+        t(() => { ph.classList.add('bad'); ph.querySelector('.dz-flag').textContent = '!'; devs.slice(1).forEach(d => { d.classList.add('dz-good'); d.querySelector('.dz-flag').textContent = '✓'; }); $('dzFix').textContent = 'headline overflows on the phone'; }, 1800);
+        t(() => { ph.querySelector('.dz-scr b').style.fontSize = '9px'; ph.querySelector('.dz-scr b').style.whiteSpace = 'normal'; $('dzFix').textContent = 'fix: wrap the headline under 480px'; }, 3000);
+        t(() => { const s = ph.querySelector('.dz-shot'); s.classList.remove('on'); void s.offsetWidth; s.classList.add('on'); }, 3700);
+        t(() => { ph.classList.remove('bad'); ph.classList.add('dz-good'); ph.querySelector('.dz-flag').textContent = '✓'; $('dzFix').textContent = '3 of 3 views fit'; }, 4000);
+        return 4800;
+      } },
+
+    { k:'Taste as a team', cap:'<p><b>A lead sets one shared style; subagents build pages in parallel; reviewers send problems back.</b> Genjutsu\'s Bunshin skill gives each page to a helper agent, then refinement rounds stop when only minor issues are left, when the round limit is hit, or when a round fixes nothing.</p><small>It states its cost and asks twice before it runs. In the video it shone with an illustrative style; with a minimal style the result still looked like a typical AI page.</small>',
+      html:() => {
+        const pages = ['Home', 'Skills', 'Pricing', 'Docs', 'Blog', 'About'];
+        return `<div class="dz-row" style="gap:34px">
+          <div class="dz-ring">
+            <div class="dz-vc dz-hub">${M}<b>bunshin</b><span class="dz-mu">SKILL.md</span><span class="dz-co">shared style</span></div>
+            ${pages.map((p, i) => { const a = -Math.PI / 2 + i * 2 * Math.PI / pages.length; return `<div class="dz-vc dz-sub" style="left:${50 + 41 * Math.cos(a)}%;top:${50 + 41 * Math.sin(a)}%">${M}<span>${p}</span></div>`; }).join('')}
+          </div>
+          <div class="dz-vc dz-ref2 dz-vi" data-s="2"><h4>Refinement <span class="dz-pl" style="padding:2px 9px;font-size:11px" id="dzRound">round 0</span></h4>
+            <div class="dz-bars">${[9, 3, 1, 0].map((n, i) => `<div><span>${n || ''}</span><i class="${i === 2 ? 'dz-minor' : ''}" data-h="${n * 10}"></i><span>${i + 1}</span></div>`).join('')}</div>
+            <div class="dz-stops"><span data-k="minor">Only minor issues</span><span>Round limit hit</span><span>No fixes in a round</span></div></div></div>`;
+      },
+      run:(t, el) => {
+        const subs = [...el.querySelectorAll('.dz-sub')], bars = [...el.querySelectorAll('.dz-bars i')];
+        subs.forEach((s, i) => t(() => s.classList.add('on', 'busy'), 300 + i * 180));
+        subs.forEach((s, i) => t(() => { s.classList.remove('busy'); s.classList.add('done'); }, 1600 + i * 120));
+        t(() => on(el, '[data-s="2"]'), 2000);
+        bars.slice(0, 3).forEach((b, i) => t(() => { b.style.height = b.dataset.h + 'px'; $('dzRound').textContent = 'round ' + (i + 1); }, 2400 + i * 700));
+        t(() => el.querySelector('[data-k="minor"]').classList.add('on'), 4600);
+        return 5400;
+      } },
+
+    { k:'Lock the style', cap:'<p><b>Pull the exact tokens instead of guessing from a screenshot, then fail the build when they drift.</b> Dembrandt renders a page and reads its real colours, type, spacing and radii into <code>DESIGN.md</code>. Later, <code>--compare</code> against the saved baseline exits 1 when an edit moved a token.</p><small>Tokens here are Gumroad\'s, as in the video. The drift (#FFC900 → #FFB000) is our example of what the gate catches.</small>',
+      html:() => `<div class="dz-row" style="gap:20px">
+        <div class="dz-vc dz-term">${win('terminal')}<div class="dz-b"><div><span class="dz-mu">›</span> <span id="dzCmd"></span></div><div id="dzOut" class="dz-mu"></div></div></div>
+        <div class="dz-vc dz-md">${win('DESIGN.md')}<div class="dz-b">${[['primary', '#FFC900'], ['secondary', '#F1F333'], ['tertiary', '#FF90E8'], ['surface', '#FFFFFF'], ['font', 'ABC Favorit'], ['spacing', '8px'], ['radius', '4px']]
+          .map(([k, v]) => `<div class="dz-ln" data-k="${k}">${v.startsWith('#') ? `<i style="background:${v}"></i>` : '<span class="dz-mu">·</span>'}<span>${k}:</span><b data-v>${v}</b></div>`).join('')}</div></div>
+        <div class="dz-vc dz-gum dz-vi" data-s="3">${win('skillbay.dev')}<div class="dz-pg"><b>Learn the skill you keep <mark>meaning</mark> to learn</b><i style="width:80%;background:#ddd"></i><span class="dz-st"></span></div></div></div>`,
+      run:(t, el) => {
+        const type = (s, at) => [...s].forEach((_, i) => t(() => { $('dzCmd').textContent = s.slice(0, i + 1); }, at + i * 28));
+        type('dembrandt gumroad.com --design-md', 200);
+        el.querySelectorAll('.dz-ln').forEach((l, i) => t(() => l.classList.add('on'), 1300 + i * 150));
+        t(() => { $('dzOut').textContent = '7 tokens → DESIGN.md'; on(el, '[data-s="3"]'); }, 2400);
+        t(() => { $('dzCmd').textContent = ''; $('dzOut').textContent = ''; }, 3300);
+        type('dembrandt skillbay.dev --compare baseline.json', 3400);
+        t(() => { const l = el.querySelector('[data-k="primary"]'); l.classList.add('bad'); l.querySelector('[data-v]').textContent = '#FFC900 → #FFB000'; l.querySelector('i').style.background = '#FFB000'; el.querySelector('.dz-gum').classList.add('drift');
+          $('dzOut').innerHTML = '<span class="dz-rd">drift: 1 token moved · exit 1 · build blocked</span>'; }, 4900);
+        return 5800;
+      } },
+
+    { k:'Ship it', cap:'<p><b>The agent reads the project and plans a ~20 second launch video.</b> Brag turns the app\'s own design and copy into a storyboard of timed shots, renders an MP4 and writes a post to go with it. <code>/brag-slim</code> leaves more creative choices to bigger models, and did better in the video.</p><small>Watch out: it can rebuild screens and add clicks that never happened, so a person checks every shot against the real app. App Store Screenshots does the same for store images.</small>',
+      html:() => `<div class="dz-row" style="gap:24px">
+        <div class="dz-vc dz-board">${win('brag-plan.md')}<div class="dz-b">${[['Hook', '3.4s'], ['Browse skills', '4.6s'], ['Install in one click', '4.8s'], ['Your agent uses it', '4.6s']]
+          .map(([n, s], i) => `<div class="dz-shotrow${i === 2 ? ' dz-flagged' : ''}"><span class="dz-th"></span><span>${n}</span><span class="dz-mono">${s}</span></div>`).join('')}</div></div>
+        <div class="dz-vc dz-tl dz-vi" data-s="1"><div style="display:flex;justify-content:space-between"><b>launch.mp4</b><span class="dz-mono dz-mu"><span id="dzSec">0.0</span> / 20s</span></div>
+          <div class="dz-track"><i></i><i></i><i></i><i></i></div>
+          <div class="dz-modes"><span class="dz-pl" data-m="full">/brag · Hyperframes</span><span class="dz-pl" data-m="slim">/brag-slim</span></div>
+          <div class="dz-warn dz-vi" data-s="2">Shot 3 shows an "Install" click the landing page cannot do. Check it against the real app before posting.</div></div></div>`,
+      run:(t, el) => {
+        const rows = [...el.querySelectorAll('.dz-shotrow')], segs = [...el.querySelectorAll('.dz-track i')], secs = [3.4, 4.6, 4.8, 4.6];
+        t(() => on(el, '[data-s="1"]'), 200);
+        t(() => el.querySelector('[data-m="full"]').classList.add('on'), 400);
+        rows.forEach((r, i) => t(() => { r.classList.add('on'); segs[i].style.width = (secs[i] / 20 * 100) + '%'; $('dzSec').textContent = secs.slice(0, i + 1).reduce((a, b) => a + b, 0).toFixed(1); }, 700 + i * 550));
+        t(() => { el.querySelector('[data-m="full"]').classList.remove('on'); el.querySelector('[data-m="slim"]').classList.add('on'); }, 3200);
+        t(() => { rows[2].classList.add('bad'); on(el, '[data-s="2"]'); }, 3800);
+        return 4800;
+      } },
+
+    { k:'Our design line', cap:'<p><b>Read the six repos as stages of our ticket pipeline.</b> References feed the scout, <code>DESIGN.md</code> goes into the spec, the worker builds with a taste skill, and the tester runs exact checks (screen sizes, drift gate, reference score) before the outside reviewer judges.</p><small>Green tags mark exact checks that need no model. Launch assets come last, after a person has merged.</small>',
+      html:() => `<div style="display:grid;gap:22px;justify-items:center">
+        <div class="dz-line">${[['scout', 'reads the ticket and the repo', 'Awwwards MCP: references'], ['spec', 'writes intent', 'Dembrandt: DESIGN.md'], ['worker', 'builds the page', 'Genjutsu: cast / paint'],
+          ['tester', 'runs it for real', 'Responsively · drift gate · verify_build', 1], ['reviewer', 'outside model judges', 'rubric + screenshots'], ['launch', 'after you merge', 'Brag · store images']]
+          .map(([n, s, tool, exact]) => `<div class="dz-vc dz-stg"><b>${n}</b><small>${s}</small><span class="dz-tool">${tool}</span>${exact ? '<span class="dz-ex">exact</span>' : ''}</div>`).join('')}</div>
+        <div class="dz-vc dz-meter"><span>Design checks</span><div class="dz-segs">${[0, 0, 0, 0, 1, 0].map(l => `<i class="${l ? 'dz-llm' : ''}"></i>`).join('')}</div><span class="dz-pl dz-mono" style="padding:3px 10px"><span id="dzDone">0</span> / 6</span></div></div>`,
+      run:(t, el) => {
+        const st = [...el.querySelectorAll('.dz-stg')], sg = [...el.querySelectorAll('.dz-segs i')];
+        st.forEach((s, i) => { t(() => s.classList.add('busy'), 300 + i * 650); t(() => { s.classList.remove('busy'); s.classList.add('done'); sg[i].classList.add('on'); $('dzDone').textContent = i + 1; }, 750 + i * 650); });
+        return 4900;
+      } },
+  ];
+
+  let cur = 0, auto = false, timers = [];
+  const clear = () => { timers.forEach(clearTimeout); timers = []; };
+  $('dzSteps').innerHTML = SCENES.map((s, i) => `<button type="button" data-i="${i}">${i + 1}. ${s.k}</button>`).join('');
+  function show(i) {
+    clear(); cur = i; const s = SCENES[i];
+    $('dzSteps').querySelectorAll('button').forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
+    stage.innerHTML = s.html(); $('dzCap').innerHTML = s.cap;
+    const t = (fn, ms) => timers.push(setTimeout(fn, reduced ? 0 : ms));
+    const end = s.run(t, stage);
+    if (auto) t(() => i < SCENES.length - 1 ? show(i + 1) : stop(), end + 2200);
+  }
+  function stop() { auto = false; $('dzPlay').textContent = '▶ Play all'; }
+  $('dzSteps').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { stop(); show(+b.dataset.i); } });
+  $('dzPlay').addEventListener('click', () => { if (auto) { stop(); clear(); return; } auto = true; $('dzPlay').textContent = '❚❚ Pause'; show(cur === SCENES.length - 1 ? 0 : cur); });
+  show(0);
+})();
+
 // ---- Research blog: home, posts, video feed and explainers ----
 const $ = s => document.querySelector(s);
 const SITE = 'https://omarjesusperezortiz.github.io/agent-factory-lab/';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c]);
 const strip = h => (h || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
 // newest first; the first entry is the pinned "start here" post
-const POSTS = [['research', 'Start here'], ['amb', 'Prompting'], ['know', 'Knowledge'], ['orch', 'Orchestration'], ['spec', 'Specs'],
-  ['iceberg', 'Concepts'], ['teams', 'Teams'], ['rag', 'Retrieval'], ['devsetup', 'Setup'], ['harness', 'Harness'], ['flow', 'Orchestration'], ['learn', 'Observability']]
+const POSTS = [['design', 'Design'], ['amb', 'Workflow'], ['know', 'Context & memory'], ['orch', 'Orchestration'], ['spec', 'Workflow'],
+  ['iceberg', 'Concepts'], ['teams', 'Orchestration'], ['rag', 'Context & memory'], ['devsetup', 'Setup & tooling'], ['harness', 'Workflow'], ['flow', 'Orchestration']]
   .map(([id, cat]) => {
     const v = document.getElementById('v-' + id);
     const lede = v.querySelector('.lede') || v.querySelector('.vhead p');
@@ -2773,20 +2998,66 @@ const POSTS = [['research', 'Start here'], ['amb', 'Prompting'], ['know', 'Knowl
 const POST_IDS = POSTS.map(p => p.id);
 const VIEWS = ['home', 'videos', ...POST_IDS];
 
-function card(p) {
-  return `<a class="rs-card" href="#${p.id}"><small>${esc(p.cat)}</small><b>${esc(p.title)}</b><span>${esc(p.lede)}</span><em>${p.round ? esc(p.round) + ' · ' : ''}read →</em></a>`;
+// thumbnails are YouTube-style title cards made from each post's own diagram (research/thumbs/<id>.jpg)
+const thumb = p => `<img loading="lazy" alt="" src="thumbs/${p.id}.jpg" width="960" height="540">`;
+const mins = p => Math.max(2, Math.round((document.getElementById('v-' + p.id).textContent.match(/\S+/g) || []).length / 230));
+const featured = POSTS.slice(0, 3), rest = POSTS.slice(3);
+$('#rsFeatured').innerHTML = featured.map(p => `<a class="rs-fc" href="#${p.id}">${thumb(p)}<small>${esc(p.cat)}</small><b>${esc(p.title)}</b><span>${esc(p.lede)}</span></a>`).join('');
+const row = p => `<a class="rs-row" href="#${p.id}">${thumb(p)}<small>${esc(p.cat)}</small><b>${esc(p.title)}</b><span>${esc(p.lede)}</span><em>${p.round ? esc(p.round) + ' · ' : ''}${mins(p)} min read</em></a>`;
+const TOPICS = [...new Set(POSTS.map(p => p.cat))];
+function renderList(topic) {
+  const list = topic ? POSTS.filter(p => p.cat === topic) : rest;
+  $('#v-home').classList.toggle('rs-filtered', !!topic);
+  $('#rsListTitle').innerHTML = topic ? `${esc(topic)}<a href="#">all articles</a>` : 'All articles';
+  $('#rsPosts').innerHTML = list.map(row).join('');
+  $('#rsPostCount').textContent = (topic ? list.length : POSTS.length) + (list.length === 1 && topic ? ' article' : ' articles');
 }
-const [pin, ...rest] = POSTS;
-$('#rsFeature').href = '#' + pin.id;
-$('#rsFeature').innerHTML = `<small>${esc(pin.cat)}</small><b>${esc(pin.title)}</b><span>${esc(pin.lede)}</span>`;
-$('#rsPosts').innerHTML = rest.map(card).join('');
-$('#rsPostCount').textContent = rest.length + ' posts';
+renderList('');
+
+// ---- Topics menu ----
+const topicsBtn = $('#rsTopicsBtn'), menu = $('#rsMenu');
+menu.innerHTML = `<a href="#">All articles <span>${POSTS.length}</span></a><hr>` +
+  TOPICS.map(t => `<a href="#topic/${encodeURIComponent(t)}">${esc(t)} <span>${POSTS.filter(p => p.cat === t).length}</span></a>`).join('');
+const setMenu = open => { menu.hidden = !open; topicsBtn.setAttribute('aria-expanded', String(open)); };
+topicsBtn.addEventListener('click', e => { e.stopPropagation(); setMenu(menu.hidden); });
+menu.addEventListener('click', () => setMenu(false));
+document.addEventListener('click', e => { if (!e.target.closest('.rs-dd')) setMenu(false); });
+addEventListener('keydown', e => { if (e.key === 'Escape' && !menu.hidden) { setMenu(false); topicsBtn.focus(); } });
+
+// ---- post table of contents + scroll-in reveal ----
+const toc = $('#rsToc');
+let tocIO = null;
+const revealIO = 'IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches
+  ? new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('rs-in'); revealIO.unobserve(e.target); } }), { rootMargin:'0px 0px -8% 0px' }) : null;
+function buildToc(sec) {
+  tocIO?.disconnect();
+  const parts = [...sec.querySelectorAll(':scope > section')].map((s2, i) => {
+    const h = s2.querySelector('h2'); if (!h) return null;
+    if (!s2.id) s2.id = sec.id.slice(2) + '-s' + (i + 1);
+    return { id:s2.id, title:strip(h.innerHTML), el:s2 };
+  }).filter(Boolean);
+  postWrap.classList.toggle('no-toc', parts.length < 2);
+  toc.innerHTML = `<b>On this page</b><ol>${parts.map(x => `<li><a href="#${x.id}" data-id="${x.id}">${esc(x.title)}</a></li>`).join('')}</ol>`;
+  const links = Object.fromEntries([...toc.querySelectorAll('a')].map(a => [a.dataset.id, a]));
+  tocIO = new IntersectionObserver(es => {
+    const vis = es.filter(e => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+    if (vis) Object.values(links).forEach(a => a.classList.toggle('on', a.dataset.id === vis.target.id));
+  }, { rootMargin:'-15% 0px -70% 0px' });
+  parts.forEach(x => tocIO.observe(x.el));
+}
+function reveal(sec) {
+  if (!revealIO || sec.dataset.rv) return;
+  sec.dataset.rv = '1';
+  sec.querySelectorAll(':scope > section > *, :scope > figure, :scope > .figs').forEach(el => { el.classList.add('rs-rv'); revealIO.observe(el); });
+}
 
 // ---- video feed (videos/index.json, written by the daily job) ----
 let vdRows = null, vdTag = '', vdBase = '';
 // page is "<folder>/" (an explainer under videos/) or "../#tab" (a post here)
 const vdHref = r => !r.page ? '' : r.page.startsWith('../#') ? r.page.slice(3) : '#videos/' + r.page.replace(/\/$/, '');
 const yt = r => `https://www.youtube.com/watch?v=${esc(r.id)}`;
+// a video always opens here first: its explainer when it has one, otherwise our own page with the summary and player
+const vdTarget = r => r.page ? vdHref(r) : '#videos/v/' + encodeURIComponent(r.id);
 async function vdLoad() {
   if (vdRows) return vdRows;
   // On GitHub Pages the file is one folder up; in an Artifact, fetch it from the live site
@@ -2800,17 +3071,17 @@ async function vdLoad() {
   // only tags shared by 2+ videos make useful filters
   const n = {}; vdRows.forEach(r => (r.tags || []).forEach(t => { n[t] = (n[t] || 0) + 1; }));
   $('#vdTags').innerHTML = ['', ...Object.keys(n).filter(t => n[t] > 1).sort()].map(t => `<button type="button" data-t="${esc(t)}">${t ? '#' + esc(t) : 'all'}</button>`).join('');
-  $('#rsVids').innerHTML = vdRows.length ? vdRows.slice(0, 3).map(r => `<a class="rs-card" href="${r.page ? vdHref(r) : yt(r)}"${r.page ? '' : ' target="_blank" rel="noopener"'}>
-      <img loading="lazy" alt="" src="https://i.ytimg.com/vi/${esc(r.id)}/mqdefault.jpg"><small>${esc(r.channel)} · ${esc(r.date)}</small><b>${esc(r.title)}</b><span>${esc(r.summary)}</span><em>${r.page ? 'animated explainer →' : 'watch on YouTube ↗'}</em></a>`).join('')
+  $('#rsVids').innerHTML = vdRows.length ? vdRows.slice(0, 3).map(r => `<a class="rs-card" href="${vdTarget(r)}">
+      <img loading="lazy" alt="" src="https://i.ytimg.com/vi/${esc(r.id)}/mqdefault.jpg"><small>${esc(r.channel)} · ${esc(r.date)}</small><b>${esc(r.title)}</b><span>${esc(r.summary)}</span><em>${r.page ? 'animated explainer →' : 'summary and video →'}</em></a>`).join('')
     : `<div class="vd-empty">The feed couldn't load here. <a href="${SITE}research/#videos" target="_blank" rel="noopener">Open it on the live site ↗</a></div>`;
   return vdRows;
 }
 function vdRender() {
   if (!vdRows.length) { $('#vdList').innerHTML = `<div class="vd-empty">The feed couldn't load here. <a href="${SITE}research/#videos" target="_blank" rel="noopener">Open it on the live site ↗</a></div>`; return; }
   $('#vdList').innerHTML = vdRows.filter(r => !vdTag || (r.tags || []).includes(vdTag)).map(r => `<article class="vd-card">
-      <a href="${r.page ? vdHref(r) : yt(r)}"${r.page ? '' : ' target="_blank" rel="noopener"'}><img loading="lazy" alt="" src="https://i.ytimg.com/vi/${esc(r.id)}/mqdefault.jpg"></a>
+      <a href="${vdTarget(r)}"><img loading="lazy" alt="" src="https://i.ytimg.com/vi/${esc(r.id)}/mqdefault.jpg"></a>
       <div>
-        <h2><a href="${yt(r)}" target="_blank" rel="noopener">${esc(r.title)}</a></h2>
+        <h2><a href="${vdTarget(r)}">${esc(r.title)}</a></h2>
         <div class="vd-meta"><span>${esc(r.channel)}</span><time>${esc(r.date)}</time>
           <span class="vd-score" title="Relevance ${r.score}/5" aria-label="Relevance ${r.score} of 5">${[1,2,3,4,5].map(n => `<i class="${n <= r.score ? 'on' : ''}"></i>`).join('')}</span></div>
         <p>${esc(r.summary)}</p>
@@ -2826,6 +3097,19 @@ $('#vdTags').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   vdTag = b.dataset.t === vdTag ? '' : b.dataset.t; vdRender();
 });
+function showVideoPage(id) {
+  const r = vdRows.find(x => x.id === id);
+  const el = $('#vdVideo');
+  if (!r) { el.innerHTML = '<p class="vd-note">That video isn\'t in the feed. <a href="#videos">All videos</a></p>'; return; }
+  el.innerHTML = `<div class="vd-bar"><a href="#videos">← All videos</a><a href="${yt(r)}" target="_blank" rel="noopener">Open on YouTube ↗</a></div>
+    <h1>${esc(r.title)}</h1>
+    <div class="vd-meta"><span>${esc(r.channel)}</span><time>${esc(r.date)}</time>
+      <span class="vd-score" title="Relevance ${r.score}/5" aria-label="Relevance ${r.score} of 5">${[1,2,3,4,5].map(n => `<i class="${n <= r.score ? 'on' : ''}"></i>`).join('')}</span></div>
+    <p>${esc(r.summary)}</p>
+    <div class="vd-links">${(r.tags || []).map(t => `<span class="vd-chip">#${esc(t)}</span>`).join('')}</div>
+    <div class="vd-embed"><iframe src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(r.id)}" title="${esc(r.title)}" allow="encrypted-media; picture-in-picture; fullscreen" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+    <p class="vd-note">${r.score >= 4 && !r.explainer_failed ? 'An animated explainer for this one is coming in a daily run.' : 'This video scored below 4, so it has a summary but no animated explainer.'}</p>`;
+}
 // Same-origin frame (GitHub Pages): drop the explainer's own back links and grow the frame to its content
 $('#vdFrame').addEventListener('load', () => {
   const f = $('#vdFrame'); let d; try { d = f.contentDocument; } catch { return; }
@@ -2835,24 +3119,57 @@ $('#vdFrame').addEventListener('load', () => {
   fit(); new ResizeObserver(fit).observe(d.body);
 });
 
+
+// ---- details track: post facts + related articles ----
+const rail = $('#rsRail'), postWrap = $('#rsPost');
+function buildRail(post) {
+  const i = POSTS.indexOf(post), pinned = false;
+  const rel = [...POSTS.filter(p => p !== post && p.cat === post.cat), ...POSTS.slice(i + 1), ...POSTS.slice(0, i)]
+    .filter((p, k, a) => p !== post && a.indexOf(p) === k).slice(0, 3);
+  rail.innerHTML = `<div class="rs-box"><dl><dt>Published</dt><dd>Oct 2026</dd>${post.round ? `<dt>Round</dt><dd>${esc(post.round.replace(/^round/i, '').trim())}</dd>` : ''}
+      <dt>Topic</dt><dd>${pinned ? 'All topics' : `<a href="#topic/${encodeURIComponent(post.cat)}">${esc(post.cat)}</a>`}</dd><dt>Reading</dt><dd>${mins(post)} min</dd></dl></div>
+    <div class="rs-box"><div class="rs-rhead"><h3>Related articles</h3><svg class="rs-dots" viewBox="0 0 120 44" aria-hidden="true"><line x1="10" y1="30" x2="38" y2="22"/><line x1="38" y1="22" x2="62" y2="10"/><line x1="38" y1="22" x2="72" y2="28"/><line x1="72" y1="28" x2="106" y2="34"/>
+      <circle cx="10" cy="30" r="5"/><circle cx="38" cy="22" r="6"/><circle cx="62" cy="10" r="4.5"/><circle cx="72" cy="28" r="5"/><circle cx="106" cy="34" r="5.5"/></svg></div>
+      <div class="rs-rels">${rel.map(p => `<a class="rs-rel" href="#${p.id}">${thumb(p)}<b>${esc(p.title)}</b></a>`).join('')}</div>
+      <a class="rs-more" href="${pinned ? '#' : '#topic/' + encodeURIComponent(post.cat)}">${pinned ? 'All articles' : 'More in ' + esc(post.cat)} →</a></div>`;
+  rail.classList.remove('rs-show');
+  requestAnimationFrame(() => requestAnimationFrame(() => rail.classList.add('rs-show')));
+}
+
 // ---- routing ----
 const back = $('#rsBack'), next = $('#rsNext');
 function show(v) {
   for (const id of VIEWS) document.getElementById('v-' + id).hidden = id !== v;
-  document.querySelectorAll('.rs-top nav a[data-r]').forEach(a => a.dataset.r === (POST_IDS.includes(v) ? 'home' : v) ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
+  const navKey = POST_IDS.includes(v) ? 'home' : v === 'home' && location.hash.startsWith('#topic/') ? 'topic' : v;
+  document.querySelectorAll('.rs-top [data-r]').forEach(a => a.dataset.r === navKey ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
   const post = POSTS.find(p => p.id === v);
   back.classList.toggle('on', !!post); next.classList.toggle('on', !!post);
+  postWrap.hidden = !post;
+  document.body.classList.toggle('rs-wide', !!post);
   if (post) {
     const sec = document.getElementById('v-' + v);
-    sec.before(back); sec.after(next);
     $('#rsCat').textContent = post.cat;
     const i = POSTS.indexOf(post), nx = POSTS[(i + 1) % POSTS.length];
     next.innerHTML = `<a href="#${nx.id}"><small>Next post · ${esc(nx.cat)}</small><b>${esc(nx.title)} →</b></a>`;
-  }
+    buildToc(sec); reveal(sec); buildRail(post);
+  } else tocIO?.disconnect();
   document.title = (post ? post.title + ' · ' : v === 'videos' ? 'Videos · ' : '') + 'Research · Agent Factory Lab';
 }
 async function route() {
   const h = decodeURIComponent(location.hash.slice(1));
+  // the OpenTelemetry notes moved to the console (they explain its traces, not the factory)
+  if (h === 'learn') { location.replace('../console/#learn'); return; }
+  if (h === 'research') { location.replace('#'); return; } // "Start here" was removed
+  if (h.startsWith('videos/v/')) {
+    show('videos'); $('#vdFeed').hidden = true; $('#vdPlayer').hidden = true; $('#vdVideo').hidden = false; $('#vdFrame').removeAttribute('src'); scrollTo(0, 0);
+    await vdLoad(); showVideoPage(h.slice(9));
+    return;
+  }
+  if (h.startsWith('topic/')) {
+    show('home'); renderList(h.slice(6)); vdLoad(); scrollTo(0, 0);
+    return;
+  }
+  $('#vdVideo').hidden = true; $('#vdVideo').innerHTML = ''; // stops an embedded video
   if (h.startsWith('videos/')) {
     const folder = h.slice(7);
     show('videos'); $('#vdFeed').hidden = true; $('#vdPlayer').hidden = false; scrollTo(0, 0);
@@ -2870,7 +3187,7 @@ async function route() {
   const v = host ? host.id.slice(2) : VIEWS.includes(h) ? h : 'home';
   show(v);
   if (v === 'videos') { $('#vdFeed').hidden = false; $('#vdPlayer').hidden = true; $('#vdFrame').removeAttribute('src'); await vdLoad(); vdRender(); }
-  if (v === 'home') vdLoad();
+  if (v === 'home') { renderList(''); vdLoad(); }
   if (host) target.scrollIntoView(); else scrollTo(0, 0);
 }
 addEventListener('hashchange', route);

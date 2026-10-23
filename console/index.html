@@ -674,6 +674,35 @@ pre.diff .del { background:color-mix(in srgb, var(--err) 14%, transparent); colo
 @media (max-width:900px) { .vd-side, .nv-list { display:flex; gap:2px; } .vd-side a { padding:7px 8px; max-width:200px; }
   .nv-toggle { white-space:nowrap; padding:7px 8px; border-radius:7px; } .nv-toggle .label { display:inline; padding:0; } }
 @media (max-width:620px) { .vd-card { grid-template-columns:minmax(0,1fr); } }
+
+/* workflow toggle (.wk-) and building-block chips on graph nodes */
+.wk-bar { display:grid; gap:8px; }
+.wk-seg { flex-wrap:wrap; justify-self:start; max-width:100%; }
+.wk-seg button span { margin-left:6px; font:11px var(--mono); color:var(--muted); }
+.wk-seg button[aria-pressed="true"] span { color:inherit; }
+.wk-about { margin:0; font-size:13px; color:var(--muted); line-height:1.5; }
+.wk-about b { color:var(--fg); margin-right:4px; }
+.wk-about .wk-good { color:var(--ok); } .wk-about .wk-bad { color:var(--tool); }
+.wk-about a { color:var(--accent); white-space:nowrap; }
+.run .wk-tag { grid-column:1 / -1; justify-self:start; font:10.5px var(--mono); color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:1px 8px; margin-top:2px; }
+.k-code { fill:var(--c4); }
+.blk rect { fill:var(--panel); stroke-width:1; }
+.blk text { font:600 9.5px var(--mono); }
+.wk-blk b { display:inline-grid; place-items:center; width:15px; height:13px; border:1px solid; border-radius:3px; font:600 9px var(--mono); margin-right:5px; }
+
+/* playback controls live in the graph card's header */
+.graphpanel .phead { flex-wrap:wrap; gap:8px 12px; }
+.graphpanel .phead .actions { flex-wrap:wrap; gap:8px; }
+.gp-speed { display:inline-flex; align-items:center; gap:6px; }
+.gp-speed select { padding:4px 6px; }
+
+/* card explanations (.pnote) and control tooltips (.tip) */
+.pnote { margin:0; padding:10px 14px; font-size:12.5px; line-height:1.5; color:var(--muted); border-bottom:1px solid var(--line); background:color-mix(in srgb, var(--panel2) 45%, transparent); }
+.tip { position:fixed; z-index:60; max-width:280px; padding:8px 11px; border-radius:8px; background:var(--fg); color:var(--bg); font-size:12.5px; line-height:1.45;
+  box-shadow:0 10px 30px rgba(0,0,0,.35); pointer-events:none; }
+.tip[hidden] { display:none; }
+@media (prefers-reduced-motion: no-preference) { .tip:not([hidden]) { animation:tipIn .14s ease-out; } }
+@keyframes tipIn { from { opacity:0; transform:translateY(3px); } }
 </style>
 
 <div class="app">
@@ -695,6 +724,10 @@ pre.diff .del { background:color-mix(in srgb, var(--err) 14%, transparent); colo
         <a class="nav" href="#prompts"><svg viewBox="0 0 16 16"><path d="M3 2.5h7l3 3v8H3z"/><path d="M5.5 7.5h5M5.5 10h3.5"/></svg>Prompts</a>
         <a class="nav" href="#costs"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M10 5.8C9.5 5.2 8.8 5 8 5 6.9 5 6 5.6 6 6.5s.9 1.2 2 1.5 2 .6 2 1.5-.9 1.5-2 1.5c-.8 0-1.6-.3-2-.9M8 3.8V5M8 11v1.2"/></svg>Costs</a>
       </div>
+      <div class="navgroup"><span class="label">Design notes</span>
+        <a class="nav" href="#notes"><svg viewBox="0 0 16 16"><path d="M4 1.5h5.5L13 5v9.5H4z"/><path d="M6.5 8h4M6.5 10.5h4M6.5 5.5h2"/></svg>Why it looks like this</a>
+        <a class="nav" href="#learn"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M2 8h12M8 2c2 2 2 10 0 12M8 2c-2 2-2 10 0 12"/></svg>OpenTelemetry</a>
+      </div>
       <div class="navgroup"><span class="label">Lab</span>
         <a class="nav" href="../"><svg viewBox="0 0 16 16"><path d="M2.5 7.5 8 3l5.5 4.5V13h-11z"/><path d="M6.5 13V9.5h3V13"/></svg>Home</a>
         <a class="nav" href="../research/"><svg viewBox="0 0 16 16"><path d="M2 3.5h4.5A1.5 1.5 0 0 1 8 5v8a1.5 1.5 0 0 0-1.5-1.5H2zM14 3.5H9.5A1.5 1.5 0 0 0 8 5v8a1.5 1.5 0 0 1 1.5-1.5H14z"/></svg>Research</a>
@@ -709,14 +742,13 @@ pre.diff .del { background:color-mix(in srgb, var(--err) 14%, transparent); colo
   <!-- ============ CONSOLE ============ -->
   <section class="view" id="v-console">
     <div class="vhead">
-      <div><h1>Console</h1><p>Watch the supervisor graph execute step by step. Click a run to inspect it, or start a new one.</p></div>
-      <div class="actions">
-        <label class="label" for="speed">Speed</label>
-        <select id="speed"><option value="1">1×</option><option value="2" selected>2×</option><option value="4">4×</option></select>
-        <button class="btn primary" id="runBtn">▶ Run graph</button>
-      </div>
+      <div><h1>Console</h1><p>Every run is a ticket moving through one of seven workflows. Pick a workflow to compare them, or click a run to replay it step by step.</p></div>
     </div>
     <div class="kpis" id="kpis" aria-label="Last 24 hours"></div>
+    <div class="wk-bar">
+      <div class="seg wk-seg" id="wkSeg" role="toolbar" aria-label="Workflow"></div>
+      <p class="wk-about" id="wkAbout" aria-live="polite"></p>
+    </div>
     <div class="cols">
       <section class="panel runpanel" aria-label="Runs">
         <div class="phead"><span class="label">Runs · <span id="runCount"></span></span>
@@ -726,12 +758,20 @@ pre.diff .del { background:color-mix(in srgb, var(--err) 14%, transparent); colo
       <section class="panel graphpanel" aria-label="Graph">
         <div class="phead"><span class="label">Graph · <span id="graphRun" class="mono"></span></span>
           <div class="actions"><span class="chip" id="graphStatus"></span>
+            <label class="gp-speed"><span class="label">Speed</span><select id="speed"><option value="1">1×</option><option value="2" selected>2×</option><option value="4">4×</option></select></label>
+            <button class="btn primary sm" id="runBtn" type="button">▶ New run</button>
             <div class="seg" id="graphSeg"><button aria-pressed="true" data-m="run" type="button">This run</button><button aria-pressed="false" data-m="agg" type="button">24h traffic</button></div></div></div>
         <div class="graph"><svg id="g" viewBox="0 0 890 445" role="img" aria-label="Supervisor graph: supervisor routes to researcher, coder and writer; workers use tools and report to a critic, which loops back or hands off to human review before END."></svg></div>
         <div class="legend">
-          <span><i style="background:var(--accent)"></i>LLM node</span>
-          <span><i style="background:var(--tool)"></i>Tool node</span>
-          <span><i style="background:var(--human)"></i>Human interrupt</span>
+          <span><i style="background:var(--accent)"></i>Agent</span>
+          <span><i style="background:var(--tool)"></i>Tool / CI</span>
+          <span><i style="background:var(--human)"></i>Human gate</span>
+          <span><i style="background:var(--c4)"></i>Code</span>
+          <span class="wk-blk"><b style="color:var(--accent);border-color:var(--accent)">S</b>skill</span>
+          <span class="wk-blk"><b style="color:var(--tool);border-color:var(--tool)">H</b>hook</span>
+          <span class="wk-blk"><b style="color:var(--human);border-color:var(--human)">§</b>OpenSpec</span>
+          <span class="wk-blk"><b style="color:var(--c4);border-color:var(--c4)">C</b>cron</span>
+          <span class="wk-blk"><b style="color:var(--c5);border-color:var(--c5)">W</b>worktree</span>
           <span><svg width="22" height="6"><path d="M0 3h22" stroke="var(--edge)" stroke-dasharray="5 4" stroke-width="1.5"/></svg>Conditional edge</span>
         </div>
         <div class="scrub">
@@ -918,6 +958,128 @@ pre.diff .del { background:color-mix(in srgb, var(--err) 14%, transparent); colo
       </section>
     </div>
   </section>
+
+  <!-- ============ DESIGN NOTES ============ -->
+  <section class="view doc" id="v-notes" hidden>
+    <div>
+      <div class="eyebrow">Design notes · Oct 2026</div>
+      <h1>Why the console looks like this</h1>
+      <p class="lede">The survey of 2026 agent dashboards behind this mockup: what they have in common, and which parts were built here. The research on the factory itself lives in the <a href="../research/">research blog</a>.</p>
+    </div>
+
+    <section>
+      <h2>Layout decision</h2>
+      <div class="tcard"><table>
+        <thead><tr><th>Question</th><th>Decision</th><th>Where</th></tr></thead>
+        <tbody>
+          <tr><td>Console layout</td><td>Sidebar, sticky runs column, graph with the inspector below it.</td><td><a href="#console">Console</a></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section>
+      <h2>What 2026 agent dashboards have in common</h2>
+      <ul class="finds">
+        <li><b>Conversation views of traces.</b> LangSmith added a Messages View (May) and Trajectories (Sept). Built here as the Messages tab. <small>LangChain</small></li>
+        <li><b>Failure clustering with suggested fixes.</b> LangSmith Engine clusters production failures and opens PRs with fixes. Built here as Issues with "Draft fix with Claude". <small>LangChain; a competitor criticised its lack of issue lifecycle</small></li>
+        <li><b>Two graph modes.</b> Langfuse (July) shows an aggregated structure view and a per-run execution view. Built here as "This run / 24h traffic". <small>Langfuse changelog</small></li>
+        <li><b>Service maps of agent → sub-agent → tool calls.</b> Monte Carlo, Datadog and New Relic all added them in early 2026. <small>vendor articles</small></li>
+        <li><b>Timelines that show parallel work.</b> Langfuse's timeline and Honeycomb's agent swim lanes with a "failures only" filter. Built here as Lanes and the runs filter. <small>Langfuse, Honeycomb</small></li>
+        <li><b>OpenTelemetry GenAI conventions</b> are reported as stable in 2026, so traces move between tools. <small>one vendor blog; unconfirmed</small></li>
+        <li><b>Trace-linked evals and datasets.</b> Several tools turn failing traces into eval datasets. Built here as "Create eval dataset". <small>Braintrust, Confident AI</small></li>
+        <li><b>Layout.</b> LangGraph Studio keeps the thread picker compact and gives the graph the space; its docs place threads at the top of the right pane. <small>LangChain docs</small></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Sources</h2>
+      <ol class="srcs">
+        <li><a href="https://www.braintrust.dev/articles/best-ai-agent-observability-tools-2026" target="_blank" rel="noopener">Braintrust: best AI agent observability tools 2026</a></li>
+        <li><a href="https://www.braintrust.dev/articles/agent-observability-complete-guide-2026" target="_blank" rel="noopener">Braintrust: agent observability guide 2026</a></li>
+        <li><a href="https://futureagi.com/blog/trace-debug-multi-agent-systems-observability-guide/" target="_blank" rel="noopener">Future AGI: multi-agent tracing 2026</a></li>
+        <li><a href="https://latitude.so/blog/15-ai-agent-observability-platforms-2026-agentic-complexity" target="_blank" rel="noopener">Latitude: 15 agent observability platforms</a></li>
+        <li><a href="https://www.confident-ai.com/knowledge-base/compare/best-ai-agent-observability-tools-2026" target="_blank" rel="noopener">Confident AI: top agent observability platforms</a></li>
+        <li><a href="https://montecarlo.ai/blog-agent-observability-tools" target="_blank" rel="noopener">Monte Carlo: agent observability tools</a></li>
+        <li><a href="https://laminar.sh/article/top-6-agent-observability-platforms" target="_blank" rel="noopener">Laminar: top agent observability platforms</a></li>
+        <li><a href="https://laminar.sh/blog/2026-02-13-laminar-vs-langfuse-why-we-prefer-laminar" target="_blank" rel="noopener">Laminar vs Langfuse</a></li>
+        <li><a href="https://aimultiple.com/agentic-monitoring" target="_blank" rel="noopener">AIMultiple: agentic monitoring</a></li>
+        <li><a href="https://www.langchain.com/blog/interrupt-2026-overview" target="_blank" rel="noopener">LangChain: Interrupt 2026 overview</a></li>
+        <li><a href="https://blog.langchain.com/insights-agent-multiturn-evals-langsmith" target="_blank" rel="noopener">LangChain: Insights Agent and multi-turn evals</a></li>
+        <li><a href="https://www.langchain.com/blog/langsmith-engine-agents-fine-tuning-trajectories" target="_blank" rel="noopener">LangChain: Engine and Trajectories</a></li>
+        <li><a href="https://docs.langchain.com/langsmith/changelog.md" target="_blank" rel="noopener">LangSmith changelog</a></li>
+        <li><a href="https://docs.langchain.com/langsmith/use-studio" target="_blank" rel="noopener">LangGraph Studio docs</a></li>
+        <li><a href="https://langfuse.com/changelog/2026-07-13-graph-view-modes.md" target="_blank" rel="noopener">Langfuse: graph view modes (July 2026)</a></li>
+        <li><a href="https://langfuse.com/blog/2026-07-31-langfuse-july-update" target="_blank" rel="noopener">Langfuse July 2026 update</a></li>
+        <li><a href="https://langfuse.com/changelog/2026-08-28-responsive-timeline" target="_blank" rel="noopener">Langfuse: responsive timeline (Aug 2026)</a></li>
+        <li><a href="https://langfuse.com/docs/observability/features/agent-graphs.md" target="_blank" rel="noopener">Langfuse: agent graphs docs</a></li>
+        <li><a href="https://www.honeycomb.io/platform/agent-timeline" target="_blank" rel="noopener">Honeycomb: Agent Timeline</a></li>
+        <li><a href="https://www.honeycomb.io/blog/agent-timeline-flight-recorder-for-your-ai-agents" target="_blank" rel="noopener">Honeycomb: agent timeline blog</a></li>
+        <li><a href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" target="_blank" rel="noopener">OpenTelemetry GenAI semantic conventions</a></li>
+      </ol>
+    </section>
+  </section>
+
+  <!-- ============ OPENTELEMETRY ============ -->
+  <section class="view" id="v-learn" hidden>
+    <div class="vhead"><div><h1>OpenTelemetry</h1><p>The open standard that lets one agent trace show up in any of these dashboards.</p></div></div>
+    <section class="panel"><div class="pbody prose">
+      <p><b>OpenTelemetry (OTel)</b> is an open-source, vendor-neutral standard for telemetry: traces, metrics and logs. It is a CNCF project with SDKs for Python, JS, Go, Java and more. Your code records what happened. An exporter ships that data over the <b>OTLP</b> protocol to whichever backend you pick. If you switch vendors, you change the exporter and leave your code alone.</p>
+      <p>For agents, the useful part is <b>tracing</b>. One run of the graph is a <b>trace</b>. Every node, model call and tool call inside it is a <b>span</b> with a start time, a duration, a parent and attributes. The <b>GenAI semantic conventions</b> standardize attribute names such as <code>gen_ai.request.model</code> and <code>gen_ai.usage.input_tokens</code>, so Langfuse, Phoenix, LangSmith or Datadog can all read cost and token usage the same way.</p>
+    </div></section>
+    <section class="panel">
+      <div class="phead"><span class="label">How data flows</span></div>
+      <div class="pbody pipe">
+        <div><b>Your agent</b><span>LangGraph + OTel SDK, or auto-instrumentation (OpenLLMetry, OpenInference)</span></div>
+        <div class="arr">→</div>
+        <div><b>OTLP export</b><span>Spans batched over gRPC or HTTP</span></div>
+        <div class="arr">→</div>
+        <div><b>Collector</b> <span>Optional. Sampling, PII redaction, fan-out to several backends</span></div>
+        <div class="arr">→</div>
+        <div><b>Backend</b><span>Langfuse · Phoenix · LangSmith · Jaeger · Datadog · Grafana Tempo</span></div>
+      </div>
+    </section>
+    <div class="cols2">
+      <section class="panel">
+        <div class="phead"><span class="label">Minimal Python span</span></div>
+        <div class="pbody"><pre class="code">from opentelemetry import trace
+
+tracer = trace.get_tracer("refund_agent")
+
+def researcher(state):
+    with tracer.start_as_current_span("chat claude-sonnet-5-5") as span:
+        span.set_attribute("gen_ai.operation.name", "chat")
+        span.set_attribute("gen_ai.request.model", "claude-sonnet-5-5")
+        resp = llm.invoke(state["messages"])
+        usage = resp.usage_metadata
+        span.set_attribute("gen_ai.usage.input_tokens", usage["input_tokens"])
+        span.set_attribute("gen_ai.usage.output_tokens", usage["output_tokens"])
+        return {"messages": [resp]}</pre></div>
+      </section>
+      <section class="panel">
+        <div class="phead"><span class="label">Glossary</span></div>
+        <div class="pbody"><dl class="gloss">
+          <dt>trace</dt><dd>One end-to-end run, such as a full graph invocation.</dd>
+          <dt>span</dt><dd>One timed step inside a trace. Spans nest into a tree.</dd>
+          <dt>attribute</dt><dd>A key/value fact on a span: model, tokens, tool name.</dd>
+          <dt>exporter</dt><dd>Sends spans out of your process, usually over OTLP.</dd>
+          <dt>collector</dt><dd>A standalone service that receives, filters and forwards telemetry.</dd>
+          <dt>context</dt><dd>The trace id carried across calls and services so spans join up.</dd>
+        </dl></div>
+      </section>
+    </div>
+    <section class="panel">
+      <div class="phead"><span class="label">Field guide · real agent dashboards worth studying</span></div>
+      <div class="guide">
+        <a href="https://smith.langchain.com" target="_blank" rel="noopener"><b>LangSmith</b><span>Trace trees, run waterfalls, datasets and online evals for LangChain/LangGraph.</span></a>
+        <a href="https://langchain-ai.github.io/langgraph/concepts/langgraph_studio/" target="_blank" rel="noopener"><b>LangGraph Studio</b><span>Live graph view, step-through, state editing and interrupts.</span></a>
+        <a href="https://langfuse.com" target="_blank" rel="noopener"><b>Langfuse</b><span>Open-source tracing, cost dashboards and prompt versions. Accepts OTLP.</span></a>
+        <a href="https://phoenix.arize.com" target="_blank" rel="noopener"><b>Arize Phoenix</b><span>OTel-native traces, span inspection and eval runs.</span></a>
+        <a href="https://www.agentops.ai" target="_blank" rel="noopener"><b>AgentOps</b><span>Session replays and multi-agent timelines.</span></a>
+        <a href="https://opentelemetry.io/docs/specs/semconv/gen-ai/" target="_blank" rel="noopener"><b>OTel GenAI conventions</b><span>The spec for gen_ai.* span names and attributes.</span></a>
+      </div>
+    </section>
+  </section>
+
 </div>
 <div class="toast" id="toast" hidden></div>
 <div class="palette" id="palette" hidden>
@@ -930,83 +1092,236 @@ pre.diff .del { background:color-mix(in srgb, var(--err) 14%, transparent); colo
 
 <script>
 const W = 132, H = 48;
-const N = {
-  start:      { x:56,  y:210, label:'START', kind:'term' },
-  supervisor: { x:210, y:210, label:'supervisor', sub:'opus-5.5 · router', kind:'llm' },
-  researcher: { x:410, y:80,  label:'researcher', sub:'sonnet-5.5', kind:'llm' },
-  coder:      { x:410, y:210, label:'coder', sub:'sonnet-5.5', kind:'llm' },
-  writer:     { x:410, y:340, label:'writer', sub:'haiku-5.5', kind:'llm' },
-  tools:      { x:620, y:80,  label:'tools', sub:'ToolNode · 4 tools', kind:'tool' },
-  critic:     { x:620, y:275, label:'critic', sub:'haiku-5.5 · rubric', kind:'llm' },
-  human:      { x:800, y:275, label:'human_review', sub:'interrupt()', kind:'human' },
-  end:        { x:800, y:395, label:'END', kind:'term' },
-};
-const MODEL = { supervisor:'claude-opus-5-5', researcher:'claude-sonnet-5-5', coder:'claude-sonnet-5-5', writer:'claude-haiku-5-5', critic:'claude-haiku-5-5' };
-const KCOLOR = { llm:'accent', tool:'tool', human:'human', control:'muted' };
-// [from, to, conditional, back-edge]
-const E = [['start','supervisor'],['supervisor','researcher',1],['supervisor','coder',1],['supervisor','writer',1],
-  ['researcher','tools'],['coder','tools'],['researcher','critic'],['coder','critic'],['writer','critic'],
-  ['critic','supervisor',1,1],['critic','human',1],['human','end']];
+const KCOLOR = { llm:'accent', tool:'tool', human:'human', code:'c4', control:'muted' };
+// Building blocks a node uses, drawn as chips under it: [glyph, colour token, name]
+const BLOCKS = { skill:['S', 'accent', 'skill'], hook:['H', 'tool', 'hook'], spec:['§', 'human', 'OpenSpec change'], cron:['C', 'c4', 'cron'], tree:['W', 'c5', 'git worktree'] };
 
-const STEPS = [
-  { n:'supervisor', d:820,  k:'llm',  tin:1840, tout:96,  ev:'route → researcher' },
-  { n:'researcher', d:1450, k:'llm',  tin:2310, tout:412, ev:'tool_call tavily_search("EU refund policy digital goods")' },
-  { n:'tools',      d:980,  k:'tool', ev:'tavily_search → 6 results, 2.1 kB' },
-  { n:'researcher', d:1120, k:'llm',  tin:4120, tout:388, ev:'findings drafted with 3 citations',
-    text:'Policy §4.2: digital goods are refundable within 14 days of purchase if downloaded no more than twice. Need order status and download count before answering.' },
-  { n:'critic',     d:640,  k:'llm',  tin:1520, tout:74,  score:0.62, ev:'score 0.62 → revise: order status unknown' },
-  { n:'supervisor', d:540,  k:'llm',  tin:2050, tout:58,  ev:'route → coder' },
-  { n:'coder',      d:1300, k:'llm',  tin:2890, tout:301, ev:'tool_call python_repl(lookup_order("A-10442"))' },
-  { n:'tools',      d:420,  k:'tool', ev:'python_repl → {status: "delivered", days: 9}' },
-  { n:'coder',      d:760,  k:'llm',  tin:3240, tout:142, ev:'order eligible: inside 14-day window' },
-  { n:'critic',     d:610,  k:'llm',  tin:1980, tout:66,  score:0.78, ev:'score 0.78 → revise: needs customer-facing reply' },
-  { n:'supervisor', d:480,  k:'llm',  tin:2210, tout:52,  ev:'route → writer' },
-  { n:'writer',     d:1180, k:'llm',  tin:2640, tout:236, ev:'reply composed, 164 words',
-    text:'Hi there, good news: your ebook order A-10442 qualifies for a full refund. You bought it 9 days ago, inside our 14-day window (Policy §4.2). I have started the refund to your original card, and it should arrive within 5 to 7 business days.' },
-  { n:'critic',     d:590,  k:'llm',  tin:1890, tout:61,  score:0.93, ev:'score 0.93 → pass' },
-  { n:'human',      d:1600, k:'human', ev:'interrupt → approved by lead@support' },
-  { n:'end',        d:0,    k:'control', ev:'run complete · reply sent' },
+// Each workflow is its own graph in a 890×445 box.
+// N: nodes (kind llm | tool | human | code | term; blocks: [[type, detail]]). E: [from, to, conditional, bow] (bow curves the edge, for loops).
+const WF = {
+  pipeline: { label:'Pipeline', agent:'ticket_pipeline', post:'flow',
+    about:'A fixed order written in code: scout → spec → you approve → worker → tester → reviewer → you merge, with bounded loops back.',
+    good:'Every ticket takes the same path, so nothing is skipped and each stage reads only what it needs.', breaks:'Rigid for work that does not fit the stages, like research spikes.',
+    N:{
+      start:    { x:50,  y:140, label:'TICKET', kind:'term' },
+      scout:    { x:175, y:140, label:'scout', sub:'sonnet-5.5 · reads repo', kind:'llm', model:'claude-sonnet-5-5', blocks:[['skill', 'repo-scout']] },
+      spec:     { x:345, y:140, label:'spec', sub:'opus-5.5 · writes intent', kind:'llm', model:'claude-opus-5-5', blocks:[['skill', 'spec-writer'], ['spec', 'openspec/changes/<ticket>/']] },
+      approve:  { x:515, y:140, label:'approve spec', sub:'you · spec_ready', kind:'human', blocks:[['spec', 'proposal.md + tasks.md']] },
+      worker:   { x:700, y:140, label:'worker', sub:'sonnet-5.5 · writes code', kind:'llm', model:'claude-sonnet-5-5', blocks:[['tree', 'one worktree per ticket'], ['hook', 'PreToolUse: no edits outside the app']] },
+      tester:   { x:700, y:330, label:'tester', sub:'CI · tests + lint', kind:'tool', blocks:[['hook', 'tester cannot edit src/']] },
+      reviewer: { x:515, y:330, label:'reviewer', sub:'other model · judge', kind:'llm', model:'gpt-5.5 (outside judge)', blocks:[['skill', 'review-rubric']] },
+      merge:    { x:345, y:330, label:'merge', sub:'you · PR review', kind:'human' },
+      end:      { x:175, y:330, label:'DONE', kind:'term' },
+    },
+    E:[['start', 'scout'], ['scout', 'spec'], ['spec', 'approve'], ['approve', 'worker'], ['worker', 'tester'], ['tester', 'reviewer'], ['reviewer', 'merge'], ['merge', 'end'],
+      ['approve', 'spec', 1, -46], ['tester', 'worker', 1, -58], ['reviewer', 'worker', 1, 34]] },
+
+  ledger: { label:'Ledger + headless', agent:'dispatch_loop', post:'orch',
+    about:'Code owns the list: a ledger row per ticket, a dispatch loop that starts one headless claude -p run per row, a reconcile check and a sweeper.',
+    good:'No ticket goes missing: reconcile compares assigned with finished, and the sweeper re-queues stuck rows.', breaks:'You write and run the loop yourself; crash recovery is only as good as your sweeper.',
+    N:{
+      tracker:   { x:80,  y:100, label:'tracker', sub:'GitHub issues', kind:'tool' },
+      cron:      { x:80,  y:250, label:'cron', sub:'every 2 min', kind:'code', blocks:[['cron', '*/2 * * * *']] },
+      sweeper:   { x:80,  y:390, label:'sweeper', sub:'every 10 min', kind:'code', blocks:[['cron', 're-queue rows stuck > 30 min']] },
+      ledger:    { x:270, y:100, label:'ledger', sub:'row per ticket', kind:'code' },
+      orch:      { x:270, y:250, label:'dispatch loop', sub:'orchestrator.py', kind:'code' },
+      runA:      { x:480, y:110, label:'run ENG-412', sub:'claude -p · sonnet', kind:'llm', model:'claude-sonnet-5-5', blocks:[['tree', 'worktree ENG-412'], ['skill', 'implement-task']] },
+      runB:      { x:480, y:250, label:'run ENG-421', sub:'claude -p · sonnet', kind:'llm', model:'claude-sonnet-5-5', blocks:[['tree', 'worktree ENG-421'], ['skill', 'implement-task']] },
+      runC:      { x:480, y:390, label:'run ENG-418', sub:'claude -p · sonnet', kind:'llm', model:'claude-sonnet-5-5', blocks:[['tree', 'worktree ENG-418'], ['skill', 'implement-task']] },
+      reconcile: { x:680, y:250, label:'reconcile', sub:'assigned = done?', kind:'code' },
+      triage:    { x:820, y:110, label:'triage', sub:'haiku · failures only', kind:'llm', model:'claude-haiku-5-5' },
+      end:       { x:820, y:390, label:'BATCH', kind:'term' },
+    },
+    E:[['tracker', 'ledger'], ['cron', 'orch'], ['ledger', 'orch'], ['orch', 'runA'], ['orch', 'runB'], ['orch', 'runC'], ['runA', 'reconcile'], ['runB', 'reconcile'], ['runC', 'reconcile'],
+      ['reconcile', 'triage', 1], ['reconcile', 'end'], ['triage', 'ledger', 1, -70], ['sweeper', 'ledger', 1, 40]] },
+
+  supervisor: { label:'Supervisor', agent:'supervisor_agent', post:'flow',
+    about:'One LLM keeps the ticket list in its prompt and decides who works next. The setup we are moving away from.',
+    good:'Flexible: it can improvise an order for odd tickets.', breaks:'The list lives in a context window, so tickets silently drop when it fills up or a page is never fetched.',
+    N:{
+      start:      { x:56,  y:222, label:'TICKETS', kind:'term' },
+      supervisor: { x:225, y:222, label:'supervisor', sub:'opus-5.5 · keeps the list', kind:'llm', model:'claude-opus-5-5' },
+      scout:      { x:440, y:90,  label:'scout', sub:'sonnet-5.5', kind:'llm', model:'claude-sonnet-5-5' },
+      worker:     { x:440, y:222, label:'worker', sub:'sonnet-5.5', kind:'llm', model:'claude-sonnet-5-5' },
+      tester:     { x:440, y:354, label:'tester', sub:'CI · tests', kind:'tool' },
+      reviewer:   { x:650, y:222, label:'reviewer', sub:'haiku-5.5', kind:'llm', model:'claude-haiku-5-5' },
+      end:        { x:820, y:222, label:'END', kind:'term' },
+    },
+    E:[['start', 'supervisor'], ['supervisor', 'scout', 1], ['supervisor', 'worker', 1], ['supervisor', 'tester', 1], ['scout', 'supervisor', 1, 30], ['worker', 'supervisor', 1, 24],
+      ['tester', 'supervisor', 1, -30], ['worker', 'reviewer'], ['reviewer', 'supervisor', 1, -90], ['supervisor', 'end', 1, -150]] },
+
+  fanout: { label:'Fan-out', agent:'fanout_planner', post:'orch',
+    about:'A planner splits one big ticket into independent tasks, workers run them in parallel worktrees, and a merge step joins the results.',
+    good:'Wall-clock time drops when the parts really are independent.', breaks:'Merge conflicts and duplicated work when the split was wrong.',
+    N:{
+      start:   { x:50,  y:222, label:'TICKET', kind:'term' },
+      planner: { x:180, y:222, label:'planner', sub:'opus-5.5 · splits work', kind:'llm', model:'claude-opus-5-5', blocks:[['spec', 'tasks.md with 3 parts']] },
+      w1:      { x:390, y:90,  label:'worker · api', sub:'sonnet-5.5', kind:'llm', model:'claude-sonnet-5-5', blocks:[['tree', 'worktree a']] },
+      w2:      { x:390, y:222, label:'worker · ui', sub:'sonnet-5.5', kind:'llm', model:'claude-sonnet-5-5', blocks:[['tree', 'worktree b']] },
+      w3:      { x:390, y:354, label:'worker · tests', sub:'sonnet-5.5', kind:'llm', model:'claude-sonnet-5-5', blocks:[['tree', 'worktree c']] },
+      merge:   { x:590, y:222, label:'merge queue', sub:'rebases in order', kind:'code' },
+      tester:  { x:720, y:110, label:'tester', sub:'CI · full suite', kind:'tool' },
+      end:     { x:820, y:330, label:'DONE', kind:'term' },
+    },
+    E:[['start', 'planner'], ['planner', 'w1'], ['planner', 'w2'], ['planner', 'w3'], ['w1', 'merge'], ['w2', 'merge'], ['w3', 'merge'], ['merge', 'tester'], ['tester', 'end'], ['tester', 'planner', 1, -120]] },
+
+  loop: { label:'Review loop', agent:'review_loop', post:'harness',
+    about:'Worker and an outside reviewer on a different model go back and forth, capped at 3 rounds; then it escalates to you.',
+    good:'Catches what the writer cannot see in its own work.', breaks:'Without the cap it argues forever and burns tokens.',
+    N:{
+      start:    { x:60,  y:222, label:'TICKET', kind:'term' },
+      worker:   { x:240, y:222, label:'worker', sub:'sonnet-5.5', kind:'llm', model:'claude-sonnet-5-5', blocks:[['tree', 'worktree'], ['skill', 'implement-task']] },
+      checks:   { x:440, y:222, label:'checks', sub:'typecheck · lint · tests', kind:'tool', blocks:[['hook', 'Stop hook runs checks']] },
+      reviewer: { x:640, y:222, label:'reviewer', sub:'other model · max 3 rounds', kind:'llm', model:'gpt-5.5 (outside judge)', blocks:[['skill', 'review-rubric']] },
+      escalate: { x:640, y:380, label:'escalate', sub:'you · after round 3', kind:'human' },
+      end:      { x:820, y:222, label:'PR', kind:'term' },
+    },
+    E:[['start', 'worker'], ['worker', 'checks'], ['checks', 'reviewer'], ['reviewer', 'end'], ['reviewer', 'worker', 1, -110], ['checks', 'worker', 1, 50], ['reviewer', 'escalate', 1]] },
+
+  team: { label:'Agent team', agent:'agent_team', post:'orch',
+    about:'A lead and teammates share a task list and message each other directly (Claude Code agent teams, experimental).',
+    good:'Good for research or design spikes where the parts need to talk.', breaks:'Task status can lag and there is no resume, so it is a poor fit for ticket batches.',
+    N:{
+      start: { x:60,  y:222, label:'GOAL', kind:'term' },
+      lead:  { x:220, y:222, label:'team lead', sub:'opus-5.5', kind:'llm', model:'claude-opus-5-5' },
+      tasks: { x:430, y:222, label:'task list', sub:'shared · claimed by peers', kind:'code' },
+      api:   { x:640, y:90,  label:'teammate · api', sub:'sonnet-5.5', kind:'llm', model:'claude-sonnet-5-5' },
+      ui:    { x:640, y:222, label:'teammate · ui', sub:'sonnet-5.5', kind:'llm', model:'claude-sonnet-5-5' },
+      qa:    { x:640, y:354, label:'teammate · qa', sub:'sonnet-5.5', kind:'llm', model:'claude-sonnet-5-5' },
+      end:   { x:220, y:380, label:'REPORT', kind:'term' },
+    },
+    E:[['start', 'lead'], ['lead', 'tasks'], ['tasks', 'api'], ['tasks', 'ui'], ['tasks', 'qa'], ['api', 'ui', 1, 36], ['ui', 'qa', 1, 36], ['qa', 'lead', 1, -60], ['lead', 'end']] },
+
+  scheduled: { label:'Scheduled', agent:'video_feed', post:'devsetup',
+    about:'A cron job runs an unattended claude -p with plain CLIs only. This is our real daily video feed on the Mac mini.',
+    good:'Cheap, boring and reliable for recurring work.', breaks:'Unattended runs cannot log in to OAuth connectors, and a silent failure goes unnoticed without a log or alert.',
+    N:{
+      cron:      { x:70,  y:120, label:'launchd', sub:'daily 08:00', kind:'code', blocks:[['cron', 'com.omar.video-feed']] },
+      rss:       { x:240, y:120, label:'channel RSS', sub:'curl · no API key', kind:'tool' },
+      transcript:{ x:420, y:120, label:'transcript', sub:'yt-dlp captions', kind:'tool' },
+      summary:   { x:610, y:120, label:'summarise', sub:'claude -p · sonnet', kind:'llm', model:'claude-sonnet-5-5' },
+      explainer: { x:610, y:300, label:'explainer', sub:'claude -p · opus', kind:'llm', model:'claude-opus-5-5', blocks:[['skill', 'visual-explainer'], ['skill', 'watch']] },
+      push:      { x:420, y:300, label:'git push', sub:'straight to main', kind:'tool' },
+      end:       { x:240, y:300, label:'LIVE', kind:'term' },
+    },
+    E:[['cron', 'rss'], ['rss', 'transcript'], ['transcript', 'summary'], ['summary', 'explainer', 1], ['summary', 'push', 1], ['explainer', 'push'], ['push', 'end']] },
+};
+
+// Steps: n node, d ms, k kind, tin/tout tokens, ev event line, text message body, at start ms (parallel), from incoming edge, status error|waiting
+const S = {};
+S.pipeline = [
+  { n:'scout', d:900, k:'llm', tin:6200, tout:540, ev:'read apps/web/AGENTS.md and 14 files · found the leak in onMounted' },
+  { n:'spec', d:1400, k:'llm', tin:8400, tout:1900, ev:'openspec/changes/ENG-412/ written: 3 requirements, 4 tasks',
+    text:'Requirement: a plain /sign-up visit must not inherit onboarding_plan_id from an earlier invite. Keep ?planId= behaviour. Do not touch /sign-in.' },
+  { n:'approve', d:1600, k:'human', ev:'spec approved by you' },
+  { n:'worker', d:2600, k:'llm', tin:21000, tout:3400, ev:'edited 2 files in worktree ENG-412 · hook blocked 1 edit outside apps/web' },
+  { n:'tester', d:1500, k:'tool', ev:'pnpm test:e2e → 1 failed: invited flow now skips checkout' },
+  { n:'worker', d:1400, k:'llm', tin:9800, tout:1200, from:'tester', ev:'fix: clear the flag only when there is no invitedTo' },
+  { n:'tester', d:1300, k:'tool', ev:'pnpm test:e2e → 38 passed · lint clean' },
+  { n:'reviewer', d:1100, k:'llm', tin:7400, tout:380, score:0.9, ev:'verdict: approve · matches the spec, 1 nit' },
+  { n:'merge', d:1800, k:'human', ev:'PR #212 merged by you' },
+  { n:'end', d:0, k:'control', ev:'ticket done · ledger row → done' },
 ];
-const errSteps = [...STEPS.slice(0, 7), { ...STEPS[7], status:'error', ev:'python_repl → TimeoutError: order service gave no reply in 30s' }];
-const waitSteps = [...STEPS.slice(0, 13), { ...STEPS[13], status:'waiting', ev:'interrupt → awaiting approval (refund > $50)' }];
-// parallel fan-out (LangGraph Send): `at` pins a step's start in ms, `from` names the edge it arrives on
-const PAR = [
-  { n:'supervisor', d:760,  k:'llm',  tin:1900, tout:120, ev:'fan-out → researcher ∥ coder (Send ×2)' },
-  { n:'researcher', d:1400, k:'llm',  tin:2310, tout:380, at:760, ev:'tool_call tavily_search("duplicate charge refund policy")' },
-  { n:'coder',      d:1180, k:'llm',  tin:2890, tout:301, at:760, from:'supervisor', ev:'tool_call python_repl(list_charges("A-10398"))' },
-  { n:'tools',      d:420,  k:'tool', at:1940, from:'coder', ev:'python_repl → 2 charges of $129.00, 41s apart' },
-  { n:'tools',      d:1050, k:'tool', at:2160, from:'researcher', ev:'tavily_search → 4 results, 1.6 kB' },
-  { n:'coder',      d:640,  k:'llm',  tin:3100, tout:120, at:2360, from:'tools', ev:'confirmed duplicate: second charge is a payment retry' },
-  { n:'researcher', d:980,  k:'llm',  tin:3900, tout:350, at:3210, from:'tools', ev:'policy §2.1: duplicate charges are refunded in full',
-    text:'Policy §2.1: duplicate charges are refunded in full with no approval needed below $200. Coder confirmed the second $129.00 charge is a retry.' },
-  { n:'critic',     d:600,  k:'llm',  tin:2100, tout:70,  score:0.88, from:'researcher', ev:'score 0.88 → facts complete, needs reply' },
-  { n:'supervisor', d:450,  k:'llm',  tin:2300, tout:50,  ev:'route → writer' },
-  { n:'writer',     d:1100, k:'llm',  tin:2700, tout:210, ev:'reply composed, 121 words',
-    text:'Hi there, you were charged twice for order A-10398 because a payment retry went through. I have refunded the duplicate $129.00 to your card. It should arrive within 5 to 7 business days.' },
-  { n:'critic',     d:560,  k:'llm',  tin:1950, tout:60,  score:0.94, ev:'score 0.94 → pass' },
-  { n:'human',      d:40,   k:'human', ev:'auto-approved: under $200 policy limit' },
-  { n:'end',        d:0,    k:'control', ev:'run complete · reply sent' },
+S.ledger = [
+  { n:'tracker', d:600, k:'tool', ev:'sync → 15 open issues, 3 new' },
+  { n:'ledger', d:240, k:'code', ev:'3 rows queued: ENG-412, ENG-421, ENG-418' },
+  { n:'cron', d:120, k:'code', ev:'tick 08:02' },
+  { n:'orch', d:300, k:'code', from:'cron', ev:'dispatch: one claude -p run per queued row' },
+  { n:'runA', d:4200, k:'llm', tin:24000, tout:3900, at:1260, from:'orch', ev:'ENG-412 done · PR #212 opened' },
+  { n:'runB', d:3600, k:'llm', tin:19000, tout:2800, at:1260, from:'orch', ev:'ENG-421 done · PR #213 opened' },
+  { n:'runC', d:2900, k:'llm', tin:15000, tout:2100, at:1260, from:'orch', ev:'ENG-418 done · flaky test quarantined, PR #214' },
+  { n:'reconcile', d:260, k:'code', at:5460, from:'runA', ev:'assigned 3 = finished 3 · nothing missing' },
+  { n:'end', d:0, k:'control', from:'reconcile', ev:'batch closed · 3 PRs waiting for review' },
 ];
-const TEMPLATES = { success:STEPS, error:errSteps, interrupted:waitSteps };
+S.supervisor = [
+  { n:'supervisor', d:900, k:'llm', tin:14000, tout:220, ev:'fetched page 1 of tickets (12 of 15) · route → scout' },
+  { n:'scout', d:1100, k:'llm', tin:6100, tout:500, ev:'ENG-412 scouted' },
+  { n:'supervisor', d:700, k:'llm', tin:18600, tout:160, from:'scout', ev:'route → worker' },
+  { n:'worker', d:2400, k:'llm', tin:20500, tout:3100, ev:'ENG-412 code written' },
+  { n:'reviewer', d:900, k:'llm', tin:6900, tout:300, score:0.86, ev:'approve' },
+  { n:'supervisor', d:800, k:'llm', tin:26800, tout:180, from:'reviewer', ev:'route → tester' },
+  { n:'tester', d:1300, k:'tool', ev:'pnpm test → 41 passed' },
+  { n:'supervisor', d:700, k:'llm', tin:31200, tout:140, from:'tester', ev:'12 of 15 tickets marked done · route → END' },
+  { n:'end', d:0, k:'control', from:'supervisor', ev:'run complete' },
+];
+S.fanout = [
+  { n:'planner', d:1300, k:'llm', tin:9200, tout:1500, ev:'ENG-430 split into api, ui and tests (tasks.md)' },
+  { n:'w1', d:3100, k:'llm', tin:16000, tout:2600, at:1300, from:'planner', ev:'api: settings endpoint returns theme' },
+  { n:'w2', d:3600, k:'llm', tin:18200, tout:3300, at:1300, from:'planner', ev:'ui: dark theme tokens + toggle' },
+  { n:'w3', d:2500, k:'llm', tin:11800, tout:2100, at:1300, from:'planner', ev:'tests: 6 new e2e cases' },
+  { n:'merge', d:700, k:'code', at:4900, from:'w2', ev:'rebased a → b → c · no conflicts' },
+  { n:'tester', d:1700, k:'tool', ev:'full suite → 212 passed' },
+  { n:'end', d:0, k:'control', ev:'PR #215 opened' },
+];
+S.loop = [
+  { n:'worker', d:2300, k:'llm', tin:19000, tout:3000, ev:'ENG-433: rate limit added to /login' },
+  { n:'checks', d:900, k:'tool', ev:'typecheck · lint · 54 tests passed' },
+  { n:'reviewer', d:1200, k:'llm', tin:8200, tout:460, score:0.58, ev:'round 1: changes requested · limit is per IP, should be per account' },
+  { n:'worker', d:1500, k:'llm', tin:12400, tout:1500, from:'reviewer', ev:'limit keyed by account id + IP' },
+  { n:'checks', d:850, k:'tool', ev:'typecheck · lint · 57 tests passed' },
+  { n:'reviewer', d:1000, k:'llm', tin:8800, tout:300, score:0.91, ev:'round 2: approve' },
+  { n:'end', d:0, k:'control', ev:'PR #216 opened' },
+];
+S.team = [
+  { n:'lead', d:1200, k:'llm', tin:9000, tout:1200, ev:'goal: compare 3 queue libraries for the cron migration' },
+  { n:'tasks', d:200, k:'code', ev:'3 tasks posted' },
+  { n:'api', d:2600, k:'llm', tin:14000, tout:2100, at:1400, from:'tasks', ev:'claimed: benchmark BullMQ vs Temporal' },
+  { n:'ui', d:2200, k:'llm', tin:11000, tout:1700, at:1400, from:'tasks', ev:'claimed: dashboard support' },
+  { n:'qa', d:2400, k:'llm', tin:12500, tout:1800, at:1400, from:'tasks', ev:'claimed: failure and retry behaviour' },
+  { n:'ui', d:500, k:'llm', tin:3000, tout:260, from:'api', ev:'message from api: Temporal needs its own server' },
+  { n:'lead', d:1300, k:'llm', tin:16000, tout:1500, from:'qa', ev:'merged findings: BullMQ now, Temporal if crashes hurt' },
+  { n:'end', d:0, k:'control', ev:'report written to decisions/0002-queue.md' },
+];
+S.scheduled = [
+  { n:'cron', d:100, k:'code', ev:'08:00 · video-feed.sh in its own clone' },
+  { n:'rss', d:700, k:'tool', ev:'curl 1 channel → 4 new videos' },
+  { n:'transcript', d:1400, k:'tool', ev:'yt-dlp → en-orig captions for 4 videos' },
+  { n:'summary', d:1600, k:'llm', tin:42000, tout:900, ev:'4 summaries · scores 4, 4, 3, 4' },
+  { n:'explainer', d:4800, k:'llm', tin:96000, tout:21000, ev:'explainer built: videos/2026-10-13-stitch-cli-…/' },
+  { n:'push', d:900, k:'tool', from:'explainer', ev:'git push origin main · 3cef1a6' },
+  { n:'end', d:0, k:'control', ev:'GitHub Pages rebuilt · feed live' },
+];
+// failure and pause variants: same path, cut where it went wrong
+const variant = (wf, cut, patch) => [...S[wf].slice(0, cut), { ...S[wf][cut], ...patch }];
+const T = {
+  pipeline:   { success:S.pipeline, error:variant('pipeline', 6, { status:'error', ev:'pnpm test:e2e → timed out 3 times · run stopped, ledger row → failed' }),
+                interrupted:variant('pipeline', 2, { status:'waiting', ev:'waiting for spec approval · 2 open questions', reason:'spec needs your approval' }) },
+  ledger:     { success:S.ledger, error:[...S.ledger.slice(0, 6), { ...S.ledger[6], d:900, status:'error', ev:'ENG-418 worker crashed (OOM) · no PR' },
+                  { ...S.ledger[7], ev:'assigned 3 ≠ finished 2 · ENG-418 missing' }, { n:'triage', d:700, k:'llm', tin:3200, tout:240, from:'reconcile', ev:'ENG-418: crash, not a bad spec → retry' },
+                  { n:'ledger', d:200, k:'code', from:'triage', ev:'ENG-418 → queued (attempt 2)' }] },
+  supervisor: { success:[...S.supervisor.slice(0, 7), { ...S.supervisor[7], status:'error', ev:'route → END with 12 of 15 done · ENG-421, ENG-418, ENG-440 never dispatched' }] },
+  fanout:     { success:S.fanout, error:[...S.fanout.slice(0, 4), { ...S.fanout[4], status:'error', ev:'merge conflict: ui and api both edited settings.ts' }] },
+  loop:       { success:S.loop, interrupted:[...S.loop.slice(0, 3), { ...S.loop[3], ev:'round 2 rewrite' }, S.loop[4], { ...S.loop[2], ev:'round 2: changes requested · still per IP' },
+                  { ...S.loop[3], ev:'round 3 rewrite' }, S.loop[4], { ...S.loop[2], ev:'round 3: changes requested' },
+                  { n:'escalate', d:400, k:'human', from:'reviewer', status:'waiting', ev:'3 rounds used · escalated to you', reason:'review loop hit its cap' }] },
+  team:       { success:S.team, interrupted:[...S.team.slice(0, 5), { n:'lead', d:600, k:'llm', tin:9000, tout:200, from:'qa', status:'waiting', ev:'task "dashboard support" shows in progress but ui went idle', reason:'task status lagging' }] },
+  scheduled:  { success:S.scheduled },
+};
 
 const runs = [
-  { id:'run_8c41a2', q:'Can I get a refund for an ebook I bought 9 days ago?', status:'success', ago:'2m', steps:STEPS },
-  { id:'run_9b2e47', q:'Charged twice for the same order A-10398, please fix', status:'success', ago:'4m', steps:PAR },
-  { id:'run_7f0d93', q:'Customer disputes double charge on order A-10398', status:'interrupted', ago:'6m', steps:waitSteps },
-  { id:'run_77b215', q:'Cancel subscription and refund the last invoice', status:'error', ago:'11m', steps:errSteps },
-  { id:'run_6e9a0c', q:'Where is my order A-10421? It says delivered.', status:'success', ago:'19m', steps:STEPS },
-  { id:'run_6a33f1', q:'Change shipping address after dispatch', status:'success', ago:'27m', steps:STEPS },
-  { id:'run_5d7e88', q:'Refund a gift card purchase to original card', status:'success', ago:'34m', steps:STEPS },
+  { id:'run_8c41a2', wf:'pipeline', q:'ENG-412 · Fix signup redirect after an invite', status:'success', ago:'2m', steps:T.pipeline.success },
+  { id:'run_9b2e47', wf:'ledger', q:'Batch 08:02 · 3 queued tickets', status:'success', ago:'4m', steps:T.ledger.success },
+  { id:'run_7f0d93', wf:'pipeline', q:'ENG-433 · Rate-limit login attempts', status:'interrupted', ago:'6m', steps:T.pipeline.interrupted },
+  { id:'run_77b215', wf:'supervisor', q:'Nightly batch · 15 tickets via the supervisor', status:'error', ago:'11m', steps:T.supervisor.success },
+  { id:'run_6e9a0c', wf:'fanout', q:'ENG-430 · Dark mode for the settings page', status:'success', ago:'19m', steps:T.fanout.success },
+  { id:'run_6a33f1', wf:'loop', q:'ENG-433 · Rate-limit login attempts (review)', status:'success', ago:'27m', steps:T.loop.success },
+  { id:'run_5d7e88', wf:'scheduled', q:'Video feed · 2026-10-23 08:00', status:'success', ago:'34m', steps:T.scheduled.success },
+  { id:'run_5b1c04', wf:'team', q:'Spike · pick a queue for the cron migration', status:'success', ago:'38m', steps:T.team.success },
+  { id:'run_59f3aa', wf:'ledger', q:'Batch 07:50 · 3 queued tickets', status:'error', ago:'45m', steps:T.ledger.error },
 ];
 // older traces for the Traces view; f scales latency and tokens so rows differ
-const OLDER = ['Item arrived damaged, want a replacement', 'Charged twice for annual plan', 'Refund to a closed bank account',
-  'Promo code not applied at checkout', 'Return window for opened headphones?', 'Partial refund for missing item in order A-10377',
-  'Upgrade plan mid-cycle, prorate?', 'Refund for a pre-order that never shipped', 'Why was my refund denied?',
-  'Swap size on an unshipped order', 'Chargeback filed by mistake', 'Bulk order refund for 40 seats'];
-const older = OLDER.map((q, i) => {
-  const status = i % 6 === 3 ? 'error' : i % 5 === 1 ? 'interrupted' : 'success';
-  return { id:'run_' + (0x4c2e10 - i * 0x1a3f).toString(16), q, status, ago:(41 + i * 9) + 'm', steps:TEMPLATES[status], f:.72 + ((i * 37) % 61) / 100 };
+const OLDER = [['pipeline', 'ENG-401 · Typo in pricing page'], ['ledger', 'Batch 07:30 · 2 queued tickets'], ['loop', 'ENG-399 · Session persist across restarts'],
+  ['pipeline', 'ENG-398 · CSV export for reports'], ['fanout', 'ENG-396 · Split billing settings into tabs'], ['supervisor', 'Nightly batch · 11 tickets via the supervisor'],
+  ['pipeline', 'ENG-395 · Flaky checkout e2e test'], ['scheduled', 'Video feed · 2026-10-22 08:00'], ['team', 'Spike · auth library options'],
+  ['loop', 'ENG-392 · Password reset email copy'], ['ledger', 'Batch 07:10 · 4 queued tickets'], ['pipeline', 'ENG-390 · Remove dead feature flags']];
+const older = OLDER.map(([wf, q], i) => {
+  const want = i % 6 === 3 ? 'error' : i % 5 === 1 ? 'interrupted' : 'success';
+  const status = T[wf][want] ? want : wf === 'supervisor' ? 'error' : 'success';
+  return { id:'run_' + (0x4c2e10 - i * 0x1a3f).toString(16), wf, q, status, ago:(51 + i * 9) + 'm', steps:T[wf][status] || T[wf].success, f:.72 + ((i * 37) % 61) / 100 };
 });
+// prompts view still describes the legacy support graph's prompts
+const LEGACY_MODEL = { supervisor:'claude-opus-5-5', researcher:'claude-sonnet-5-5', coder:'claude-sonnet-5-5', writer:'claude-haiku-5-5', critic:'claude-haiku-5-5' };
+const modelOf = (r, n) => WF[r.wf].N[n]?.model || '';
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' })[c]);
@@ -1021,12 +1336,12 @@ function timeline(r) {
   const starts = r.steps.map(s => { const st = s.at ?? t; t = Math.max(t, st + s.d); return st; });
   return { starts, wall: t };
 }
-console.assert(timeline({ steps:PAR }).wall === 6940, 'parallel wall clock');
+console.assert(timeline({ steps:S.ledger }).wall === 5720, 'parallel wall clock');
 const totals = r => { const f = r.f || 1; let tin = 0, tout = 0; for (const s of r.steps) { tin += s.tin || 0; tout += s.tout || 0; } return { ms: timeline(r).wall * f, tin: Math.round(tin * f), tout: Math.round(tout * f) }; };
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => t.hidden = true, 2400); }
 
 // ---- routing ----
-const VIEW_NAMES = { console:'Console', traces:'Traces', issues:'Issues', inbox:'Human inbox', evals:'Evals', prompts:'Prompts', costs:'Costs' };
+const VIEW_NAMES = { console:'Console', traces:'Traces', issues:'Issues', inbox:'Human inbox', evals:'Evals', prompts:'Prompts', costs:'Costs', notes:'Why it looks like this', learn:'OpenTelemetry' };
 const VIEWS = Object.keys(VIEW_NAMES);
 function route() {
   const h = location.hash.slice(1);
@@ -1062,38 +1377,84 @@ function renderKpis() {
     <div class="row"><div><div class="v num">${v}</div><div class="d ${c}">${d}</div></div>${spark(s, u)}</div></a>`).join('');
 }
 
-const STATS = [['supervisor','3,912','0.6s','1.4s',.1],['researcher','1,148','2.9s','6.8s',.4],['coder','806','2.2s','5.1s',.9],
-  ['writer','1,201','1.3s','2.6s',0],['tools','2,377','0.8s','4.9s',2.7],['critic','2,694','0.6s','1.1s',0],['human_review','1,190','4.2m','38m',null]];
-$('#nodeStats').innerHTML = STATS.map(([n, c, p5, p9, e]) => `<tr><td class="mono">${n}</td><td class="r">${c}</td><td class="r">${p5}</td><td class="r">${p9}</td>
-  <td class="r ${e > 1 ? 'warn' : ''}">${e == null ? '—' : e.toFixed(1) + '%'}</td></tr>`).join('');
-
-// ---- graph ----
-const g = $('#g'), edges = {}, nodes = {};
-const defs = el('defs', {}, g), mk = el('marker', { id:'arr', viewBox:'0 0 10 10', refX:9, refY:5, markerWidth:10, markerHeight:10, markerUnits:'userSpaceOnUse', orient:'auto-start-reverse' }, defs);
-el('path', { d:'M0,1 L9,5 L0,9z', class:'arrow' }, mk);
-for (const [a, b, cond, back] of E) {
-  const A = N[a], B = N[b];
-  let d;
-  if (back) d = `M${A.x},${A.y + hh(A)} C${A.x},435 ${B.x},435 ${B.x},${B.y + hh(B)}`;
-  else if (Math.abs(A.x - B.x) < 10) d = `M${A.x},${A.y + hh(A)} L${B.x},${B.y - hh(B)}`;
-  else { const x1 = A.x + hw(A), x2 = B.x - hw(B), m = (x1 + x2) / 2; d = `M${x1},${A.y} C${m},${A.y} ${m},${B.y} ${x2},${B.y}`; }
-  edges[a + '>' + b] = el('path', { d, class:'edge' + (cond ? ' cond' : ''), 'marker-end':'url(#arr)' }, g);
-}
-for (const [id, n] of Object.entries(N)) {
-  const grp = el('g', { class:'node' }, g);
-  if (n.kind === 'term') {
-    el('circle', { cx:n.x, cy:n.y, r:18 }, grp);
-    el('text', { x:n.x, y:n.y + 34, 'text-anchor':'middle', class:'sub' }, grp).textContent = n.label;
-  } else {
-    el('rect', { x:n.x - W / 2, y:n.y - H / 2, width:W, height:H, rx:10 }, grp);
-    el('circle', { cx:n.x - W / 2 + 14, cy:n.y - 7, r:4, class:'k-' + n.kind }, grp);
-    el('text', { x:n.x - W / 2 + 25, y:n.y - 3 }, grp).textContent = n.label;
-    el('text', { x:n.x - W / 2 + 14, y:n.y + 14, class:'sub' }, grp).textContent = n.sub;
+// ---- graph: drawn per workflow ----
+const g = $('#g');
+let N = {}, edges = {}, nodes = {}, curWf = null, packet, aggLayer;
+// edge from A's border to B's border; `bow` bends it sideways (loops back), so it does not sit on the forward edge
+function edgePath(A, B, bow) {
+  const dx = B.x - A.x, dy = B.y - A.y, horiz = Math.abs(dx) >= Math.abs(dy);
+  let sx, sy, ex, ey;
+  if (horiz) { sx = A.x + Math.sign(dx) * hw(A); sy = A.y; ex = B.x - Math.sign(dx) * hw(B); ey = B.y; }
+  else { sx = A.x; sy = A.y + Math.sign(dy) * hh(A); ex = B.x; ey = B.y - Math.sign(dy) * hh(B); }
+  if (bow) {
+    const len = Math.hypot(ex - sx, ey - sy) || 1, px = -(ey - sy) / len, py = (ex - sx) / len, o = bow * .3;
+    sx += px * o; sy += py * o; ex += px * o; ey += py * o;
+    return `M${sx},${sy} Q${(sx + ex) / 2 + px * bow * 2},${(sy + ey) / 2 + py * bow * 2} ${ex},${ey}`;
   }
-  const badge = el('text', { x:n.x + hw(n) - 4, y:n.y - hh(n) - 6, 'text-anchor':'end', class:'badge' }, grp);
-  nodes[id] = { grp, badge };
+  if (horiz) { const m = (sx + ex) / 2; return `M${sx},${sy} C${m},${sy} ${m},${ey} ${ex},${ey}`; }
+  const m = (sy + ey) / 2; return `M${sx},${sy} C${sx},${m} ${ex},${m} ${ex},${ey}`;
 }
-const packet = el('circle', { id:'packet', r:4.5, opacity:0 }, g);
+// deterministic sample numbers for the 24h view and node health
+const hash = s => [...s].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+const volOf = (wf, k) => 300 + hash(wf + k) % 1400;
+function statsFor(wf) {
+  return Object.entries(WF[wf].N).filter(([, n]) => n.kind !== 'term').map(([id, n]) => {
+    const h = hash(wf + id), human = n.kind === 'human';
+    return [n.label, (400 + h % 3600).toLocaleString(), human ? (2 + h % 9) + 'm' : (0.3 + (h % 40) / 10).toFixed(1) + 's',
+      human ? (20 + h % 50) + 'm' : (1.2 + (h % 70) / 10).toFixed(1) + 's', human ? null : n.kind === 'tool' ? (h % 34) / 10 : (h % 12) / 10];
+  });
+}
+let STATS = [];
+function renderStats() {
+  STATS = statsFor(curWf);
+  $('#nodeStats').innerHTML = STATS.map(([n, c, p5, p9, e]) => `<tr><td class="mono">${esc(n)}</td><td class="r">${c}</td><td class="r">${p5}</td><td class="r">${p9}</td>
+    <td class="r ${e > 1 ? 'warn' : ''}">${e == null ? '—' : e.toFixed(1) + '%'}</td></tr>`).join('');
+}
+// squeeze text that would overflow its node box
+function fit(t, text, max) {
+  t.textContent = text;
+  if (t.getComputedTextLength() > max) { t.setAttribute('textLength', max); t.setAttribute('lengthAdjust', 'spacingAndGlyphs'); }
+}
+function drawGraph(wf) {
+  if (wf === curWf) return;
+  curWf = wf; N = WF[wf].N; edges = {}; nodes = {};
+  g.replaceChildren();
+  g.setAttribute('aria-label', `${WF[wf].label} workflow: ${WF[wf].about}`);
+  const defs = el('defs', {}, g), mk = el('marker', { id:'arr', viewBox:'0 0 10 10', refX:9, refY:5, markerWidth:10, markerHeight:10, markerUnits:'userSpaceOnUse', orient:'auto-start-reverse' }, defs);
+  el('path', { d:'M0,1 L9,5 L0,9z', class:'arrow' }, mk);
+  for (const [a, b, cond, bow] of WF[wf].E)
+    edges[a + '>' + b] = el('path', { d:edgePath(N[a], N[b], bow), class:'edge' + (cond ? ' cond' : ''), 'marker-end':'url(#arr)' }, g);
+  for (const [id, n] of Object.entries(N)) {
+    const grp = el('g', { class:'node' }, g);
+    const tip = [n.label, n.sub, ...(n.blocks || []).map(([t, d]) => BLOCKS[t][2] + ': ' + d)].filter(Boolean).join('\n');
+    el('title', {}, grp).textContent = tip;
+    if (n.kind === 'term') {
+      el('circle', { cx:n.x, cy:n.y, r:18 }, grp);
+      el('text', { x:n.x, y:n.y + 34, 'text-anchor':'middle', class:'sub' }, grp).textContent = n.label;
+    } else {
+      el('rect', { x:n.x - W / 2, y:n.y - H / 2, width:W, height:H, rx:10 }, grp);
+      el('circle', { cx:n.x - W / 2 + 14, cy:n.y - 7, r:4, class:'k-' + n.kind }, grp);
+      fit(el('text', { x:n.x - W / 2 + 25, y:n.y - 3 }, grp), n.label, W - 32);
+      fit(el('text', { x:n.x - W / 2 + 14, y:n.y + 14, class:'sub' }, grp), n.sub, W - 22);
+      // building blocks: one chip per skill, hook, spec, cron or worktree the node uses
+      (n.blocks || []).forEach(([t], i) => {
+        const [glyph, color] = BLOCKS[t], bx = n.x - W / 2 + i * 20, by = n.y + H / 2 + 5;
+        const c = el('g', { class:'blk' }, grp);
+        el('rect', { x:bx, y:by, width:17, height:15, rx:4, style:`stroke:var(--${color})` }, c);
+        el('text', { x:bx + 8.5, y:by + 11, 'text-anchor':'middle', style:`fill:var(--${color})` }, c).textContent = glyph;
+      });
+    }
+    const badge = el('text', { x:n.x + hw(n) - 4, y:n.y - hh(n) - 6, 'text-anchor':'end', class:'badge' }, grp);
+    nodes[id] = { grp, badge };
+  }
+  packet = el('circle', { id:'packet', r:4.5, opacity:0 }, g);
+  aggLayer = el('g', { style:'display:none' }, g);
+  for (const [k, p] of Object.entries(edges)) {
+    const m = p.getPointAtLength(p.getTotalLength() / 2);
+    el('text', { x:m.x, y:m.y + 4, 'text-anchor':'middle', class:'agglbl' }, aggLayer).textContent = volOf(wf, k).toLocaleString();
+  }
+  renderStats();
+}
 
 function travel(a, b, ms) {
   let p = edges[a + '>' + b], rev = false;
@@ -1113,6 +1474,23 @@ function travel(a, b, ms) {
   });
 }
 
+// ---- workflow toggle: filter runs by workflow and explain the one on screen ----
+let wfFilter = 'all';
+$('#wkSeg').innerHTML = [['all', 'All'], ...Object.entries(WF).map(([k, w]) => [k, w.label])]
+  .map(([k, l]) => `<button type="button" data-w="${k}" aria-pressed="${k === 'all'}">${esc(l)}<span>${k === 'all' ? '' : [...runs, ...older].filter(r => r.wf === k).length}</span></button>`).join('');
+function renderAbout(wf) {
+  const w = WF[wf];
+  $('#wkAbout').innerHTML = `<b>${esc(w.label)}</b> ${esc(w.about)} <span class="wk-good">Good at: ${esc(w.good)}</span> <span class="wk-bad">Breaks when: ${esc(w.breaks)}</span>
+    <a href="../research/#${w.post}">Read the research →</a>`;
+}
+$('#wkSeg').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  wfFilter = b.dataset.w;
+  for (const x of $('#wkSeg').children) x.setAttribute('aria-pressed', x === b);
+  renderRuns();
+  if (wfFilter !== 'all' && current?.wf !== wfFilter) play([...runs, ...older].find(r => r.wf === wfFilter));
+});
+
 // ---- console playback ----
 let token = 0, current = null;
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -1121,13 +1499,13 @@ const statusText = { success:'completed', error:'failed', interrupted:'interrupt
 let runFilter = 'all';
 $('#runSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; runFilter = b.dataset.f; for (const x of $('#runSeg').children) x.setAttribute('aria-pressed', x === b); renderRuns(); });
 function renderRuns() {
-  const list = [...runs, ...older].filter(r => runFilter === 'all' || r.status === 'error' || r.status === 'interrupted' || r === current);
+  const list = [...runs, ...older].filter(r => (wfFilter === 'all' || r.wf === wfFilter) && (runFilter === 'all' || r.status === 'error' || r.status === 'interrupted' || r === current));
   $('#runCount').textContent = list.length + ' shown';
   $('#runs').innerHTML = list.map(r => {
     const dur = r.status === 'running' ? '…' : (totals(r).ms / 1000).toFixed(1) + 's';
     return `<button class="run" data-id="${r.id}" aria-current="${r === current}">
       <span class="dot s-${r.status}" title="${statusText[r.status]}"></span><span class="id">${r.id}</span><span class="t">${dur} · ${r.ago}</span>
-      <span class="q">${r.parent ? `⑂ ${r.parent} @${r.forkAt} · ` : ''}${esc(r.q)}</span></button>`;
+      <span class="q">${r.parent ? `⑂ ${r.parent} @${r.forkAt} · ` : ''}${esc(r.q)}</span><span class="wk-tag">${esc(WF[r.wf].label)}</span></button>`;
   }).join('');
 }
 $('#runs').addEventListener('click', e => { const b = e.target.closest('.run'); if (b) play([...runs, ...older].find(r => r.id === b.dataset.id)); });
@@ -1140,9 +1518,10 @@ function scrubLabel(run, k) {
 
 // animateFrom: first step index to animate (Infinity = render instantly); upto: checkpoint to stop at
 async function play(run, animateFrom = Infinity, upto = run.steps.length) {
-  const my = ++token; current = run; renderRuns();
+  const my = ++token; current = run; drawGraph(run.wf); renderAbout(run.wf); renderRuns();
+  $('#runBtn').textContent = '▶ Replay ' + run.q.split(' · ')[0];
   $('#forkBox').hidden = true; exitAgg();
-  $('#msgs').innerHTML = `<div class="msg user"><div class="mh">customer</div>${esc(run.q)}</div>`;
+  $('#msgs').innerHTML = `<div class="msg user"><div class="mh">ticket · ${esc(WF[run.wf].label)}</div>${esc(run.q)}</div>`;
   const speed = +$('#speed').value, steps = run.steps.slice(0, upto), scrub = $('#scrub');
   scrub.max = run.steps.length; scrub.value = upto; scrubLabel(run, upto);
   const evLine = (t, who, color, text, cls = '') => $('#p-events').insertAdjacentHTML('afterbegin', `<div class="ev ${cls}"><span class="ts">+${(t / 1000).toFixed(2)}s</span>
@@ -1152,10 +1531,11 @@ async function play(run, animateFrom = Infinity, upto = run.steps.length) {
   $('#wf').innerHTML = ''; $('#p-events').innerHTML = '';
   const tl = timeline(run), WALL = tl.wall || 1, laneRows = [];
   renderLanes(laneRows, WALL);
-  $('#graphRun').textContent = run.id;
-  const st = { thread_id: run.id.replace('run', 'thr'), input: run.q, step: 0, next: 'supervisor', iteration: 0, scores: [], tool_calls: 0, messages: 1, interrupt: null };
+  $('#graphRun').textContent = run.id + ' · ' + WF[run.wf].label;
+  const st = { thread_id: run.id.replace('run', 'thr'), input: run.q, step: 0, workflow: run.wf, next: run.steps[0].n, iteration: 0, scores: [], tool_calls: 0, messages: 1, interrupt: null };
   const visits = {};
   let t = 0, tin = 0, tout = 0, prev = 'start';
+  const setNodeSafe = (id, cls) => nodes[id] && setNode(id, cls);
   const setNode = (id, cls) => nodes[id].grp.setAttribute('class', 'node ' + cls);
   const status = s => { $('#graphStatus').textContent = s; };
   const summary = () => {
@@ -1164,7 +1544,7 @@ async function play(run, animateFrom = Infinity, upto = run.steps.length) {
     $('#stateJson').textContent = JSON.stringify(st, null, 2);
   };
   const partial = upto < run.steps.length;
-  setNode('start', 'done'); status(animateFrom < steps.length ? 'running' : partial ? `checkpoint ${upto}` : statusText[run.status]); summary();
+  setNodeSafe('start', 'done'); status(animateFrom < steps.length ? 'running' : partial ? `checkpoint ${upto}` : statusText[run.status]); summary();
 
   for (const [i, s] of steps.entries()) {
     const anim = i >= animateFrom, t0 = tl.starts[i];
@@ -1197,22 +1577,21 @@ async function play(run, animateFrom = Infinity, upto = run.steps.length) {
     if (s.score) { st.scores.push(s.score); st.iteration++; }
     st.next = res === 'error' ? null : run.steps[i + 1]?.n ?? null;
     if (anim) { scrub.value = i + 1; scrubLabel(run, i + 1); }
-    if (res === 'waiting') st.interrupt = { node: 'human_review', reason: 'refund > $50 needs approval', resume: 'Command(resume={"approved": true})' };
+    if (res === 'waiting') st.interrupt = { node: s.n, reason: s.reason || s.ev, resume: 'Command(resume={"approved": true})' };
     if (res === 'error') st.error = s.ev;
     summary();
     prev = s.n;
   }
-  if (run.status === 'running') { run.status = 'success'; renderRuns(); }
+  if (run.status === 'running') { run.status = run.final || 'success'; renderRuns(); }
   status(partial ? `checkpoint ${upto} / ${run.steps.length}` : statusText[run.status]);
   scrubLabel(run, upto);
 }
 
 // swim lanes: one row per node, bars at real start offsets so parallel work overlaps
-const LANE_ORDER = ['supervisor', 'researcher', 'coder', 'writer', 'tools', 'critic', 'human'];
 function renderLanes(rows, wall) {
   const busy = rows.reduce((a, r) => a + r.d, 0), end = rows.reduce((a, r) => Math.max(a, r.start + r.d), 0) || 1;
   $('#parNote').textContent = rows.length ? `${(busy / 1000).toFixed(1)}s of work in ${(end / 1000).toFixed(1)}s wall · ${(busy / end).toFixed(2)}× parallel` : '';
-  $('#lanes').innerHTML = LANE_ORDER.filter(n => rows.some(r => r.n === n)).map(n => `<div class="tr"><span class="n"><i class="dot" style="background:var(--${KCOLOR[N[n].kind]})"></i>${N[n].label}</span>
+  $('#lanes').innerHTML = Object.keys(N).filter(n => rows.some(r => r.n === n)).map(n => `<div class="tr"><span class="n"><i class="dot" style="background:var(--${KCOLOR[N[n].kind]})"></i>${N[n].label}</span>
     <div class="track">${rows.filter(r => r.n === n).map(r => `<div class="bar ${r.kind}" title="${N[n].label} · ${r.d}ms at +${(r.start / 1000).toFixed(2)}s" style="left:${r.start / wall * 100}%;width:${r.d / wall * 100}%"></div>`).join('')}</div></div>`).join('')
     + `<div class="tr"><span></span><div class="axis"><span>0s</span><span>${(wall / 2000).toFixed(1)}s</span><span>${(wall / 1000).toFixed(1)}s</span></div></div>`;
 }
@@ -1225,21 +1604,13 @@ $('#traceMode').addEventListener('click', e => {
 // trajectory view: supervisor routes become handoff markers, tools become result blocks
 function msgHTML(s, res) {
   if (s.n === 'end') return `<div class="handoff">END · ${esc(s.ev)}</div>`;
-  if (s.n === 'supervisor') return `<div class="handoff">supervisor ${esc(s.ev)}</div>`;
-  const head = `<div class="mh"><i class="dot" style="background:var(--${res === 'error' ? 'err' : KCOLOR[s.k]})"></i>${N[s.n].label}${MODEL[s.n] ? ' · ' + MODEL[s.n] : ''}</div>`;
+  if (s.n === 'supervisor' || s.k === 'code') return `<div class="handoff">${esc(N[s.n].label)} · ${esc(s.ev)}</div>`;
+  const head = `<div class="mh"><i class="dot" style="background:var(--${res === 'error' ? 'err' : KCOLOR[s.k]})"></i>${N[s.n].label}${N[s.n].model ? ' · ' + N[s.n].model : ''}</div>`;
   if (s.k === 'tool') return `<div class="msg ${res}">${head}<code>${esc(s.ev)}</code></div>`;
   return `<div class="msg ${s.k === 'human' ? 'human' : ''}">${head}${esc(s.text || s.ev)}</div>`;
 }
 
 // ---- aggregate graph: edge width = 24h traffic ----
-const VOL = { 'start>supervisor':1284, 'supervisor>researcher':1148, 'supervisor>coder':806, 'supervisor>writer':1201, 'researcher>tools':1310, 'coder>tools':1067,
-  'researcher>critic':1148, 'coder>critic':806, 'writer>critic':1201, 'critic>supervisor':1904, 'critic>human':1190, 'human>end':1150 };
-const maxVol = Math.max(...Object.values(VOL));
-const aggLayer = el('g', { style:'display:none' }, g);
-for (const [k, p] of Object.entries(edges)) {
-  const m = p.getPointAtLength(p.getTotalLength() / 2);
-  el('text', { x:m.x, y:m.y + 4, 'text-anchor':'middle', class:'agglbl' }, aggLayer).textContent = VOL[k].toLocaleString();
-}
 let graphMode = 'run';
 function syncGraphSeg() { for (const b of $('#graphSeg').children) b.setAttribute('aria-pressed', b.dataset.m === graphMode); }
 function exitAgg() {
@@ -1252,20 +1623,20 @@ $('#graphSeg').addEventListener('click', e => {
   if (b.dataset.m === 'run') return play(current);
   token++; graphMode = 'agg'; syncGraphSeg();
   aggLayer.style.display = ''; $('.scrub').hidden = true; $('#forkBox').hidden = true; packet.setAttribute('opacity', 0);
-  for (const [k, p] of Object.entries(edges)) { p.classList.add('lit'); p.style.strokeWidth = 1 + 6 * VOL[k] / maxVol; }
+  const maxVol = Math.max(...Object.keys(edges).map(k => volOf(curWf, k)));
+  for (const [k, p] of Object.entries(edges)) { p.classList.add('lit'); p.style.strokeWidth = 1 + 6 * volOf(curWf, k) / maxVol; }
   for (const [id, n] of Object.entries(nodes)) {
     const s = STATS.find(x => x[0] === N[id].label);
     n.grp.setAttribute('class', 'node ' + (s && s[4] > 1 ? 'error' : 'done'));
     n.badge.textContent = s ? s[1] + ' calls' : '';
   }
-  $('#graphRun').textContent = 'last 24h'; $('#graphStatus').textContent = '1,284 runs · red = error rate > 1%';
+  $('#graphRun').textContent = 'last 24h · ' + WF[curWf].label; $('#graphStatus').textContent = 'red = error rate > 1%';
 });
 
 const newId = () =>'run_' + Math.random().toString(16).slice(2, 8);
 function addRun(run) { runs.unshift(run); if (runs.length > 12) runs.pop(); }
 $('#runBtn').addEventListener('click', () => {
-  const run = { id: newId(), q: 'Can I get a refund for an ebook I bought 9 days ago?', status: 'running', ago: 'now', steps: STEPS };
-  addRun(run); play(run, 0);
+  play(current || runs[0], 0); // replay the selected run in place, animated from its first step
 });
 
 // ---- time travel: scrub checkpoints, fork with edited state ----
@@ -1286,7 +1657,7 @@ $('#forkGo').addEventListener('click', () => {
   const patch = {};
   for (const key in edited) if (JSON.stringify(edited[key]) !== JSON.stringify(state[key])) patch[key] = edited[key];
   // ponytail: the fork always continues down the happy path; real forks would re-run nodes against the patched state
-  const fork = { id: newId(), q: base.q, status: 'running', ago: 'now', parent: base.id, forkAt: k, patch, steps: [...base.steps.slice(0, k), ...STEPS.slice(k)] };
+  const fork = { id: newId(), q: base.q, status: 'running', ago: 'now', parent: base.id, forkAt: k, patch, wf: base.wf, steps: [...base.steps.slice(0, k), ...T[base.wf].success.slice(k)] };
   addRun(fork); play(fork, k);
   toast(`Forked ${base.id} at checkpoint ${k}. Resuming as ${fork.id}.`);
 });
@@ -1299,8 +1670,8 @@ document.querySelector('.tabs').addEventListener('click', e => {
 let traceFilter = 'all', selTrace = null, selSpan = 0;
 function spansOf(r) {
   const f = r.f || 1, tt = totals(r);
-  const out = [{ name:'invoke_agent refund_agent', kind:'root', depth:0, start:0, d:tt.ms, attrs:{
-    'gen_ai.operation.name':'invoke_agent', 'gen_ai.agent.name':'refund_agent', 'langgraph.thread_id':r.id.replace('run', 'thr'),
+  const out = [{ name:'invoke_agent ' + WF[r.wf].agent, kind:'root', depth:0, start:0, d:tt.ms, attrs:{
+    'gen_ai.operation.name':'invoke_agent', 'gen_ai.agent.name':WF[r.wf].agent, 'langgraph.thread_id':r.id.replace('run', 'thr'),
     'input.value':r.q, 'gen_ai.usage.input_tokens':tt.tin, 'gen_ai.usage.output_tokens':tt.tout, 'status':r.status } }];
   const starts = timeline(r).starts;
   let step = 0;
@@ -1309,9 +1680,11 @@ function spansOf(r) {
     step++;
     if (s.k === 'llm') {
       out.push({ name:s.n, kind:'control', depth:1, start:t, d, attrs:{ 'langgraph.node':s.n, 'langgraph.step':step, 'status':st } });
-      out.push({ name:'chat ' + MODEL[s.n], kind:'llm', depth:2, start:t + d * .04, d:d * .92, attrs:{
-        'gen_ai.operation.name':'chat', 'gen_ai.system':'anthropic', 'gen_ai.request.model':MODEL[s.n],
+      out.push({ name:'chat ' + modelOf(r, s.n), kind:'llm', depth:2, start:t + d * .04, d:d * .92, attrs:{
+        'gen_ai.operation.name':'chat', 'gen_ai.system':'anthropic', 'gen_ai.request.model':modelOf(r, s.n),
         'gen_ai.usage.input_tokens':Math.round(s.tin * f), 'gen_ai.usage.output_tokens':Math.round(s.tout * f), 'langgraph.node':s.n, 'output.summary':s.ev, 'status':st } });
+    } else if (s.k === 'code') {
+      out.push({ name:s.n, kind:'control', depth:1, start:t, d, attrs:{ 'langgraph.node':s.n, 'langgraph.step':step, 'output.summary':s.ev, 'status':st } });
     } else if (s.k === 'tool') {
       const tool = s.ev.split(' ')[0];
       out.push({ name:'execute_tool ' + tool, kind:s.status === 'error' ? 'error' : 'tool', depth:2, start:t, d, attrs:{
@@ -1391,7 +1764,7 @@ $('#inboxCards').addEventListener('click', e => {
   inbox.splice(+card.dataset.i, 1);
   resolved.unshift({ id:c.id, decision: a === 'reject' ? 'Rejected' : edited ? 'Edited & approved' : 'Approved', who:'you', wait:c.wait });
   const run = runs.find(r => r.id === c.id);
-  if (run) { run.status = a === 'reject' ? 'error' : 'success'; run.steps = a === 'reject' ? waitSteps.map((s, i, arr) => i === arr.length - 1 ? { ...s, status:'error', ev:'interrupt → rejected by you' } : s) : STEPS; renderRuns(); }
+  if (run) { run.status = a === 'reject' ? 'error' : 'success'; run.steps = a === 'reject' ? run.steps.map((s, i, arr) => i === arr.length - 1 ? { ...s, status:'error', ev:'rejected by you' } : s) : T[run.wf].success; renderRuns(); }
   renderInbox();
   toast(a === 'reject' ? `Rejected ${c.id}. The graph ends without replying.` : `Resumed ${c.id} from checkpoint 13.`);
 });
@@ -1512,7 +1885,7 @@ function renderPrompts() {
   $('#promptList').innerHTML = PROMPTS.map(p => {
     const prod = p.versions.find(v => v.tag === 'production'), cand = p.versions.find(v => v.tag === 'candidate');
     return `<button class="run" data-id="${p.id}" aria-current="${p === selPrompt}"><span class="dot" style="background:var(--accent)"></span>
-      <span class="id">${p.id}</span><span class="t">${prod.v}${cand ? ' · ' + cand.v + '?' : ''}</span><span class="q">node ${p.node} · ${MODEL[p.node]}</span></button>`;
+      <span class="id">${p.id}</span><span class="t">${prod.v}${cand ? ' · ' + cand.v + '?' : ''}</span><span class="q">node ${p.node} · ${LEGACY_MODEL[p.node] || ''}</span></button>`;
   }).join('');
   const vs = selPrompt.versions, v = vs[selVer], prev = vs[selVer - 1];
   $('#pTitle').textContent = selPrompt.id;
@@ -1765,6 +2138,138 @@ renderInbox();
 play(runs[0]);
 route();
 
+
+// ---- explanations: a line under each card's title, and a tooltip on every control ----
+// One place for all of it, so the wording stays consistent and easy to edit.
+const NOTES = [
+  ['.runpanel', 'Recent runs. Each one is a ticket going through one workflow. Click a run to replay it on the graph. The dot shows how it ended: green done, red failed, purple waiting for you.'],
+  ['.graphpanel', 'The selected run\'s workflow. Boxes are steps (an agent, a tool, plain code or you), arrows are the paths between them, and dashed arrows only fire on some runs. The moving dot is the run. Chips under a box are the skills, hooks, specs, crons and worktrees that step uses.'],
+  ['.healthpanel', 'Sample numbers for the workflow on screen: how often each step runs, how long it usually takes (p50) and on a slow run (p95), and how often it fails.'],
+  ['.insppanel', 'Everything about the selected run: the timing of each step, what each agent said, its state at the current checkpoint, the raw event log, and Claude to ask about it.'],
+  // cards on the other pages, found by the start of their title
+  ['#v-traces', 'One trace per run, in the OpenTelemetry format any observability tool can read. Each span is a step, a model call or a tool call, nested under whatever started it. Click a span to see its attributes.', 'Span tree'],
+  ['#v-inbox', 'Decisions people made on paused runs today, newest first.', 'Resolved'],
+  ['#v-issues', 'Rules that alert someone when a failure pattern shows up. Switch one off to stop its alerts.', 'Alert rules'],
+  ['#v-evals', 'Each metric for the version in production and the candidate, on the same examples. The arrow shows which direction is better.', 'Scorecard'],
+  ['#v-evals', 'Whether the candidate is safe to ship, based on the scorecard.', 'Verdict'],
+  ['#v-evals', 'The examples where the two versions differ most.', 'Biggest changes'],
+  ['#v-costs', 'Daily spend per step for the last 14 days. Hover a bar segment for its value.', 'Spend by'],
+  ['#v-costs', 'The same spend split by model.', 'By model'],
+  ['#v-costs', 'Each step\'s daily limit and what happens when it goes over: fall back to a cheaper model, pause for a person, or block.', 'Budgets'],
+  ['#v-prompts', 'Every prompt the agents pull at runtime, by tag. Pick one to see its versions and what changed.', 'Prompts'],
+];
+const TIPS = [
+  ['#palBtn', 'Search runs, pages and prompts. Shortcut: ⌘K'],
+  ['.kpi', el => ({ 'Runs · 24h':'Runs started in the last 24 hours across all workflows. Opens Traces.', 'p50 latency':'How long a typical run takes; p95 is a slow one. Opens Traces.',
+    'Success rate':'Share of runs that finished without failing. Opens Evals.', 'Awaiting human':'Runs paused until a person approves or rejects. Opens the Human inbox.',
+    'Tokens · 24h':'Model tokens used in the last 24 hours. Opens Costs.', 'Cost · 24h':'Estimated model and tool spend in the last 24 hours. Opens Costs.' })[el.querySelector('.label')?.textContent.trim()]],
+  ['#wkSeg button', el => el.dataset.w === 'all' ? 'Show runs from every workflow.' : `${WF[el.dataset.w].about} Click to show only these runs.`],
+  ['#runSeg [data-f="all"]', 'Show every run.'],
+  ['#runSeg [data-f="fail"]', 'Show only runs that failed or are waiting for a person.'],
+  ['#runs .run', 'Replay this run on the graph, step by step.'],
+  ['#graphStatus', 'How the selected run ended, or where it is now.'],
+  ['#speed', 'How fast the graph replays a run.'],
+  ['#runBtn', 'Play the selected run again on the graph, step by step from the start.'],
+  ['#graphSeg [data-m="run"]', 'Show the path the selected run took.'],
+  ['#graphSeg [data-m="agg"]', 'Show the last 24 hours instead: thicker arrows carried more runs.'],
+  ['#scrub', 'Drag to jump to any checkpoint: the state saved after each step.'],
+  ['#forkBtn', 'Copy the run at this checkpoint, edit its state, then resume from there as a new run.'],
+  ['#forkCancel', 'Close without forking.'],
+  ['#forkGo', 'Start a new run from this checkpoint with the state you edited.'],
+  ['.tab[data-tab="trace"]', 'Timing of every step, as a waterfall or one lane per step.'],
+  ['.tab[data-tab="messages"]', 'What each agent and tool said and did, in order.'],
+  ['.tab[data-tab="state"]', 'The run\'s state object at the current checkpoint.'],
+  ['.tab[data-tab="events"]', 'The raw event log, newest first.'],
+  ['.tab[data-tab="ask"]', 'Ask Claude about this run or all runs. Uses your Claude account.'],
+  ['#traceMode [data-m="wf"]', 'One bar per step, in the order they ran.'],
+  ['#traceMode [data-m="lanes"]', 'One row per step type. Bars that overlap ran in parallel.'],
+  ['#stepChip', 'Steps shown so far out of the run\'s total.'],
+  ['#askSend', 'Send your question to Claude.'],
+  ['#askStop', 'Stop the answer.'],
+  ['#statusSeg [data-s="all"]', 'Show every trace.'],
+  ['#statusSeg [data-s="success"]', 'Show only runs that finished.'],
+  ['#statusSeg [data-s="error"]', 'Show only runs that failed.'],
+  ['#statusSeg [data-s="interrupted"]', 'Show only runs paused for a person.'],
+  ['#traceQ', 'Filter traces by ticket title or run id.'],
+  ['#traceRows tr[data-id]', 'Open this trace\'s spans below.'],
+  ['#spanTree .span', 'Show this span\'s attributes.'],
+  ['[data-a="approve"]', 'Accept the proposal and resume the run from its checkpoint.'],
+  ['[data-a="edit"]', 'Change the proposal before you approve it.'],
+  ['[data-a="reject"]', 'End the run without applying the proposal.'],
+  ['#issueList .issue', 'Open this failure cluster: how often it happens, example runs and a suggested fix.'],
+  ['#draftFix', 'Ask Claude to draft a code fix for this failure. Uses your Claude account.'],
+  ['#toPrompt', 'Open the prompt this issue points at and compare its versions.'],
+  ['#mkDataset', 'Save these failing runs as an eval dataset, so the fix can be tested against them.'],
+  ['[data-run]', 'Open this run on the graph.'],
+  ['.switch', 'Turn this alert rule on or off.'],
+  ['#promptList .run', 'Open this prompt and its versions.'],
+  ['#promote', 'Make the selected version the one production runs use.'],
+  ['.nav[href="#console"]', 'Watch runs move through their workflow, step by step.'],
+  ['.nav[href="#traces"]', 'Every run as an OpenTelemetry trace you can open span by span.'],
+  ['.nav[href="#issues"]', 'Failures grouped by root cause, with suggested fixes and alert rules.'],
+  ['.nav[href="#inbox"]', 'Runs paused until a person approves, edits or rejects them.'],
+  ['.nav[href="#evals"]', 'Compare a prompt version against production on the same examples before shipping it.'],
+  ['.nav[href="#prompts"]', 'The prompts each step uses, with versions and diffs.'],
+  ['.nav[href="#costs"]', 'Spend per step and per model, with daily budgets and guardrails.'],
+  ['#issueStatus', 'Set where this issue stands: open, being investigated, or fixed.'],
+  ['#v-prompts button[data-i]', 'Show this version and what changed from the one before.'],
+  ['.nav[href="#notes"]', 'Why the console is laid out the way it is, and the dashboards it learned from.'],
+  ['.nav[href="#learn"]', 'How one trace format lets these runs show up in any observability tool.'],
+  ['.nav[href="../research/"]', 'The research blog behind the factory design.'],
+  ['.nav[href="../"]', 'Back to the landing page.'],
+];
+for (const [sel, text, title] of NOTES) {
+  const scope = document.querySelector(sel); if (!scope) continue;
+  const panels = title ? [...scope.querySelectorAll('.panel')].filter(p => p.querySelector(':scope > .phead')?.textContent.trim().startsWith(title)) : [scope];
+  const panel = panels[0], head = panel?.querySelector(':scope > .phead');
+  if (head && !panel.querySelector(':scope > .pnote')) head.insertAdjacentHTML('afterend', `<p class="pnote">${text}</p>`);
+}
+function applyTips() {
+  for (const [sel, t] of TIPS) for (const el of document.querySelectorAll(sel)) {
+    if (el.dataset.tip) continue;
+    const text = typeof t === 'function' ? t(el) : t;
+    if (text) el.dataset.tip = text;
+  }
+}
+applyTips();
+// lists re-render often (runs, traces, issues); tag new controls once per frame
+let tipRaf = 0;
+new MutationObserver(() => { if (!tipRaf) tipRaf = requestAnimationFrame(() => { tipRaf = 0; applyTips(); }); })
+  .observe(document.body, { childList:true, subtree:true });
+
+// the tooltip itself: one element, shown on hover after a short pause or right away on keyboard focus
+const tip = Object.assign(document.createElement('div'), { id:'tip', className:'tip', hidden:true });
+tip.setAttribute('role', 'tooltip');
+document.body.append(tip);
+let tipFor = null, tipWait = 0;
+function placeTip(el) {
+  const r = el.getBoundingClientRect(), t = tip.getBoundingClientRect(), pad = 8;
+  let y = r.bottom + 8, x = r.left + r.width / 2 - t.width / 2;
+  if (y + t.height > innerHeight - pad) y = r.top - t.height - 8;      // no room below: show above
+  x = Math.max(pad, Math.min(x, innerWidth - t.width - pad));
+  tip.style.left = x + 'px'; tip.style.top = Math.max(pad, y) + 'px';
+}
+function showTip(el) {
+  tipFor?.removeAttribute('aria-describedby');
+  tipFor = el; tip.textContent = el.dataset.tip; tip.hidden = false;
+  el.setAttribute('aria-describedby', 'tip');
+  placeTip(el);
+}
+function hideTip() { clearTimeout(tipWait); tip.hidden = true; tipFor?.removeAttribute('aria-describedby'); tipFor = null; }
+document.addEventListener('pointerover', e => {
+  const el = e.target.closest?.('[data-tip]');
+  if (!el || el === tipFor) return;
+  clearTimeout(tipWait); tipWait = setTimeout(() => showTip(el), 380);
+});
+document.addEventListener('pointerout', e => {
+  const el = e.target.closest?.('[data-tip]');
+  if (el && !el.contains(e.relatedTarget)) hideTip();
+});
+document.addEventListener('focusin', e => { const el = e.target.closest?.('[data-tip]'); if (el && el.matches(':focus-visible')) showTip(el); });
+document.addEventListener('focusout', hideTip);
+document.addEventListener('pointerdown', hideTip);
+addEventListener('keydown', e => { if (e.key === 'Escape') hideTip(); });
+addEventListener('scroll', hideTip, { passive:true, capture:true });
 </script>
 
 </body>

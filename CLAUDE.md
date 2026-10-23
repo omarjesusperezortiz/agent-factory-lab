@@ -18,6 +18,7 @@ The site has three parts. Edit the sources in `src/`, never the built `index.htm
 - **The console is also a private claude.ai Artifact:** https://claude.ai/artifact/Bws2CJPVkzxv91UvDupScq (Learning Heroes account)
   - From a new session, read it with the Artifact tool first.
   - Then publish `src/console.html` with that `url` so the link stays the same.
+- `research/thumbs/<post-id>.jpg`: YouTube-style post thumbnails (1280×720, a few big words over a zoomed piece of the post's own diagram). Template: `scripts/thumbs/card.html?img=…&k=kicker&t=Title%20<em>word</em>&c=%23accent&pos=…&w=…`, screenshotted at 1280×720.
 - `research/sources.md`, `research/videos.md`: source lists. `decisions/`: one file per decision. `handoffs/`: session handoffs, newest first.
 - `videos/`: data for the research blog's video feed. `index.json` is the feed, `channels.txt` lists followed channels, `<date>-<slug>/index.html` is a standalone explainer.
   - The blog opens an explainer at `research/#videos/<date>-<slug>` in a frame and removes its `<nav class="top">`. `videos/index.html` only redirects to `../research/#videos`.
@@ -28,9 +29,12 @@ The site has three parts. Edit the sources in `src/`, never the built `index.htm
 ## How the pages are built
 
 - **Research post:** a `<section class="view doc" id="v-NAME" hidden>` in `src/research.html`, before `<nav class="rs-next"`.
-  - Add `['NAME', 'Category']` to `POSTS` (newest first, after the pinned "Start here"). Title and summary come from the post's `<h1>` and `.lede`.
+  - Add `['NAME', 'Category']` to `POSTS`, newest first; the first three are featured on the home page. Title and summary come from the post's `<h1>` and `.lede`.
+  - Give it a thumbnail at `research/thumbs/NAME.jpg`.
   - Its script goes in its own IIFE that returns early when its elements are missing.
 - **Console view:** a `<section class="view" id="v-NAME" hidden>` in `src/console.html`, registered in `VIEW_NAMES` with a sidebar link `href="#NAME"`.
+- **Class names:** never use a bare short class (`.run`, `.btn`, `.v2`, `.st`…) inside a stage: the shared stylesheet already styles them globally. Prefix every one.
+- **Moving markup between files:** cut a section by matching opening and closing tags, never by searching for the first `</section>`.
 - **Prefixes:** every view's CSS and JS uses a unique prefix (`.sp-`, `.or-`, `.rs-`, `.vd-`, `.lp-`…). Global classes like `.warn` clash.
 - **Animated explainers:** use the `visual-explainer` skill.
   - Derive the visuals from the source (video frames, the essay's own metaphors).
