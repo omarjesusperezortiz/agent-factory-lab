@@ -525,6 +525,13 @@ pre.diff .del { background:color-mix(in srgb, var(--err) 14%, transparent); colo
   .or-pipe { grid-template-columns:repeat(2, minmax(0,1fr)); gap:10px; }
   .or-st + .or-st::before { display:none; }
 }
+.am-term { font-size:12.5px; line-height:1.6; display:grid; gap:6px; }
+.am-term p { margin:0; opacity:0; transform:translateY(4px); transition:opacity .3s, transform .3s; }
+.am-term p.in { opacity:1; transform:none; }
+.am-term .pr { color:#8ab4f8; }
+.am-term .hl { color:var(--tool); }
+.am-term .dm { color:#9aa0a6; }
+.am-stage .sp-card .st { min-width:1em; text-align:right; }
 @media (prefers-reduced-motion: reduce) { *, *::before { animation:none !important; transition:none !important; } }
 </style>
 
@@ -556,6 +563,7 @@ pre.diff .del { background:color-mix(in srgb, var(--err) 14%, transparent); colo
         <a class="nav" href="#iceberg"><svg viewBox="0 0 16 16"><path d="M2 9h12M5 9l3-6 3 6M4 9l1.5 5h5L12 9"/></svg>Iceberg (30)</a>
         <a class="nav" href="#spec"><svg viewBox="0 0 16 16"><path d="M4 1.5h5.5L13 5v9.5H4z"/><path d="M6.5 8h4M6.5 10.5h4M6.5 5.5h2"/></svg>Spec-driven</a>
         <a class="nav" href="#orch"><svg viewBox="0 0 16 16"><circle cx="8" cy="3" r="1.8"/><circle cx="3" cy="12.5" r="1.8"/><circle cx="13" cy="12.5" r="1.8"/><path d="M8 4.8v3.4M8 8.2 3.8 11M8 8.2l4.2 2.8"/></svg>Orchestration</a>
+        <a class="nav" href="#amb"><svg viewBox="0 0 16 16"><path d="M2 14 6.5 6l3 4.5L11.5 7 14 14z"/><path d="M11.5 7V2.5l2 1-2 1"/></svg>Be ambitious</a>
         <a class="nav" href="#research"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3.5 3.5"/></svg>Research notes</a>
         <a class="nav" href="#learn"><svg viewBox="0 0 16 16"><path d="M2 3.5h4.5A1.5 1.5 0 0 1 8 5v8a1.5 1.5 0 0 0-1.5-1.5H2zM14 3.5H9.5A1.5 1.5 0 0 0 8 5v8a1.5 1.5 0 0 1 1.5-1.5H14z"/></svg>OpenTelemetry</a>
       </div>
@@ -1872,6 +1880,77 @@ exit 2   # blocks the call; stderr goes to Claude</pre>
     </section>
   </section>
 
+  <section class="view doc" id="v-amb" hidden>
+    <div>
+      <div class="eyebrow">Research round 8 · prompting for outcomes · Oct 2026</div>
+      <h1>Be more ambitious with the agent</h1>
+      <p class="lede">The same model gives some people remarkable results and others ordinary ones, because it does <i>exactly</i> what it's asked. Felix Rieseberg (who led engineering on Claude's apps) splits "ask for more" into four kinds: <b>speed, altitude, depth, range</b>. Then he adds two things that make them work: an outside judge, and real resources. Built from <a href="https://felixrieseberg.com/how-to-be-more-ambitious-a-tutorial-for-humans-with-models/" target="_blank" rel="noopener">his essay</a> and <a href="https://www.youtube.com/watch?v=92ZDgn8bgLM" target="_blank" rel="noopener">AI Labs' video walkthrough</a>, using the video's example: a hiring app.</p>
+      <nav class="toc" aria-label="Sections"><a href="#am-loop">The ladder</a><a href="#am-ours">Our pipeline</a><a href="#am-limits">When not to</a><a href="#am-src">Sources</a></nav>
+    </div>
+
+    <section id="am-loop">
+      <h2>One task, asked six ways</h2>
+      <p class="claim">Press play, or click a step. On the left is what you type, and on the right is what comes back. <b>Each step keeps the previous ones</b>; they stack, they don't replace each other.</p>
+      <div class="sp-ctl">
+        <div class="seg" id="amSteps"></div>
+        <button type="button" class="sp-play" id="amPlay" aria-pressed="false">▶ Play all</button>
+      </div>
+      <div class="sp-stage am-stage" id="amStage">
+        <div class="sp-box sp-left"><div class="sp-h" id="amLeftH"></div><div class="am-term" id="amLeft"></div></div>
+        <div class="sp-link"><span class="sp-verb" id="amVerb"></span><svg viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true"><line x1="0" y1="5" x2="100" y2="5"/></svg></div>
+        <div class="sp-box sp-agent"><div class="sp-h" id="amAgentH">AGENT</div><div class="sp-dots" aria-hidden="true"><i></i><i></i><i></i></div><div class="sp-note" id="amNote"></div></div>
+        <div class="sp-fan"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0,50 L100,12.5 M0,50 L100,37.5 M0,50 L100,62.5 M0,50 L100,87.5"/></svg></div>
+        <div class="sp-cards" id="amCards"></div>
+      </div>
+      <div class="sp-cap" id="amCap" aria-live="polite"></div>
+    </section>
+
+    <section id="am-ours">
+      <h2>Where each one plugs into our pipeline</h2>
+      <p class="claim">None of these needs a new tool. They change <b>what each stage is asked for</b>, and most can be written into the stage prompts once.</p>
+      <div class="tcard"><table>
+        <thead><tr><th>Kind</th><th>The question</th><th>Stage</th><th>Concrete change</th></tr></thead>
+        <tbody>
+          <tr><td><b>Altitude</b></td><td>What's the goal behind the goal?</td><td>Ticket intake / orchestrator</td><td>Every ticket gets an <code>outcome</code> field ("roles fill faster") next to the task ("add a dashboard"). The scout plans against the outcome.</td></tr>
+          <tr><td><b>Depth</b></td><td>What would the best practitioner do?</td><td>Scout / spec</td><td>Before writing <code>proposal.md</code>, the scout answers the four depth questions. Answer 4, "what proves it", becomes the scenarios in the spec.</td></tr>
+          <tr><td><b>Judge</b></td><td>Who checks, other than the builder?</td><td>Tester, reviewer</td><td>The reviewer runs on a different model (<code>codex exec</code>, or a fresh <code>claude -p</code> with only the files). Prefer judges the agent can <i>run</i>: tests, measurements, a reproduction.</td></tr>
+          <tr><td><b>Range</b></td><td>Which other fields would see this differently?</td><td>Final review</td><td>Describe the product as a verb, then a sequence of specialist subagents, each with a <i>method</i>, not a persona, and a red team at the end. Only for big tickets: it is slow.</td></tr>
+          <tr><td><b>Resources</b></td><td>Can it see, understand and test the problem?</td><td>Worker environment</td><td>MCP to the error tracker, a version → commit map, and a sandbox where the worker can reproduce the bug and prove the fix.</td></tr>
+        </tbody>
+      </table></div>
+      <ol class="order">
+        <li><div><b>Add <code>outcome</code> to the ledger row</b><span>The cheapest change with the biggest effect. Without it, every downstream stage optimises for "task done".</span></div></li>
+        <li><div><b>Depth questions in the scout prompt</b><span>This fits OpenSpec's explore step: "what a professional would do that I'm not asking for" is exactly the question explore should ask.</span></div></li>
+        <li><div><b>A different model for the reviewer</b><span>We already separate tester and reviewer. Making the reviewer a different model is a one-line change in the dispatch loop.</span></div></li>
+        <li><div><b>Range as a label, not a default</b><span>A <code>range</code> label on the ticket triggers the specialist sequence. Default tickets skip it, because it takes a long time.</span></div></li>
+      </ol>
+    </section>
+
+    <section id="am-limits">
+      <h2>When not to</h2>
+      <div class="tcard"><table>
+        <thead><tr><th>Kind</th><th>Breaks when</th></tr></thead>
+        <tbody>
+          <tr><td>Speed</td><td>It scales whatever you already do, mistakes included.</td></tr>
+          <tr><td>Altitude</td><td>The work is creative, with no single right result, or the agent can't reach the data and permissions the outcome needs.</td></tr>
+          <tr><td>Depth</td><td>The work is throwaway, because depth costs much more compute. Without a judge, "expert standard" is just a claim.</td></tr>
+          <tr><td>Range</td><td>It becomes role-play. "Write like a recruiter" changes the tone, not the work. Remove any specialist that has no concrete method or tool.</td></tr>
+          <tr><td>Outside judge</td><td>There's nothing to run. Content is harder to judge than code; asking for citations helps, but it is not independent.</td></tr>
+          <tr><td>All of them</td><td>Rieseberg: "There are currently limits." "Claude, go make money" still doesn't work on its own.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="am-src">
+      <h2>Sources</h2>
+      <ul class="or-src">
+        <li><a href="https://felixrieseberg.com/how-to-be-more-ambitious-a-tutorial-for-humans-with-models/" target="_blank" rel="noopener">Felix Rieseberg: How to be more ambitious, a tutorial for humans with models</a> (Oct 2026). Cites Locke &amp; Latham on specific hard goals; the noun→verb trick is from <i>The Art of Innovation</i>.</li>
+        <li><a href="https://www.youtube.com/watch?v=92ZDgn8bgLM" target="_blank" rel="noopener">AI Labs: Anthropic Just Revealed How Their Engineers Use Claude Code</a> (11:47). The hiring-app prompts on this page are quoted from its screen recordings.</li>
+        <li><a href="https://www.mejba.me/blog/be-more-ambitious-with-ai" target="_blank" rel="noopener">Mejba: summary of the framework and its caveats</a></li>
+      </ul>
+    </section>
+  </section>
+
   <!-- ============ RESEARCH NOTES ============ -->
   <section class="view doc" id="v-research" hidden>
     <div>
@@ -2241,7 +2320,7 @@ const totals = r => { const f = r.f || 1; let tin = 0, tout = 0; for (const s of
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => t.hidden = true, 2400); }
 
 // ---- routing ----
-const VIEW_NAMES = { console:'Console', traces:'Traces', issues:'Issues', inbox:'Human inbox', evals:'Evals', prompts:'Prompts', costs:'Costs', flow:'Ticket flow', harness:'Harness playbook', devsetup:'Dev setup', rag:'RAG & context', teams:'Teams & supervision', iceberg:'Iceberg (30)', spec:'Spec-driven', orch:'Orchestration', research:'Research notes', learn:'OpenTelemetry' };
+const VIEW_NAMES = { console:'Console', traces:'Traces', issues:'Issues', inbox:'Human inbox', evals:'Evals', prompts:'Prompts', costs:'Costs', flow:'Ticket flow', harness:'Harness playbook', devsetup:'Dev setup', rag:'RAG & context', teams:'Teams & supervision', iceberg:'Iceberg (30)', spec:'Spec-driven', orch:'Orchestration', amb:'Be ambitious', research:'Research notes', learn:'OpenTelemetry' };
 const VIEWS = Object.keys(VIEW_NAMES);
 function route() {
   const h = location.hash.slice(1);
@@ -3269,6 +3348,88 @@ The system SHALL keep a session for 30 days when the user ticks "Remember me".
   $('orRows').addEventListener('click', e => { const r = e.target.closest('tr'); if (r) pick(+r.dataset.i); });
   $('orPlay').addEventListener('click', run);
   pick(cur);
+})();
+
+// Be ambitious: six-step prompt ladder on the terminal stage
+(() => {
+  const $ = id => document.getElementById(id);
+  const ICON = { dim:'', plan:'·', wip:'…', done:'', ok:'✓', wn:'⚠' };
+  // lines: [class, text]; cards: [label, note, final state]
+  const STEPS = [
+    { k:'Task', head:'PROMPT', verb:'ASK', agent:'AGENT', note:'does exactly what was asked',
+      lines:[['pr','› Add a reports dashboard']],
+      cards:[['CHARTS','numbers per role','ok'], ['FILTERS','by date, client','ok'], ['EXPORT','CSV','ok'], ['SO WHAT?','nothing to act on','wn']],
+      cap:'<p><b>Baseline, plus speed.</b> You get what you asked for: charts of numbers. Speed (same work, less time) is the kind of ambition everyone already uses.</p><p class="sp-small">Nothing in the prompt says what the report is <i>for</i>, so the agent stops at "done".</p>' },
+    { k:'Altitude', head:'PROMPT', verb:'OUTCOME', agent:'AGENT', note:'works out the tasks itself',
+      lines:[['pr','› Build a reports dashboard, but what I actually want is for our roles to get filled faster.'],
+        ['','Go through our hiring data, find what\'s slowing roles down, and build the page to <span class="hl">flag stuck roles early</span> and tell us what to do about them.'],
+        ['','Put the <span class="hl">three most urgent decisions</span> on it, with the numbers behind them.']],
+      cards:[['STUCK ROLES','flagged early','ok'], ['WHY','bottleneck per role','ok'], ['3 DECISIONS','with the numbers','ok'], ['CHARTS','now supporting evidence','done']],
+      cap:'<p><b>Altitude: ask for the goal behind the goal.</b> Rieseberg stopped handing agents one crash at a time and asked them to keep the app crash-free.</p><p class="sp-small">Fits work with a specific outcome. Fits creative work less well, where there is no single right result.</p>' },
+    { k:'Depth', head:'REWRITE FIRST', verb:'DEEPER', agent:'AGENT', note:'rewrites the prompt, then you run it',
+      lines:[['dm','My task: rank candidates in each role\'s pipeline.'],
+        ['pr','› I want a deeper version of this task, not a bigger one. Before rewriting it:'],
+        ['','(1) what would a <span class="hl">top professional</span> do here that I\'m not asking for?'],
+        ['','(2) what <span class="hl">rawest material</span> would they start from?'],
+        ['','(3) which specific <span class="hl">methods and tools</span>?'],
+        ['','(4) what, other than you or me, would <span class="hl">show the result is right</span>?'],
+        ['dm','Then rewrite my prompt to ask for exactly that.']],
+      cards:[['PRO MOVE','a rubric the recruiter can defend','ok'], ['RAW MATERIAL','raw records, not derived fields','ok'], ['METHOD','hard filters, then tiers','ok'], ['PROOF','hand-labelled fixture, precision@3','ok']],
+      cap:'<p><b>Depth: the way the best expert would do it.</b> "Act as a senior recruiter" changes how the answer <i>sounds</i>. Asking for the expert\'s material, methods and proof changes the <i>work</i>. You don\'t need to know the methods; the model usually does.</p><p class="sp-small">In the video the rewrite took 46s and produced a 12-line spec, including a leakage test. Run it in a fresh session. Hard goals help too: "make it feel instant" beats "make it faster".</p>' },
+    { k:'Judge', head:'PROMPT', verb:'REVIEW', agent:'OTHER MODEL', note:'codex exec, read-only',
+      lines:[['pr','› Use the codex CLI to review the ranking feature that was implemented, report back all the findings, then fix them.'],
+        ['dm','● Bash(codex exec -s read-only …)'],
+        ['dm','  Found six verified issues, ordered by severity. All 17 existing tests pass.']],
+      cards:[['REVIEWER','a different model','ok'], ['FINDINGS','6 verified, by severity','wn'], ['FIXES','applied by the builder','ok'], ['TESTS','17/17 still pass','ok']],
+      cap:'<p><b>Outside judge: never let the model grade its own work.</b> It made every decision in that work. Use another model\'s CLI, or at least a fresh non-interactive session, ideally on a different model.</p><p class="sp-small">The best judge is one the agent can <i>run</i>: tests, a measurement, a reproduction.</p>' },
+    { k:'Range', head:'NOUN → VERB', verb:'FIELDS', agent:'WORKFLOW', note:'6 specialists, one after another',
+      lines:[['pr','› We\'re not just "a recruitment agency".'],
+        ['','We get <span class="hl">strangers to trust us</span> with their next career move, and <span class="hl">companies to trust us</span> with their next hire.'],
+        ['','Bring in subagents from the fields that know that best, and have each do that field\'s actual work on our app.'],
+        ['','Then a <span class="hl">red team</span>: a candidate who\'s been ghosted and a hiring manager burned by an agency find every reason to leave us.']],
+      cards:[['CANDIDATE EXP.','stop ghosting','ok'], ['CLIENT SERVICES','the hiring manager\'s side','ok'], ['FAIR HIRING + PRIVACY','pay transparency, consent','ok'], ['SECURITY + CONTENT','logins, scams, every string','ok']],
+      cap:'<p><b>Range: fields you would never normally bring in.</b> The trick for picking them is to describe the product by what it <i>does</i> for people (a verb), not what it is (a noun).</p><p class="sp-small">Each specialist builds on the previous one\'s changes and must pass typecheck, lint and a smoke test before handing over. It takes a long time. Use it on big work only.</p>' },
+    { k:'Resources', head:'GOAL', verb:'SEE · TEST', agent:'AGENT + COMPUTERS', note:'proves the fix, doesn\'t claim it',
+      lines:[['pr','› Keep the apps crash-free.'],
+        ['dm','Only works because the agent has:'],
+        ['','• <span class="hl">crash reports</span> it can fetch (MCP to the tracker)'],
+        ['','• <span class="hl">context</span>: which app version maps to which commit'],
+        ['','• <span class="hl">computers</span> (Windows, macOS, Linux) to reproduce each crash and test the fix']],
+      cards:[['SEE','crash reports via MCP','ok'], ['UNDERSTAND','version ↔ commit','ok'], ['REPRODUCE','real machines','ok'], ['PROVE','the fix stops the crash','ok']],
+      cap:'<p><b>Resources: every kind of ambition needs them.</b> Asking for a bigger result is useless if the agent can\'t see whether it got there. It has to be able to install software, reach the data, and check its own work somewhere real.</p><p class="sp-small">For our factory this is the worker\'s environment: the error-tracker MCP, a version→commit map, and the sandbox per ticket.</p>' },
+  ];
+  const stage = $('amStage'); let cur = 0, auto = false, timers = [];
+  const clear = () => { timers.forEach(clearTimeout); timers = []; };
+  $('amSteps').innerHTML = STEPS.map((s, i) => `<button type="button" data-i="${i}">${i + 1}. ${s.k}</button>`).join('');
+  function card(c, st) {
+    return `<div><div class="sp-card ${st}"><b>${c[0]}</b><span class="st">${ICON[st]}</span><small>${c[1]}</small></div></div>`;
+  }
+  function show(i) {
+    clear(); cur = i; const s = STEPS[i];
+    $('amSteps').querySelectorAll('button').forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
+    $('amLeftH').textContent = s.head; $('amVerb').textContent = s.verb; $('amAgentH').textContent = s.agent; $('amNote').textContent = '';
+    $('amLeft').innerHTML = s.lines.map(([c, t]) => `<p class="${c}">${t}</p>`).join('');
+    $('amCards').innerHTML = s.cards.map(c => card(c, 'plan')).join('');
+    $('amCap').innerHTML = s.cap;
+    stage.classList.remove('busy');
+    const t = (fn, ms) => timers.push(setTimeout(fn, reduced ? 0 : ms));
+    const ps = [...$('amLeft').children];
+    ps.forEach((p, k) => t(() => p.classList.add('in'), 150 + k * 380));
+    const go = 150 + ps.length * 380 + 200;
+    t(() => { stage.classList.add('busy'); $('amNote').textContent = s.note; }, go);
+    const cards = [...$('amCards').children];
+    s.cards.forEach((c, k) => {
+      t(() => { cards[k].outerHTML = card(c, 'wip'); }, go + 500 + k * 450);
+      t(() => { $('amCards').children[k].outerHTML = card(c, c[2]); }, go + 900 + k * 450);
+    });
+    const end = go + 900 + s.cards.length * 450;
+    t(() => stage.classList.remove('busy'), end);
+    if (auto) t(() => i < STEPS.length - 1 ? show(i + 1) : stop(), end + 1800);
+  }
+  function stop() { auto = false; $('amPlay').textContent = '▶ Play all'; $('amPlay').setAttribute('aria-pressed', 'false'); }
+  $('amSteps').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { stop(); show(+b.dataset.i); } });
+  $('amPlay').addEventListener('click', () => { if (auto) { stop(); clear(); return; } auto = true; $('amPlay').textContent = '❚❚ Pause'; $('amPlay').setAttribute('aria-pressed', 'true'); show(cur === STEPS.length - 1 ? 0 : cur); });
+  show(0);
 })();
 </script>
 
