@@ -2,6 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script>
+// Old dashboard links (/#orch, /#console…) now live in /console/ or /research/
+(() => { const h = location.hash.slice(1); if (!h) return;
+  const CONSOLE = ['console', 'traces', 'issues', 'inbox', 'evals', 'prompts', 'costs'];
+  location.replace((CONSOLE.includes(h) ? 'console/' : 'research/') + location.hash); })();
+</script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Agent Factory Lab</title>
 <meta name="description" content="Research on orchestrating AI coding agents into a software factory. Follow one ticket down the line.">
@@ -115,7 +121,7 @@ main { position:relative; z-index:2; }
 
 <header class="lp-top">
   <b>agent-factory-lab</b>
-  <nav><a href="../#console">Console</a><a href="../#research">Research</a><a href="https://github.com/omarjesusperezortiz/agent-factory-lab" target="_blank" rel="noopener">GitHub</a></nav>
+  <nav><a href="console/">Console</a><a href="research/">Research</a><a href="https://github.com/omarjesusperezortiz/agent-factory-lab" target="_blank" rel="noopener">GitHub</a></nav>
 </header>
 <div class="lp-hud" aria-hidden="true"><i id="lpDot"></i><span>ticket <b>AF-0042</b></span><span>stage <b id="lpStage">intake</b></span><span>attempt <b id="lpTry">1</b></span></div>
 <div class="lp-ctl"><button type="button" id="lpPlay" aria-pressed="false">▶ Play</button><button type="button" id="lpSkip">Skip to doors ↓</button><span class="lp-bar" aria-hidden="true"><i id="lpBar"></i></span></div>
@@ -174,8 +180,8 @@ main { position:relative; z-index:2; }
 
   <section class="lp-doors" data-scene="5">
     <div class="lp-doorrow">
-      <a class="lp-door c" href="../#console"><small>● Console</small><b>Run the factory →</b><span>Runs, traces, issues, the human inbox, evals and costs.</span></a>
-      <a class="lp-door r" href="../#research"><small>● Research</small><b>Read the lab →</b><span>Posts, animated explainers, the daily video feed and decisions.</span></a>
+      <a class="lp-door c" href="console/"><small>● Console</small><b>Run the factory →</b><span>Runs, traces, issues, the human inbox, evals and costs.</span></a>
+      <a class="lp-door r" href="research/"><small>● Research</small><b>Read the lab →</b><span>Posts, animated explainers, the daily video feed and decisions.</span></a>
     </div>
   </section>
 </main>
