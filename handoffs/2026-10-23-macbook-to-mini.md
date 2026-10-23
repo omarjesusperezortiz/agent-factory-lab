@@ -38,3 +38,9 @@
 
 - Research tabs: Orchestration (9 ways × 6 jobs, worker-crash simulation) and Be ambitious (6 scenes redrawn from the AI Labs video's motion graphics).
 - Mac mini SSH: `ssh omarjesusperezortiz@100.110.82.11` (Tailscale, by IP).
+
+## Resolved on the Mini (same day)
+
+- Watch plugin installed: local engine, no speech fallback (captions only).
+- Knowledge & handoff tab: the user chose **both**, so it is in `src/dashboard.html` (Artifact and GitHub Pages).
+- Videos feed: AI Labs only for now. Updates go **straight to main**, not as PRs. The job is live, see `CLAUDE.md` → `videos/`.

@@ -1,0 +1,35 @@
+[
+  {
+    "id": "92ZDgn8bgLM",
+    "channel": "AI LABS",
+    "date": "2026-10-21",
+    "title": "Anthropic Just Revealed How Their Engineers Use Claude Code",
+    "summary": "Walks through Felix Rieseberg's essay on being more ambitious with models: ask for outcomes instead of tasks, and push on altitude, depth and range. Give the agent real resources and an outside judge so it can work toward the result rather than the next step.",
+    "tags": [
+      "claude-code",
+      "ambition",
+      "outcomes",
+      "workflow"
+    ],
+    "score": 5,
+    "page": "../#amb"
+  },
+  {
+    "id": "ERNqRK6sMJY",
+    "channel": "AI LABS",
+    "date": "2026-10-09",
+    "title": "Claude Mods Are Insane... You Need To Try These Right Now",
+    "summary": "Anthropic's new Claude mods are always-on extensions that can redraw Claude Code's UI and change its behavior, unlike skills or plugins that only add capabilities. The channel builds mods for prompt enhancement, assumption tracking, session dashboards, same-folder session coordination, an idea shelf, and plain-language answer rewriting checked by a Haiku model. The idea worth keeping is the assumptions-review mod: surface every silent assumption the agent made, let a human mark each right or wrong, and automatically feed the wrong ones back as a correction prompt.",
+    "tags": [
+      "claude-code",
+      "claude-mods",
+      "human-in-the-loop",
+      "session-management",
+      "prompt-enhancement"
+    ],
+    "score": 3,
+    "page": null,
+    "slug": "claude-mods-assumption-review-session-tracking",
+    "transcript": true
+  }
+]

@@ -621,6 +621,21 @@ pre.diff .del { background:color-mix(in srgb, var(--err) 14%, transparent); colo
   .v2 .tasks i { font-size:8.5px; white-space:nowrap; overflow:hidden; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before { animation:none !important; transition:none !important; } }
+/* Knowledge & handoff */
+.k-bar { display:flex; height:30px; border-radius:8px; overflow:hidden; background:var(--panel2); border:1px solid var(--line); }
+.k-bar span { display:flex; align-items:center; justify-content:center; font:12px var(--mono); color:#0b1214; white-space:nowrap; overflow:hidden; transition:flex-basis .5s ease; }
+.k-bar .al, .k-sw.al { background:var(--err); }
+.k-bar .nr, .k-sw.nr { background:var(--tool); }
+.k-bar .od, .k-sw.od { background:var(--c4); }
+.k-legend { display:flex; flex-wrap:wrap; gap:14px; font-size:12.5px; color:var(--muted); }
+.k-sw { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; vertical-align:middle; }
+.k-files { display:grid; grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); gap:8px; }
+.k-file { display:flex; justify-content:space-between; gap:8px; align-items:center; font:12.5px var(--mono); padding:7px 10px; border-radius:8px; border:1px solid var(--line); background:var(--panel); border-left:4px solid var(--line); transition:opacity .3s, border-color .3s; }
+.k-file.al { border-left-color:var(--err); }
+.k-file.nr { border-left-color:var(--tool); }
+.k-file.od { border-left-color:var(--c4); }
+.k-file.off { opacity:.35; }
+.k-file small { color:var(--muted); }
 </style>
 
 <div class="app">
@@ -652,7 +667,9 @@ pre.diff .del { background:color-mix(in srgb, var(--err) 14%, transparent); colo
         <a class="nav" href="#spec"><svg viewBox="0 0 16 16"><path d="M4 1.5h5.5L13 5v9.5H4z"/><path d="M6.5 8h4M6.5 10.5h4M6.5 5.5h2"/></svg>Spec-driven</a>
         <a class="nav" href="#orch"><svg viewBox="0 0 16 16"><circle cx="8" cy="3" r="1.8"/><circle cx="3" cy="12.5" r="1.8"/><circle cx="13" cy="12.5" r="1.8"/><path d="M8 4.8v3.4M8 8.2 3.8 11M8 8.2l4.2 2.8"/></svg>Orchestration</a>
         <a class="nav" href="#amb"><svg viewBox="0 0 16 16"><path d="M2 14 6.5 6l3 4.5L11.5 7 14 14z"/><path d="M11.5 7V2.5l2 1-2 1"/></svg>Be ambitious</a>
+        <a class="nav" href="#know"><svg viewBox="0 0 16 16"><path d="M3 2.5h8.5v11H3z"/><path d="M5.5 5.5h4M5.5 8h4M11.5 11l2 2.5"/></svg>Knowledge &amp; handoff</a>
         <a class="nav" href="#research"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3.5 3.5"/></svg>Research notes</a>
+        <a class="nav" href="https://omarjesusperezortiz.github.io/agent-factory-lab/videos/" target="_blank" rel="noopener"><svg viewBox="0 0 16 16"><rect x="1.5" y="3" width="13" height="10" rx="2"/><path d="M6.5 6v4l3.5-2z"/></svg>Video feed ↗</a>
         <a class="nav" href="#learn"><svg viewBox="0 0 16 16"><path d="M2 3.5h4.5A1.5 1.5 0 0 1 8 5v8a1.5 1.5 0 0 0-1.5-1.5H2zM14 3.5H9.5A1.5 1.5 0 0 0 8 5v8a1.5 1.5 0 0 1 1.5-1.5H14z"/></svg>OpenTelemetry</a>
       </div>
     </nav>
@@ -2033,6 +2050,93 @@ exit 2   # blocks the call; stderr goes to Claude</pre>
     </section>
   </section>
 
+  <!-- ============ KNOWLEDGE & HANDOFF ============ -->
+  <section class="view doc" id="v-know" hidden>
+    <div>
+      <div class="eyebrow">Research round 7 · persistent knowledge &amp; handoff · Oct 2026</div>
+      <h1>What an agent knows when it starts</h1>
+      <p class="lede">Every agent session starts with no memory. Whatever it should know about <i>how</i> we work, <i>where</i> things live, <i>why</i> past decisions were made and <i>where the work stands now</i> has to come from files. This is a case study of a real production monorepo's agent setup (anonymized: a 12-app Nuxt frontend at work), what it gets right, where it drifted, and what our factory should copy.</p>
+      <nav class="toc" aria-label="Sections"><a href="#k-load">What loads</a><a href="#k-layers">Four kinds</a><a href="#k-handoff">Handoff</a><a href="#k-steal">Worth copying</a><a href="#k-drift">Drift found</a><a href="#k-ours">Our layout</a></nav>
+    </div>
+
+    <section id="k-load">
+      <h2>What loads at the start of a session</h2>
+      <p class="claim">Pick a session type. The bar shows how many lines of instructions the agent reads before it does anything, using real line counts from the repo. <b>Cursor's always-loaded rules were trimmed from 110 to 41 lines. Claude's were never trimmed: <code>CLAUDE.md</code> @-imports all nine guidelines, about 2,700 lines, every session.</b></p>
+      <div class="sp-ctl"><div class="seg" id="kScen"></div></div>
+      <div class="k-bar" id="kBar" aria-hidden="true"></div>
+      <div class="k-legend"><span><i class="k-sw al"></i>always loaded</span><span><i class="k-sw nr"></i>nearest folder</span><span><i class="k-sw od"></i>on demand</span></div>
+      <div class="k-files" id="kFiles"></div>
+      <p class="sp-small" id="kNote" aria-live="polite"></p>
+    </section>
+
+    <section id="k-layers">
+      <h2>Four kinds of knowledge, and how well each one persists</h2>
+      <p class="claim">They decay at different speeds, so they belong in different files. The case study is strong on <b>how</b> and <b>where</b>, thin on <b>why</b>, and keeps <b>now</b> almost entirely in people's heads.</p>
+      <div class="tcard"><table>
+        <thead><tr><th>Kind</th><th>Question</th><th>Where it lives in the case study</th><th>State</th><th>Changes</th></tr></thead>
+        <tbody>
+          <tr><td><b>How</b></td><td>What are the rules?</td><td><code>.agents/guidelines/*.md</code> as the single source of truth, with BLOCK / FLAG / WARN levels</td><td><span class="yes">strong</span></td><td>Monthly</td></tr>
+          <tr><td><b>Where</b></td><td>Which file do I open?</td><td>The root <code>AGENTS.md</code> is a map, plus a scoped <code>AGENTS.md</code> in all 29 apps and packages ("read the nearest one")</td><td><span class="yes">strong</span></td><td>When the structure changes</td></tr>
+          <tr><td><b>Why</b></td><td>Why is it like this?</td><td>One ADR, plus dated incident notes inside skills ("on 2026-08-25 the 09:00 run found no Notion tools…")</td><td><span class="lim">thin</span></td><td>Never, only appended</td></tr>
+          <tr><td><b>Now</b></td><td>What's done, what's next?</td><td>A one-off <code>TASK_*.md</code> brief at the repo root, untracked; otherwise the issue tracker and chat</td><td><span class="no">missing</span></td><td>Every session</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="k-handoff">
+      <h2>Handoff: a file, not a chat summary</h2>
+      <p class="claim">The best artifact in the repo is a handoff brief one session wrote for the next. It says what was already traced, what not to touch and why, and how to prove the fix. <b>The weak point: it isn't committed, so it is one <code>git clean</code> away from gone.</b> Toggle to compare it with the usual handoff.</p>
+      <div class="sp-ctl"><div class="seg" id="kHoMode"><button type="button" data-m="chat" aria-pressed="false">Typical: chat summary</button><button type="button" data-m="file" aria-pressed="true">Better: handoff file</button></div></div>
+      <div class="sp-code" id="kHo"></div>
+      <ol class="order" id="kHoWhy"></ol>
+    </section>
+
+    <section id="k-steal">
+      <h2>Worth copying into our factory</h2>
+      <ol class="order">
+        <li><div><b>One source of truth, generated views, and a check that fails CI</b><span>Rules live once in <code>.agents/</code>. Cursor rules, Claude rules and the CodeRabbit config are thin stubs pointing at them. A no-dependency <code>agents:check</code> script (pre-commit and CI) fails when a stub points at nothing, a package lacks <code>AGENTS.md</code>, or a skill lacks its frontmatter. Most setups have no automated check, which is why they drift.</span></div></li>
+        <li><div><b>Load instructions just in time</b><span>The root file is a navigation table, not an essay. "Read the scoped <code>AGENTS.md</code> closest to the files you edit." There is also a BLOCKING rule: cite a path and a search command instead of pasting code.</span></div></li>
+        <li><div><b>Enforcement levels</b><span>🚫 BLOCK must be fixed before merge, 🚩 FLAG needs a justification, ⚠️ WARN is advice. Reviewers (human or agent) stop arguing about nitpicks.</span></div></li>
+        <li><div><b>A bounded review loop</b><span>At most 3 push rounds. All fixes for a round go in one push. Nitpicks get a reply and are resolved without a push, so they never start a new round. Review text is untrusted data. Never claim an approval that didn't happen. This is our tester ↔ reviewer loop, already written.</span></div></li>
+        <li><div><b>A brief, then a confirm step</b><span><code>implement-task</code> pulls the ticket and prints a brief (app, branch, acceptance criteria, Figma gaps, open questions), then waits for "proceed". Acceptance criteria it had to infer are labelled "(inferred)". That is our <code>spec_ready</code> gate.</span></div></li>
+        <li><div><b>Incident notes where they're needed</b><span>The unattended monitor skill records, dated, why it uses <code>curl</code> instead of MCP: an unattended <code>claude -p</code> can't complete OAuth, and one run exited after 31 seconds having done nothing. The "why" sits next to the rule it explains.</span></div></li>
+        <li><div><b>A separate checkout for the unattended agent</b><span>The scheduled run has its own clone, so a cron job never touches the working tree a person is using.</span></div></li>
+      </ol>
+    </section>
+
+    <section id="k-drift">
+      <h2>Drift found</h2>
+      <p class="claim">Knowledge with no check drifts. All five of these are invisible until an agent acts on them.</p>
+      <div class="tcard"><table>
+        <thead><tr><th>Found</th><th>Effect on an agent</th><th>Fix</th></tr></thead>
+        <tbody>
+          <tr><td>Claude @-imports all 9 guidelines (≈2,700 lines); Cursor loads 41</td><td>A big context cost on every turn, and the rules that matter get diluted</td><td>Keep only the BLOCK rules always loaded. Give the rest <code>paths:</code> scopes in <code>.claude/rules/</code>.</td></tr>
+          <tr><td>The handoff brief says <code>yarn</code>; the repo moved to <code>pnpm</code></td><td>The next session runs the wrong commands</td><td>Handoffs link to commands in <code>AGENTS.md</code> instead of copying them</td></tr>
+          <tr><td>The handoff brief is untracked at the repo root</td><td>Lost on clean, invisible to teammates</td><td>Commit it as <code>handoffs/&lt;ticket&gt;.md</code> and delete it when the PR merges</td></tr>
+          <tr><td>The reviewer agent says "tests pass (<code>test:unit</code>)" for every change; the guidelines say apps have no unit tests</td><td>False review findings</td><td>Point the agent at the guideline instead of restating it, and add the agent files to <code>agents:check</code></td></tr>
+          <tr><td>The cron checkout was last updated 2026-09-01 and still has <code>yarn.lock</code></td><td>The monitor tests old instructions</td><td>Have the cron run <code>git pull</code> first, or use a worktree of the main clone</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="k-ours">
+      <h2>Our layout: one file per kind, one owner per file</h2>
+      <p class="claim">Each stage of the pipeline reads only what it needs. <b>The ledger and the handoff file are the only state that crosses a stage boundary.</b></p>
+      <div class="tcard"><table>
+        <thead><tr><th>File</th><th>Kind</th><th>Written by</th><th>Read by</th></tr></thead>
+        <tbody>
+          <tr><td><code>AGENTS.md</code> (root + one per package)</td><td>Where</td><td>People; checked in CI</td><td>Every stage, nearest first</td></tr>
+          <tr><td><code>.agents/guidelines/*.md</code></td><td>How</td><td>People</td><td>Worker, reviewer (BLOCK rules always, the rest by path)</td></tr>
+          <tr><td><code>decisions/NNNN-*.md</code></td><td>Why</td><td>Anyone, including agents, as a proposal</td><td>Scout, reviewer</td></tr>
+          <tr><td><code>openspec/changes/&lt;ticket&gt;/</code></td><td>Intent</td><td>Scout; approved by a person</td><td>Worker, tester, reviewer</td></tr>
+          <tr><td><code>handoffs/&lt;ticket&gt;.md</code></td><td>Now</td><td>Whichever stage stops (done, blocked, or out of budget)</td><td>The next stage, or the retry after a crash</td></tr>
+          <tr><td>The tracker</td><td>Now (status)</td><td>The orchestrator loop only</td><td>Orchestrator, sweeper, people</td></tr>
+          <tr><td><code>.agents/CHANGELOG.md</code></td><td>Why (of the instructions)</td><td>Whoever changes the agent setup</td><td>People debugging "it used to work"</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+  </section>
+
   <!-- ============ RESEARCH NOTES ============ -->
   <section class="view doc" id="v-research" hidden>
     <div>
@@ -2402,7 +2506,7 @@ const totals = r => { const f = r.f || 1; let tin = 0, tout = 0; for (const s of
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => t.hidden = true, 2400); }
 
 // ---- routing ----
-const VIEW_NAMES = { console:'Console', traces:'Traces', issues:'Issues', inbox:'Human inbox', evals:'Evals', prompts:'Prompts', costs:'Costs', flow:'Ticket flow', harness:'Harness playbook', devsetup:'Dev setup', rag:'RAG & context', teams:'Teams & supervision', iceberg:'Iceberg (30)', spec:'Spec-driven', orch:'Orchestration', amb:'Be ambitious', research:'Research notes', learn:'OpenTelemetry' };
+const VIEW_NAMES = { console:'Console', traces:'Traces', issues:'Issues', inbox:'Human inbox', evals:'Evals', prompts:'Prompts', costs:'Costs', flow:'Ticket flow', harness:'Harness playbook', devsetup:'Dev setup', rag:'RAG & context', teams:'Teams & supervision', iceberg:'Iceberg (30)', spec:'Spec-driven', orch:'Orchestration', amb:'Be ambitious', know:'Knowledge & handoff', research:'Research notes', learn:'OpenTelemetry' };
 const VIEWS = Object.keys(VIEW_NAMES);
 function route() {
   const h = location.hash.slice(1);
@@ -3542,6 +3646,90 @@ The system SHALL keep a session for 30 days when the user ticks "Remember me".
   $('amSteps').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { stop(); show(+b.dataset.i); } });
   $('amPlay').addEventListener('click', () => { if (auto) { stop(); clear(); return; } auto = true; $('amPlay').textContent = '❚❚ Pause'; $('amPlay').setAttribute('aria-pressed', 'true'); show(cur === SCENES.length - 1 ? 0 : cur); });
   show(0);
+})();
+
+
+// Knowledge & handoff: session loader bar + handoff toggle
+(() => {
+  const $ = id => document.getElementById(id);
+  // [file, lines]; per scenario each file is al (always), nr (nearest), od (on demand) or absent
+  const FILES = [['CLAUDE.md', 19], ['AGENTS.md (root)', 110], ['guidelines: vue', 627], ['guidelines: api', 500], ['guidelines: testing', 485],
+    ['guidelines: typescript', 282], ['guidelines: deployment', 201], ['guidelines: design-system', 194], ['guidelines: monorepo', 145],
+    ['guidelines: principles', 114], ['guidelines: jit-indexing', 53], ['Cursor always-on rules', 41], ['apps/<app>/AGENTS.md', 80], ['skill SKILL.md', 245], ['handoffs/<ticket>.md', 35]];
+  const G = FILES.slice(2, 11).map(f => f[0]);
+  const all = (k, names) => Object.fromEntries(names.map(n => [n, k]));
+  const SCEN = {
+    claude: { label:'Claude session', map:{ 'CLAUDE.md':'al', 'AGENTS.md (root)':'al', ...all('al', G), 'apps/<app>/AGENTS.md':'nr', 'skill SKILL.md':'od' },
+      note:'<code>CLAUDE.md</code> @-imports every guideline, so a typo fix in one app loads the Vue, API and testing rules for all twelve.' },
+    cursor: { label:'Cursor session', map:{ 'Cursor always-on rules':'al', 'AGENTS.md (root)':'od', ...all('od', G), 'apps/<app>/AGENTS.md':'nr', 'skill SKILL.md':'od' },
+      note:'After the v1.2.0 cleanup, only two rules are always on (41 lines). The rest are attached by file glob, when a matching file is open.' },
+    cron: { label:'Unattended run', map:{ 'CLAUDE.md':'al', 'AGENTS.md (root)':'al', ...all('al', G), 'skill SKILL.md':'al' },
+      note:'A scheduled <code>claude -p</code> pays the full 2,700 lines, plus the skill, from a clone that is seven weeks behind. No ticket handoff exists for it to read.' },
+    ideal: { label:'Proposed', map:{ 'CLAUDE.md':'al', 'AGENTS.md (root)':'al', 'guidelines: principles':'al', 'guidelines: monorepo':'al', 'guidelines: jit-indexing':'al',
+      'guidelines: vue':'od', 'guidelines: api':'od', 'guidelines: testing':'od', 'guidelines: typescript':'od', 'guidelines: deployment':'od', 'guidelines: design-system':'od',
+      'apps/<app>/AGENTS.md':'nr', 'skill SKILL.md':'od', 'handoffs/<ticket>.md':'al' },
+      note:'Always load only the BLOCK rules, the map and this ticket\'s handoff (about 480 lines). Everything else loads by path or on demand. The handoff is the only thing that is new each session.' },
+  };
+  const MAX = 3100;
+  const scen = $('kScen');
+  scen.innerHTML = Object.entries(SCEN).map(([k, s]) => `<button type="button" data-k="${k}">${s.label}</button>`).join('');
+  function show(k) {
+    const s = SCEN[k], sum = { al:0, nr:0, od:0 };
+    FILES.forEach(([n, l]) => { if (s.map[n]) sum[s.map[n]] += l; });
+    // ponytail: on-demand shown at full size to keep the bar honest about the worst case; fine for a 3-scenario explainer
+    $('kBar').innerHTML = ['al', 'nr', 'od'].map(c => `<span class="${c}" style="flex:0 0 ${sum[c] / MAX * 100}%">${sum[c] > 180 ? sum[c].toLocaleString() : ''}</span>`).join('');
+    $('kFiles').innerHTML = FILES.map(([n, l]) => `<div class="k-file ${s.map[n] || 'off'}"><span>${n}</span><small>${l}</small></div>`).join('');
+    $('kNote').innerHTML = `<b>${sum.al.toLocaleString()} lines</b> loaded before the first action. ${s.note}`;
+    scen.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.k === k)));
+  }
+  scen.addEventListener('click', e => { const b = e.target.closest('button'); if (b) show(b.dataset.k); });
+  show('claude');
+
+  const HO = {
+    chat: { code:`<span class="f">(last message of a chat, pasted into a new session)</span>
+
+I looked into the signup bug. I think it's something with localStorage
+in the sign-up page. Can you fix it? Make sure tests pass.`,
+      why:[['No root cause, so the next session starts over','It will re-investigate, and may land on a different theory.'],
+        ['No constraints','Nothing stops it from "fixing" the shared helper that another flow depends on.'],
+        ['"Make sure tests pass"','Which tests? The app has no unit tests, only end-to-end tests.'],
+        ['No deliverable','Commit? PR? Draft? Who merges?']] },
+    file: { code:`<span class="f">handoffs/ET-1234-signup-checkout.md</span>   <span class="f">(committed with the branch)</span>
+
+<span class="hd">## Scope</span>
+App: apps/<app>. Read apps/<app>/AGENTS.md first. Do NOT touch <other-app>.
+
+<span class="hd">## Problem</span>
+/sign-up?code=… (no invitedTo) still shows checkout. Expected: skip to onboarding.
+
+<span class="hd">## Root cause (already traced: verify, then fix)</span>
+<span class="add">onMounted SETS onboarding_plan_id from ?invitedTo / ?planId,
+but never CLEARS it, so a previous invited visit leaks into a plain one.
+Same class as the invited-to flag leak, already handled in utils/….ts</span>
+
+<span class="hd">## Constraints</span>
+<span class="mod">- Keep ?planId= behaviour (subscription flow sets it on purpose)
+- Do NOT change /sign-in: it can resume an in-progress invite (see comment in …ts)</span>
+
+<span class="hd">## Verify</span>
+Commands: see AGENTS.md "Definition of Done"   <span class="f">← link, don't copy</span>
+Flows: (a) ?invitedTo=<id> still shows checkout  (b) plain visit after an invite doesn't
+
+<span class="hd">## Deliverable</span>
+Branch per start-task, draft PR, a person merges. Report the branch and PR URL.`,
+      why:[['Root cause marked "verify, then fix"','The next agent checks the theory instead of re-deriving it, or blindly trusting it.'],
+        ['Constraints with reasons','"Don\'t touch /sign-in, because…" survives where a bare rule gets "optimised" away.'],
+        ['Links to commands instead of copying them','The real brief copied <code>yarn</code> commands after the repo had moved to <code>pnpm</code>.'],
+        ['Committed with the branch','It survives crashes and clean-ups, the sweeper can hand it to a retry, and it gets deleted on merge.']] },
+  };
+  const hm = $('kHoMode');
+  function setHo(m) {
+    $('kHo').innerHTML = HO[m].code;
+    $('kHoWhy').innerHTML = HO[m].why.map(([b, s]) => `<li><div><b>${b}</b><span>${s}</span></div></li>`).join('');
+    hm.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.m === m)));
+  }
+  hm.addEventListener('click', e => { const b = e.target.closest('button'); if (b) setHo(b.dataset.m); });
+  setHo('file');
 })();
 </script>
 
