@@ -525,13 +525,101 @@ pre.diff .del { background:color-mix(in srgb, var(--err) 14%, transparent); colo
   .or-pipe { grid-template-columns:repeat(2, minmax(0,1fr)); gap:10px; }
   .or-st + .or-st::before { display:none; }
 }
-.am-term { font-size:12.5px; line-height:1.6; display:grid; gap:6px; }
-.am-term p { margin:0; opacity:0; transform:translateY(4px); transition:opacity .3s, transform .3s; }
-.am-term p.in { opacity:1; transform:none; }
-.am-term .pr { color:#8ab4f8; }
-.am-term .hl { color:var(--tool); }
-.am-term .dm { color:#9aa0a6; }
-.am-stage .sp-card .st { min-width:1em; text-align:right; }
+.v2 { --c:#d97757; --card:#1c1c1c; --card2:#232323; --ln:#2e2e2e; --tx:#ececec; --mu:#8d8d8d; --gr:#7bd88f; --yl:#e8c468;
+  background:#0e0e0e; color:var(--tx); border-radius:14px; min-height:440px; padding:26px; position:relative; overflow:hidden; font-family:var(--sans); }
+.v2 .vc { background:var(--card); border:1px solid var(--ln); border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,.45); }
+.v2 .vi { opacity:0; transform:translateY(10px); transition:opacity .5s, transform .5s; }
+.v2 .vi.on { opacity:1; transform:none; }
+.v2 .mu { color:var(--mu); } .v2 .co { color:var(--c); } .v2 .gr { color:var(--gr); }
+.v2 .mono { font-family:var(--mono); }
+.v2 .row { display:flex; gap:22px; align-items:center; justify-content:center; flex-wrap:wrap; }
+.v2 .pill { display:inline-flex; align-items:center; gap:8px; background:var(--card2); border:1px solid var(--ln); border-radius:99px; padding:6px 14px; font-weight:600; font-size:14px; }
+.v2 .mascot { width:34px; height:25px; display:inline-block; vertical-align:middle; }
+.v2 .win-h { display:flex; align-items:center; gap:6px; padding:9px 12px; border-bottom:1px solid var(--ln); }
+.v2 .win-h i { width:9px; height:9px; border-radius:50%; background:#ff5f57; } .v2 .win-h i:nth-child(2) { background:#febc2e; } .v2 .win-h i:nth-child(3) { background:#28c840; }
+.v2 .win-h span { margin-left:auto; margin-right:auto; font:11px var(--mono); color:var(--mu); background:#141414; border-radius:6px; padding:2px 12px; }
+.v2 .num { font-variant-numeric:tabular-nums; }
+/* scene 1 */
+.v2 .term { width:230px; padding-bottom:10px; font:12.5px var(--mono); }
+.v2 .term .b { padding:10px 14px; display:grid; gap:8px; }
+.v2 .browser { width:min(380px, 100%); position:relative; overflow:hidden; }
+.v2 .bars { display:flex; align-items:flex-end; gap:6px; height:140px; padding:14px 18px; }
+.v2 .bars i { flex:1; background:#2f9e7a; border-radius:3px 3px 0 0; height:0; transition:height .6s cubic-bezier(.2,.8,.2,1); }
+.v2 .scan { position:absolute; left:0; right:0; top:0; height:2px; background:var(--c); box-shadow:0 0 12px var(--c); opacity:0; }
+.v2 .scan.go { opacity:1; animation:v2scan 1.4s ease-in-out forwards; }
+@keyframes v2scan { to { top:100%; } }
+.v2 .found { width:190px; padding:12px 14px; display:grid; gap:10px; font-size:14px; }
+.v2 .found div { display:flex; justify-content:space-between; }
+.v2 .found b { font-size:18px; }
+/* scene 2 */
+.v2 .gauge { position:relative; width:90px; height:290px; }
+.v2 .gauge .rail { position:absolute; left:10px; top:0; bottom:0; width:2px; background:#333; }
+.v2 .gauge .fill { position:absolute; left:10px; bottom:0; width:2px; height:0; background:var(--c); transition:height 1s ease; }
+.v2 .gauge .tk { position:absolute; left:14px; width:8px; height:1px; background:#3a3a3a; }
+.v2 .gauge .lab { position:absolute; left:22px; font-size:13px; transition:bottom 1s ease; white-space:nowrap; }
+.v2 .gauge .dot { position:absolute; left:6px; width:10px; height:10px; border-radius:50%; background:var(--c); transition:bottom 1s ease; }
+.v2 .alt-mid { display:grid; justify-items:center; gap:26px; }
+.v2 .goal { display:flex; align-items:center; gap:12px; padding:14px 22px; font-size:20px; font-weight:700; }
+.v2 .tasks { display:grid; grid-template-columns:repeat(4, 56px); gap:8px; transform:perspective(500px) rotateX(52deg); padding:10px; }
+.v2 .tasks i { height:28px; border-radius:6px; background:var(--card2); border:1px solid var(--ln); position:relative; font-style:normal; font-size:11px; display:grid; place-items:center; color:transparent; transition:color .3s, border-color .3s; }
+.v2 .tasks i.on { color:var(--gr); border-color:#2f5a3a; }
+.v2 .result { width:300px; padding:16px; display:grid; gap:12px; }
+.v2 .result .hd { display:flex; align-items:center; gap:10px; font-size:19px; font-weight:700; }
+.v2 .badge { margin-left:auto; font-size:12px; font-weight:600; color:var(--yl); background:#2b2615; border-radius:99px; padding:3px 10px; }
+.v2 .track { position:relative; height:8px; border-radius:99px; background:#2a2a2a; }
+.v2 .track b { position:absolute; left:0; top:0; bottom:0; width:0; border-radius:99px; background:var(--yl); transition:width 1s ease; }
+.v2 .track .flag { position:absolute; left:84%; top:-14px; font-size:11px; }
+.v2 .dec { display:flex; align-items:center; gap:10px; background:var(--card2); border:1px solid var(--ln); border-radius:8px; padding:8px 10px; font-size:13px; }
+.v2 .dec em { font-style:normal; width:22px; height:22px; border-radius:50%; display:grid; place-items:center; font-size:12px; background:#2c2c2c; }
+.v2 .dec:first-of-type em { background:var(--c); color:#fff; }
+/* scene 3 */
+.v2 .icon-card { width:120px; height:120px; display:grid; place-items:center; align-content:center; gap:8px; background:#2a1e19; border-radius:12px; font-weight:600; }
+.v2 .ladder { position:relative; width:150px; height:300px; border-left:3px solid #3a3a3a; border-right:3px solid #3a3a3a; }
+.v2 .ladder .rung { position:absolute; left:0; right:0; height:3px; background:#3a3a3a; }
+.v2 .ladder .climber { position:absolute; left:50%; transform:translate(-50%, 50%); transition:bottom .7s cubic-bezier(.3,1.4,.5,1); background:var(--card2); border:1px solid var(--ln); border-radius:8px; padding:3px 8px; }
+.v2 .ladder .end { position:absolute; left:50%; transform:translateX(-50%); font-size:13px; color:var(--mu); white-space:nowrap; }
+.v2 .steps { display:flex; flex-direction:column-reverse; gap:10px; width:290px; }
+.v2 .steps div { padding:9px 12px; font-size:13px; }
+.v2 .steps b { display:block; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--c); }
+/* scene 4 */
+.v2 .speed { width:330px; padding:16px; display:grid; gap:18px; }
+.v2 .speed .t { position:relative; height:8px; background:#2a2a2a; border-radius:99px; margin:22px 0 4px; }
+.v2 .speed .t b { position:absolute; left:0; top:0; bottom:0; width:50%; background:#cfcfcf; border-radius:99px; transition:width 1.6s cubic-bezier(.5,0,.2,1), background .4s; }
+.v2 .speed .mk { position:absolute; top:-24px; left:50%; transform:translateX(-50%); font-size:13px; font-weight:600; transition:left 1.6s cubic-bezier(.5,0,.2,1); white-space:nowrap; }
+.v2 .judge { display:flex; align-items:center; gap:10px; }
+.v2 .judge .vc { padding:14px 16px; min-width:120px; display:grid; gap:6px; justify-items:center; }
+.v2 .judge .arrow { font:11px var(--mono); color:var(--mu); text-align:center; }
+.v2 .strike { text-decoration:line-through; text-decoration-color:var(--c); text-decoration-thickness:2px; }
+/* scene 5 */
+.v2 .verb { font-size:17px; max-width:520px; text-align:center; line-height:1.5; }
+.v2 .noun { display:inline-block; transition:opacity .4s; }
+.v2 .chain { display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center; }
+.v2 .spec { width:92px; height:86px; display:grid; place-items:center; align-content:center; gap:4px; position:relative; font-size:11px; color:var(--mu); text-align:center; transition:border-color .3s; }
+.v2 .spec .ck { position:absolute; top:-6px; right:-6px; width:16px; height:16px; border-radius:50%; background:var(--gr); color:#0e0e0e; font-size:10px; display:grid; place-items:center; transform:scale(0); transition:transform .3s cubic-bezier(.3,1.6,.5,1); }
+.v2 .spec.on { border-color:#2f5a3a; } .v2 .spec.on .ck { transform:scale(1); }
+.v2 .spec.run { border-color:var(--c); }
+.v2 .quality { width:min(560px, 100%); padding:12px 16px; display:flex; align-items:center; gap:14px; font-size:13px; }
+.v2 .quality .segs { flex:1; display:grid; grid-template-columns:repeat(6,1fr); gap:5px; }
+.v2 .quality .segs i { height:8px; border-radius:99px; background:#2a2a2a; transition:background .3s; }
+.v2 .quality .segs i.on { background:var(--gr); }
+/* scene 6 */
+.v2 .chips { display:grid; gap:10px; }
+.v2 .chips .vc { padding:10px 14px; display:flex; gap:10px; align-items:center; font-size:14px; transform:translateX(-30px); opacity:0; transition:transform .5s, opacity .5s; }
+.v2 .chips .vc.on { transform:none; opacity:1; }
+.v2 .chips small { display:block; color:var(--mu); font-size:11.5px; }
+.v2 .cc { width:160px; height:170px; display:grid; place-items:center; align-content:center; gap:10px; font-weight:600; }
+.v2 .cc .mascot { width:70px; height:51px; }
+.v2 .expect { width:220px; padding:14px; text-align:center; font-size:13px; }
+.v2 .expect path { fill:none; stroke-width:12; stroke-linecap:round; }
+.v2 .expect .bg { stroke:#2a2a2a; } .v2 .expect .fg { stroke:var(--c); transition:stroke-dashoffset 1.6s ease; }
+.v2 .scene-cap { position:absolute; left:26px; bottom:18px; right:26px; font-size:12.5px; color:var(--mu); text-align:center; }
+@media (max-width: 760px) {
+  .v2 { padding:18px 14px 60px; }
+  .v2 .gauge { height:180px; width:70px; }
+  .v2 .ladder { height:220px; }
+  .v2 .tasks { grid-template-columns:repeat(4, 50px); }
+  .v2 .tasks i { font-size:8.5px; white-space:nowrap; overflow:hidden; }
+}
 @media (prefers-reduced-motion: reduce) { *, *::before { animation:none !important; transition:none !important; } }
 </style>
 
@@ -1890,18 +1978,12 @@ exit 2   # blocks the call; stderr goes to Claude</pre>
 
     <section id="am-loop">
       <h2>One task, asked six ways</h2>
-      <p class="claim">Press play, or click a step. On the left is what you type, and on the right is what comes back. <b>Each step keeps the previous ones</b>; they stack, they don't replace each other.</p>
+      <p class="claim">Press play, or click a scene. Each one is redrawn from the motion graphics in the video. <b>The kinds stack</b>: each step keeps the previous ones.</p>
       <div class="sp-ctl">
         <div class="seg" id="amSteps"></div>
         <button type="button" class="sp-play" id="amPlay" aria-pressed="false">▶ Play all</button>
       </div>
-      <div class="sp-stage am-stage" id="amStage">
-        <div class="sp-box sp-left"><div class="sp-h" id="amLeftH"></div><div class="am-term" id="amLeft"></div></div>
-        <div class="sp-link"><span class="sp-verb" id="amVerb"></span><svg viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true"><line x1="0" y1="5" x2="100" y2="5"/></svg></div>
-        <div class="sp-box sp-agent"><div class="sp-h" id="amAgentH">AGENT</div><div class="sp-dots" aria-hidden="true"><i></i><i></i><i></i></div><div class="sp-note" id="amNote"></div></div>
-        <div class="sp-fan"><svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0,50 L100,12.5 M0,50 L100,37.5 M0,50 L100,62.5 M0,50 L100,87.5"/></svg></div>
-        <div class="sp-cards" id="amCards"></div>
-      </div>
+      <div class="v2" id="amStage"></div>
       <div class="sp-cap" id="amCap" aria-live="polite"></div>
     </section>
 
@@ -3350,85 +3432,115 @@ The system SHALL keep a session for 30 days when the user ticks "Remember me".
   pick(cur);
 })();
 
-// Be ambitious: six-step prompt ladder on the terminal stage
+// Be ambitious: six bespoke scenes in the video's motion-graphics style
 (() => {
   const $ = id => document.getElementById(id);
-  const ICON = { dim:'', plan:'·', wip:'…', done:'', ok:'✓', wn:'⚠' };
-  // lines: [class, text]; cards: [label, note, final state]
-  const STEPS = [
-    { k:'Task', head:'PROMPT', verb:'ASK', agent:'AGENT', note:'does exactly what was asked',
-      lines:[['pr','› Add a reports dashboard']],
-      cards:[['CHARTS','numbers per role','ok'], ['FILTERS','by date, client','ok'], ['EXPORT','CSV','ok'], ['SO WHAT?','nothing to act on','wn']],
-      cap:'<p><b>Baseline, plus speed.</b> You get what you asked for: charts of numbers. Speed (same work, less time) is the kind of ambition everyone already uses.</p><p class="sp-small">Nothing in the prompt says what the report is <i>for</i>, so the agent stops at "done".</p>' },
-    { k:'Altitude', head:'PROMPT', verb:'OUTCOME', agent:'AGENT', note:'works out the tasks itself',
-      lines:[['pr','› Build a reports dashboard, but what I actually want is for our roles to get filled faster.'],
-        ['','Go through our hiring data, find what\'s slowing roles down, and build the page to <span class="hl">flag stuck roles early</span> and tell us what to do about them.'],
-        ['','Put the <span class="hl">three most urgent decisions</span> on it, with the numbers behind them.']],
-      cards:[['STUCK ROLES','flagged early','ok'], ['WHY','bottleneck per role','ok'], ['3 DECISIONS','with the numbers','ok'], ['CHARTS','now supporting evidence','done']],
-      cap:'<p><b>Altitude: ask for the goal behind the goal.</b> Rieseberg stopped handing agents one crash at a time and asked them to keep the app crash-free.</p><p class="sp-small">Fits work with a specific outcome. Fits creative work less well, where there is no single right result.</p>' },
-    { k:'Depth', head:'REWRITE FIRST', verb:'DEEPER', agent:'AGENT', note:'rewrites the prompt, then you run it',
-      lines:[['dm','My task: rank candidates in each role\'s pipeline.'],
-        ['pr','› I want a deeper version of this task, not a bigger one. Before rewriting it:'],
-        ['','(1) what would a <span class="hl">top professional</span> do here that I\'m not asking for?'],
-        ['','(2) what <span class="hl">rawest material</span> would they start from?'],
-        ['','(3) which specific <span class="hl">methods and tools</span>?'],
-        ['','(4) what, other than you or me, would <span class="hl">show the result is right</span>?'],
-        ['dm','Then rewrite my prompt to ask for exactly that.']],
-      cards:[['PRO MOVE','a rubric the recruiter can defend','ok'], ['RAW MATERIAL','raw records, not derived fields','ok'], ['METHOD','hard filters, then tiers','ok'], ['PROOF','hand-labelled fixture, precision@3','ok']],
-      cap:'<p><b>Depth: the way the best expert would do it.</b> "Act as a senior recruiter" changes how the answer <i>sounds</i>. Asking for the expert\'s material, methods and proof changes the <i>work</i>. You don\'t need to know the methods; the model usually does.</p><p class="sp-small">In the video the rewrite took 46s and produced a 12-line spec, including a leakage test. Run it in a fresh session. Hard goals help too: "make it feel instant" beats "make it faster".</p>' },
-    { k:'Judge', head:'PROMPT', verb:'REVIEW', agent:'OTHER MODEL', note:'codex exec, read-only',
-      lines:[['pr','› Use the codex CLI to review the ranking feature that was implemented, report back all the findings, then fix them.'],
-        ['dm','● Bash(codex exec -s read-only …)'],
-        ['dm','  Found six verified issues, ordered by severity. All 17 existing tests pass.']],
-      cards:[['REVIEWER','a different model','ok'], ['FINDINGS','6 verified, by severity','wn'], ['FIXES','applied by the builder','ok'], ['TESTS','17/17 still pass','ok']],
-      cap:'<p><b>Outside judge: never let the model grade its own work.</b> It made every decision in that work. Use another model\'s CLI, or at least a fresh non-interactive session, ideally on a different model.</p><p class="sp-small">The best judge is one the agent can <i>run</i>: tests, a measurement, a reproduction.</p>' },
-    { k:'Range', head:'NOUN → VERB', verb:'FIELDS', agent:'WORKFLOW', note:'6 specialists, one after another',
-      lines:[['pr','› We\'re not just "a recruitment agency".'],
-        ['','We get <span class="hl">strangers to trust us</span> with their next career move, and <span class="hl">companies to trust us</span> with their next hire.'],
-        ['','Bring in subagents from the fields that know that best, and have each do that field\'s actual work on our app.'],
-        ['','Then a <span class="hl">red team</span>: a candidate who\'s been ghosted and a hiring manager burned by an agency find every reason to leave us.']],
-      cards:[['CANDIDATE EXP.','stop ghosting','ok'], ['CLIENT SERVICES','the hiring manager\'s side','ok'], ['FAIR HIRING + PRIVACY','pay transparency, consent','ok'], ['SECURITY + CONTENT','logins, scams, every string','ok']],
-      cap:'<p><b>Range: fields you would never normally bring in.</b> The trick for picking them is to describe the product by what it <i>does</i> for people (a verb), not what it is (a noun).</p><p class="sp-small">Each specialist builds on the previous one\'s changes and must pass typecheck, lint and a smoke test before handing over. It takes a long time. Use it on big work only.</p>' },
-    { k:'Resources', head:'GOAL', verb:'SEE · TEST', agent:'AGENT + COMPUTERS', note:'proves the fix, doesn\'t claim it',
-      lines:[['pr','› Keep the apps crash-free.'],
-        ['dm','Only works because the agent has:'],
-        ['','• <span class="hl">crash reports</span> it can fetch (MCP to the tracker)'],
-        ['','• <span class="hl">context</span>: which app version maps to which commit'],
-        ['','• <span class="hl">computers</span> (Windows, macOS, Linux) to reproduce each crash and test the fix']],
-      cards:[['SEE','crash reports via MCP','ok'], ['UNDERSTAND','version ↔ commit','ok'], ['REPRODUCE','real machines','ok'], ['PROVE','the fix stops the crash','ok']],
-      cap:'<p><b>Resources: every kind of ambition needs them.</b> Asking for a bigger result is useless if the agent can\'t see whether it got there. It has to be able to install software, reach the data, and check its own work somewhere real.</p><p class="sp-small">For our factory this is the worker\'s environment: the error-tracker MCP, a version→commit map, and the sandbox per ticket.</p>' },
+  const M = '<svg class="mascot" viewBox="0 0 11 8" aria-hidden="true"><path fill="#d97757" d="M2 0h7v1h1v1h1v2h-1v1H9v1H2V5H1V4H0V2h1V1h1z"/><rect x="3" y="2" width="1" height="1" fill="#0e0e0e"/><rect x="7" y="2" width="1" height="1" fill="#0e0e0e"/><path fill="#d97757" d="M2 6h1v2H2zM4 6h1v2H4zM6 6h1v2H6zM8 6h1v2H8z"/></svg>';
+  const SUN = '<span class="co" style="font-size:18px">✳</span>';
+  const win = url => `<div class="win-h"><i></i><i></i><i></i><span>${url}</span></div>`;
+  const on = (el, sel) => el.querySelectorAll(sel).forEach(x => x.classList.add('on'));
+  const count = (node, to, ms, fmt = v => v) => { const t0 = performance.now(); const f = now => { const p = Math.min(1, (now - t0) / ms); node.textContent = fmt(Math.round(to * p)); if (p < 1) requestAnimationFrame(f); }; reduced ? (node.textContent = fmt(to)) : requestAnimationFrame(f); };
+
+  const SCENES = [
+    { k:'Task', cap:'<p><b>Baseline.</b> You get exactly what you asked for: a reports page full of numbers. Nothing in the prompt said what the report is <i>for</i>, so the agent stops at "done". (Speed, the same work faster, is the kind of ambition everyone already uses.)</p>',
+      html:() => `<div class="row" style="min-height:330px">
+        <div class="vc term vi" data-s="1">${win('')}<div class="b"><div>${M} Claude Code <span class="mu">~/hirefield</span></div><div><span class="mu">›</span> <span id="v2type"></span></div><div class="vi gr" data-s="2">● Reports page built</div></div></div>
+        <div class="vc browser vi" data-s="2">${win('localhost:3000/recruiter/reports')}<div style="padding:12px 18px 0;font-weight:700">Reports</div><div class="bars">${'<i></i>'.repeat(12)}</div><div class="scan"></div></div>
+        <div class="vc found vi" data-s="4"><div class="mu" style="justify-content:flex-start;gap:8px">${SUN} Found</div><div><span># Numbers</span><b class="num" id="v2n">0</b></div><div><span>💡 Insights</span><b>0</b></div><div><span>➜ Decisions</span><b>0</b></div></div></div>`,
+      run:(t, el) => {
+        t(() => on(el, '[data-s="1"]'), 100);
+        const s = 'build a reports dashboard';
+        [...s].forEach((c, i) => t(() => { $('v2type').textContent = s.slice(0, i + 1); }, 400 + i * 40));
+        t(() => { on(el, '[data-s="2"]'); el.querySelectorAll('.bars i').forEach((b, i) => { b.style.height = (35 + ((i * 37) % 60)) + '%'; }); }, 1600);
+        t(() => el.querySelector('.scan').classList.add('go'), 2800);
+        t(() => { on(el, '[data-s="4"]'); count($('v2n'), 12, 700); }, 4200);
+        return 5400;
+      } },
+    { k:'Altitude', cap:'<p><b>Altitude: ask for the goal behind the goal.</b> "Build a reports dashboard, but what I actually want is for our roles to get filled faster. Flag stuck roles early, and put the three most urgent decisions on it, with the numbers behind them." Rieseberg stopped handing agents one crash at a time and asked for crash-free apps instead.</p><p class="sp-small">Works when there is a specific outcome to chase. Weak for creative work with no single right answer.</p>',
+      html:() => `<div class="row" style="min-height:340px;align-items:center">
+        <div class="gauge">${Array.from({length:15}, (_, i) => `<i class="tk" style="bottom:${i * 7}%"></i>`).join('')}<div class="rail"></div><div class="fill"></div><div class="dot" style="bottom:0"></div><div class="lab" style="bottom:-6px">↑ Altitude</div></div>
+        <div class="alt-mid"><div class="vc goal vi" data-s="3">${SUN}<span class="mu">◎</span> Hire faster</div><div class="tasks">${['charts','filters','export','table','auth','layout','legend','colors','dates','csv','perf','tests'].map(x => `<i>✓ ${x}</i>`).join('')}</div></div>
+        <div class="vc result vi" data-s="4"><div class="hd"><span class="co">◎</span> Hire faster <span class="badge">● Behind</span></div><div class="track"><b></b><span class="flag">⚑ target</span></div>
+          <div class="mu" style="font-size:12px">Time to fill 31 days · target 21</div>
+          <div class="dec vi" data-s="5"><em>1</em>Backend roles stuck at client review: chase 4 clients</div><div class="dec vi" data-s="6"><em>2</em>Sourcing for data roles is drying up</div><div class="dec vi" data-s="7"><em>3</em>Offer stage too slow: pre-approve bands</div></div></div>`,
+      run:(t, el) => {
+        el.querySelectorAll('.tasks i').forEach((x, i) => t(() => x.classList.add('on'), 200 + i * 90));
+        t(() => { el.querySelector('.fill').style.height = '88%'; el.querySelector('.dot').style.bottom = '86%'; el.querySelector('.lab').style.bottom = '84%'; }, 1500);
+        t(() => on(el, '[data-s="3"]'), 2300);
+        t(() => { on(el, '[data-s="4"]'); el.querySelector('.track b').style.width = '58%'; }, 2900);
+        [5, 6, 7].forEach((s, i) => t(() => on(el, `[data-s="${s}"]`), 3800 + i * 350));
+        return 5200;
+      } },
+    { k:'Depth', cap:'<p><b>Depth: do it the way the best expert would.</b> "Act as a senior recruiter" changes how the answer <i>sounds</i>. Asking for the expert\'s material, methods and proof changes the <i>work</i>. You don\'t need to know those methods; the model usually does, so ask it first: <i>"I want a deeper version of this task, not a bigger one…"</i></p><p class="sp-small">In the video the rewrite took 46 seconds and became a 12-line spec, including a leakage test. Run the result in a fresh session.</p>',
+      html:() => `<div class="row" style="min-height:340px">
+        <div class="icon-card vi" data-s="1"><span class="co" style="font-size:30px">≡↓</span>Depth</div>
+        <div class="ladder">${[0, 1, 2, 3, 4].map(i => `<i class="rung" style="bottom:${8 + i * 21}%"></i>`).join('')}<div class="climber" style="bottom:8%">${M}</div><span class="end" style="top:-26px">Best expert</span><span class="end" style="bottom:-26px">Beginner</span></div>
+        <div class="steps">${[['1 · pro move','what would a top professional do that I\'m not asking for? <span class="mu">→ a rubric the recruiter can defend</span>'],
+          ['2 · raw material','start from the rawest material <span class="mu">→ raw records, not derived fields</span>'],
+          ['3 · methods','the specific methods and tools <span class="mu">→ hard filters, then tiers</span>'],
+          ['4 · proof','what, other than you or me, shows it\'s right? <span class="mu">→ hand-labelled fixture, precision@3</span>']].map(([b, s], i) => `<div class="vc vi" data-s="${i + 2}"><b>${b}</b>${s}</div>`).join('')}</div></div>`,
+      run:(t, el) => {
+        t(() => on(el, '[data-s="1"]'), 100);
+        [0, 1, 2, 3].forEach(i => t(() => { el.querySelector('.climber').style.bottom = (29 + i * 21) + '%'; on(el, `[data-s="${i + 2}"]`); }, 700 + i * 900));
+        return 4600;
+      } },
+    { k:'Hard goal + judge', cap:'<p><b>Hard goals, then an outside judge.</b> "Make it faster" lets the agent tweak what exists. "Make it feel instant" can\'t be reached by tweaking, so it has to rethink the page. Then <b>never let the model grade its own work</b>: it made every decision in it. Use another model\'s CLI, or at least a fresh non-interactive session.</p><p class="sp-small">The best judge is one the agent can <i>run</i>: tests, a measurement, a reproduction.</p>',
+      html:() => `<div class="row" style="min-height:340px;gap:34px">
+        <div class="vc speed vi" data-s="1"><div style="display:flex;justify-content:space-between"><span>${SUN} Page load time</span><b class="num" id="v2ms">5.0s</b></div>
+          <div class="t"><b></b><span class="mk" id="v2mk">"make it faster"</span></div><div style="display:flex;justify-content:space-between" class="mu"><span>10s</span><span>0s</span></div></div>
+        <div style="display:grid;gap:14px;justify-items:center">
+          <div class="judge"><div class="vc vi" data-s="2">${M}<b>Claude</b><span class="mu" style="font-size:12px">builder</span></div><div class="arrow vi" data-s="3">codex exec<br>-s read-only<br>──────▶</div><div class="vc vi" data-s="3"><span style="font-size:22px">◇</span><b>Codex</b><span class="mu" style="font-size:12px">judge</span></div></div>
+          <div class="row vi" data-s="4" style="gap:10px"><span class="pill"><span class="co num" id="v2f">0</span> verified findings</span><span class="pill gr">✓ 17/17 tests</span><span class="pill mu strike">self-review</span></div></div></div>`,
+      run:(t, el) => {
+        t(() => on(el, '[data-s="1"]'), 100);
+        t(() => { el.querySelector('.speed .t b').style.width = '97%'; el.querySelector('.speed .t b').style.background = '#7bd88f'; $('v2mk').style.left = '92%'; $('v2mk').textContent = '"feels instant"'; count($('v2ms'), 3, 1600, v => '0.' + v + 's'); }, 700);
+        t(() => on(el, '[data-s="2"]'), 2600);
+        t(() => on(el, '[data-s="3"]'), 3100);
+        t(() => { on(el, '[data-s="4"]'); count($('v2f'), 6, 900); }, 3700);
+        return 5000;
+      } },
+    { k:'Range', cap:'<p><b>Range: bring in fields you\'d never normally use.</b> To find them, describe the product by what it <i>does</i> for people (a verb), not what it is (a noun). Then specialists work one after another, each doing that field\'s real work (not role-play), each passing typecheck, lint and a smoke test before handing over. A red team goes last.</p><p class="sp-small">In the video it ran for 2h 40m. Use it only on big work.</p>',
+      html:() => `<div style="display:grid;gap:22px;justify-items:center;min-height:340px;align-content:center">
+        <div class="verb"><span class="noun mu strike vi" data-s="1">"a recruitment agency"</span><br><span class="vi" data-s="2">We get <span class="co">strangers to trust us</span> with their next career move, and <span class="co">companies to trust us</span> with their next hire.</span></div>
+        <div class="row vi" data-s="3" style="gap:14px"><span class="pill">👥 people</span><span class="mu">──</span><span class="pill">🤝 trust</span><span class="mu">──</span><span class="pill">💼 Us</span><span class="pill mono num" style="margin-left:18px">⏱ <span id="v2tm">0h 00m</span></span></div>
+        <div class="chain">${[['♥', 'candidate exp.'], ['🤝', 'client services'], ['⚖', 'fair hiring'], ['👁', 'privacy'], ['🛡', 'security'], ['✎', 'content']].map(([ic, n], i) => `${i ? '<span class="mu">›</span>' : ''}<div class="vc spec">${M}<span>${ic} ${n}</span><span class="ck">✓</span></div>`).join('')}</div>
+        <div class="vc quality vi" data-s="3"><span>App quality</span><div class="segs">${'<i></i>'.repeat(6)}</div><span class="pill vi" data-s="9" style="padding:3px 10px;font-size:12px">⚔ red team</span></div></div>`,
+      run:(t, el) => {
+        t(() => on(el, '[data-s="1"]'), 100); t(() => on(el, '[data-s="2"]'), 800); t(() => on(el, '[data-s="3"]'), 1500);
+        const sp = el.querySelectorAll('.spec'), sg = el.querySelectorAll('.segs i');
+        sp.forEach((s, i) => { t(() => s.classList.add('run'), 1900 + i * 550); t(() => { s.classList.remove('run'); s.classList.add('on'); sg[i].classList.add('on'); }, 2300 + i * 550); });
+        t(() => count($('v2tm'), 160, 3300, v => `${Math.floor(v / 60)}h ${String(v % 60).padStart(2, '0')}m`), 1900);
+        t(() => on(el, '[data-s="9"]'), 5400);
+        return 6200;
+      } },
+    { k:'Resources', cap:'<p><b>Resources: none of this works without them.</b> To keep his apps crash-free, Rieseberg gave Claude crash reports it can fetch, the context to map each app version to its commit, and real Windows, macOS and Linux machines to reproduce each crash and prove the fix. With the right context, instructions and tooling, it will exceed your expectations.</p><p class="sp-small">For our factory this is the worker\'s environment: the error-tracker MCP, a version→commit map, and the sandbox per ticket.</p>',
+      html:() => `<div class="row" style="min-height:340px;gap:26px">
+        <div class="chips">${[['☰', 'Context', 'version ↔ commit'], ['☑', 'Instructions', '"keep the app crash-free"'], ['🔧', 'Tooling', 'crash reports via MCP · Win/mac/Linux machines']].map(([i, n, s]) => `<div class="vc"><span class="co">${i}</span><span>${n}<small>${s}</small></span></div>`).join('')}</div>
+        <div style="display:grid;gap:14px;justify-items:center"><span class="pill vi" data-s="2"><span class="gr">⛨</span> Crash-free</span><div class="vc cc">${M}<span>Claude Code</span></div></div>
+        <div class="vc expect vi" data-s="3"><div class="mu">Your expectations</div><svg viewBox="0 0 120 80" width="180"><path class="bg" d="M14 70 A48 48 0 1 1 106 70"/><path class="fg" d="M14 70 A48 48 0 1 1 106 70" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"/><line x1="60" y1="6" x2="60" y2="22" stroke="#ececec" stroke-dasharray="2 2"/><text x="60" y="62" text-anchor="middle" fill="#7bd88f" font-size="18" class="vi" data-s="4">✓</text></svg></div></div>`,
+      run:(t, el) => {
+        el.querySelectorAll('.chips .vc').forEach((c, i) => t(() => c.classList.add('on'), 200 + i * 450));
+        t(() => on(el, '[data-s="2"]'), 1700);
+        t(() => { on(el, '[data-s="3"]'); el.querySelector('.expect .fg').style.strokeDashoffset = '8'; }, 2200);
+        t(() => on(el, '[data-s="4"]'), 3700);
+        return 4600;
+      } },
   ];
+
   const stage = $('amStage'); let cur = 0, auto = false, timers = [];
   const clear = () => { timers.forEach(clearTimeout); timers = []; };
-  $('amSteps').innerHTML = STEPS.map((s, i) => `<button type="button" data-i="${i}">${i + 1}. ${s.k}</button>`).join('');
-  function card(c, st) {
-    return `<div><div class="sp-card ${st}"><b>${c[0]}</b><span class="st">${ICON[st]}</span><small>${c[1]}</small></div></div>`;
-  }
+  $('amSteps').innerHTML = SCENES.map((s, i) => `<button type="button" data-i="${i}">${i + 1}. ${s.k}</button>`).join('');
   function show(i) {
-    clear(); cur = i; const s = STEPS[i];
+    clear(); cur = i; const s = SCENES[i];
     $('amSteps').querySelectorAll('button').forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
-    $('amLeftH').textContent = s.head; $('amVerb').textContent = s.verb; $('amAgentH').textContent = s.agent; $('amNote').textContent = '';
-    $('amLeft').innerHTML = s.lines.map(([c, t]) => `<p class="${c}">${t}</p>`).join('');
-    $('amCards').innerHTML = s.cards.map(c => card(c, 'plan')).join('');
-    $('amCap').innerHTML = s.cap;
-    stage.classList.remove('busy');
+    stage.innerHTML = s.html(); $('amCap').innerHTML = s.cap;
     const t = (fn, ms) => timers.push(setTimeout(fn, reduced ? 0 : ms));
-    const ps = [...$('amLeft').children];
-    ps.forEach((p, k) => t(() => p.classList.add('in'), 150 + k * 380));
-    const go = 150 + ps.length * 380 + 200;
-    t(() => { stage.classList.add('busy'); $('amNote').textContent = s.note; }, go);
-    const cards = [...$('amCards').children];
-    s.cards.forEach((c, k) => {
-      t(() => { cards[k].outerHTML = card(c, 'wip'); }, go + 500 + k * 450);
-      t(() => { $('amCards').children[k].outerHTML = card(c, c[2]); }, go + 900 + k * 450);
-    });
-    const end = go + 900 + s.cards.length * 450;
-    t(() => stage.classList.remove('busy'), end);
-    if (auto) t(() => i < STEPS.length - 1 ? show(i + 1) : stop(), end + 1800);
+    const end = s.run(t, stage);
+    if (auto) t(() => i < SCENES.length - 1 ? show(i + 1) : stop(), end + 2200);
   }
   function stop() { auto = false; $('amPlay').textContent = '▶ Play all'; $('amPlay').setAttribute('aria-pressed', 'false'); }
   $('amSteps').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { stop(); show(+b.dataset.i); } });
-  $('amPlay').addEventListener('click', () => { if (auto) { stop(); clear(); return; } auto = true; $('amPlay').textContent = '❚❚ Pause'; $('amPlay').setAttribute('aria-pressed', 'true'); show(cur === STEPS.length - 1 ? 0 : cur); });
+  $('amPlay').addEventListener('click', () => { if (auto) { stop(); clear(); return; } auto = true; $('amPlay').textContent = '❚❚ Pause'; $('amPlay').setAttribute('aria-pressed', 'true'); show(cur === SCENES.length - 1 ? 0 : cur); });
   show(0);
 })();
 </script>
