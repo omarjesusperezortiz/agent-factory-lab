@@ -37,6 +37,14 @@ a { color:var(--accent); }
   backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
 .lp-hud i { width:8px; height:8px; border-radius:50%; background:var(--accent); box-shadow:0 0 10px var(--accent); }
 .lp-hud b { color:var(--fg); font-weight:600; }
+.lp-ctl { position:fixed; right:20px; bottom:18px; z-index:6; display:flex; gap:8px; }
+.lp-ctl button { font:600 12.5px var(--mono); color:var(--fg); background:var(--panel); border:1px solid var(--line); border-radius:999px;
+  padding:8px 15px; cursor:pointer; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); transition:border-color .2s, color .2s; }
+.lp-ctl button:hover { border-color:var(--accent); color:var(--accent); }
+.lp-ctl #lpPlay[aria-pressed="true"] { border-color:var(--accent); color:var(--accent); }
+.lp-ctl .lp-bar { position:absolute; left:14px; right:14px; bottom:-6px; height:2px; border-radius:2px; background:var(--line); overflow:hidden; }
+.lp-ctl .lp-bar i { display:block; height:100%; width:0; background:var(--accent); }
+.lp-static #lpPlay { display:none; }
 .lp-prog { position:fixed; right:20px; top:50%; transform:translateY(-50%); z-index:5; display:grid; gap:10px; }
 .lp-prog span { width:6px; height:6px; border-radius:50%; background:var(--line); transition:background .3s, transform .3s; }
 .lp-prog span.on { background:var(--accent); transform:scale(1.5); }
@@ -94,6 +102,7 @@ main { position:relative; z-index:2; }
   .lp-card, .lp-card.r { margin:0 16px; max-width:none; top:96px; padding:18px; }
   .lp-card p { font-size:14.5px; }
   .lp-prog { display:none; }
+  .lp-ctl { right:16px; left:16px; bottom:16px; justify-content:center; }
   .lp-hud { left:16px; right:16px; bottom:auto; top:52px; justify-content:center; }
   .lp-doorrow { grid-template-columns:minmax(0,1fr); }
   .lp-doors { padding-bottom:8vh; }
@@ -109,6 +118,7 @@ main { position:relative; z-index:2; }
   <nav><a href="../#console">Console</a><a href="../#research">Research</a><a href="https://github.com/omarjesusperezortiz/agent-factory-lab" target="_blank" rel="noopener">GitHub</a></nav>
 </header>
 <div class="lp-hud" aria-hidden="true"><i id="lpDot"></i><span>ticket <b>AF-0042</b></span><span>stage <b id="lpStage">intake</b></span><span>attempt <b id="lpTry">1</b></span></div>
+<div class="lp-ctl"><button type="button" id="lpPlay" aria-pressed="false">▶ Play</button><button type="button" id="lpSkip">Skip to doors ↓</button><span class="lp-bar" aria-hidden="true"><i id="lpBar"></i></span></div>
 <div class="lp-prog" aria-hidden="true" id="lpProg"><span></span><span></span><span></span><span></span><span></span><span></span></div>
 
 <main>
@@ -198,6 +208,41 @@ const secs = [...document.querySelectorAll('[data-scene]')];
 const dots = [...$('lpProg').children];
 const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) dots.forEach((d, i) => d.classList.toggle('on', i === +e.target.dataset.scene)); }), { rootMargin:'-45% 0px -45% 0px' });
 secs.forEach(s => io.observe(s));
+
+// Play scrolls the story for you (about 40 s end to end); any wheel, touch or key hands control back
+const playBtn = $('lpPlay'), skipBtn = $('lpSkip'), bar = $('lpBar');
+const maxY = () => document.documentElement.scrollHeight - innerHeight;
+let playing = false, lastT = 0;
+const PLAY_SECONDS = 40;
+function setPlaying(on) {
+  playing = on;
+  playBtn.setAttribute('aria-pressed', String(on));
+  playBtn.textContent = on ? '❚❚ Pause' : scrollY >= maxY() - 2 ? '↺ Replay' : '▶ Play';
+  if (on) { lastT = performance.now(); requestAnimationFrame(step); }
+}
+function step(now) {
+  if (!playing) return;
+  const y = Math.min(maxY(), scrollY + maxY() / PLAY_SECONDS * (now - lastT) / 1000);
+  lastT = now; scrollTo(0, y);
+  if (y >= maxY() - 1) { setPlaying(false); return; }
+  requestAnimationFrame(step);
+}
+playBtn.addEventListener('click', () => {
+  if (!playing && scrollY >= maxY() - 2) scrollTo(0, 0);
+  setPlaying(!playing);
+});
+skipBtn.addEventListener('click', () => {
+  setPlaying(false);
+  document.querySelector('.lp-doors').scrollIntoView({ behavior:reduce ? 'auto' : 'smooth' });
+});
+for (const ev of ['wheel', 'touchstart', 'keydown']) addEventListener(ev, e => {
+  if (playing && !(ev === 'keydown' && e.target === playBtn)) setPlaying(false);
+}, { passive:true });
+addEventListener('scroll', () => {
+  bar.style.width = (scrollY / Math.max(1, maxY()) * 100) + '%';
+  skipBtn.hidden = scrollY > maxY() - innerHeight * .6;
+  if (!playing) playBtn.textContent = scrollY >= maxY() - 2 ? '↺ Replay' : '▶ Play';
+}, { passive:true });
 
 if (!renderer || !window.gsap) {
   root.classList.add('lp-static');
