@@ -1,4 +1,4 @@
-<title>Agent Orchestration Console</title>
+<title>Agent Factory Lab</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
@@ -632,27 +632,54 @@ pre.diff .del { background:color-mix(in srgb, var(--err) 14%, transparent); colo
 .k-file.od { border-left-color:var(--c4); }
 .k-file.off { opacity:.35; }
 .k-file small { color:var(--muted); }
+/* Sidebar groups + Videos view (.vd-) */
+.nv-toggle { display:flex; align-items:center; justify-content:space-between; width:100%; background:none; border:0; padding:0 8px 4px 0; cursor:pointer; }
+.nv-toggle .label { padding:0 8px; }
+.nv-chev { color:var(--muted); font-size:11px; transition:transform .2s; }
+.nv-mock[data-open="true"] .nv-chev { transform:rotate(90deg); }
+.nv-list { display:grid; gap:2px; }
+.nv-mock[data-open="false"] .nv-list { display:none; }
+.vd-side { display:grid; gap:1px; }
+.vd-side a { display:block; padding:4px 8px 4px 34px; border-radius:7px; color:var(--muted); text-decoration:none; font-size:12.5px; line-height:1.3; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.vd-side a:hover { background:var(--panel2); color:var(--fg); }
+.vd-side a[aria-current="page"] { background:var(--panel2); color:var(--fg); font-weight:600; }
+.nav .count.vd-count { background:var(--panel2); color:var(--muted); }
+.side .foot .vd-gh { color:var(--muted); text-decoration:none; }
+.side .foot .vd-gh:hover { color:var(--fg); }
+.vd-tags { display:flex; flex-wrap:wrap; gap:6px; }
+.vd-tags button { border:1px solid var(--line); background:var(--panel); border-radius:999px; padding:3px 10px; font:12.5px var(--mono); cursor:pointer; color:var(--muted); }
+.vd-tags button[aria-pressed="true"] { border-color:var(--accent); color:var(--accent); }
+.vd-list { display:grid; gap:12px; }
+.vd-card { display:grid; grid-template-columns:200px minmax(0,1fr); gap:16px; padding:14px; background:var(--panel); border:1px solid var(--line); border-radius:12px; }
+.vd-card img { width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:8px; background:var(--panel2); display:block; }
+.vd-card h2 { margin:0 0 4px; font-size:16px; line-height:1.3; border:0; padding:0; }
+.vd-card h2 a { color:var(--fg); text-decoration:none; }
+.vd-card h2 a:hover { color:var(--accent); }
+.vd-meta { font:12px var(--mono); color:var(--muted); display:flex; flex-wrap:wrap; gap:4px 12px; align-items:center; }
+.vd-card p { margin:8px 0; }
+.vd-score { display:inline-flex; gap:2px; }
+.vd-score i { width:8px; height:8px; border-radius:2px; background:var(--line); }
+.vd-score i.on { background:var(--tool); }
+.vd-links { display:flex; flex-wrap:wrap; gap:6px 14px; align-items:center; font-size:13.5px; }
+.vd-links a.vd-btn { display:inline-flex; align-items:center; gap:6px; padding:4px 11px; border-radius:7px; background:var(--accent); color:var(--bg); font-weight:600; text-decoration:none; font-size:13px; }
+.vd-chip { font:12px var(--mono); color:var(--muted); }
+.vd-wait { font-size:12.5px; color:var(--muted); }
+.vd-empty { color:var(--muted); padding:24px; border:1px dashed var(--line); border-radius:12px; text-align:center; }
+.vd-bar { display:flex; flex-wrap:wrap; gap:8px 16px; align-items:center; font-size:13.5px; }
+.vd-frame { width:100%; border:0; display:block; min-height:70vh; border-radius:12px; background:transparent; }
+@media (max-width:900px) { .vd-side, .nv-list { display:flex; gap:2px; } .vd-side a { padding:7px 8px; max-width:200px; }
+  .nv-toggle { white-space:nowrap; padding:7px 8px; border-radius:7px; } .nv-toggle .label { display:inline; padding:0; } }
+@media (max-width:620px) { .vd-card { grid-template-columns:minmax(0,1fr); } }
 </style>
 
 <div class="app">
   <aside class="side">
     <div class="brand">
       <svg width="32" height="32" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="8" fill="var(--panel2)" stroke="var(--line)"/><circle cx="10" cy="17" r="3.5" fill="var(--accent)"/><circle cx="24" cy="10" r="3" fill="var(--tool)"/><circle cx="24" cy="24" r="3" fill="var(--human)"/><path d="M13 16 21 11M13 18l8 5" stroke="var(--edge)" stroke-width="1.5"/></svg>
-      <div><b>refund_agent</b><small>support-ops</small></div>
+      <div><b>agent-factory-lab</b><small>research hub</small></div>
     </div>
     <button class="searchbtn" id="palBtn" type="button">Search<kbd>⌘K</kbd></button>
     <nav aria-label="Views">
-      <div class="navgroup"><span class="label">Monitor</span>
-        <a class="nav" href="#console"><svg viewBox="0 0 16 16"><circle cx="3.5" cy="8" r="2"/><circle cx="12.5" cy="3.5" r="2"/><circle cx="12.5" cy="12.5" r="2"/><path d="M5.3 7.1 10.7 4.4M5.3 8.9l5.4 2.7"/></svg>Console</a>
-        <a class="nav" href="#traces"><svg viewBox="0 0 16 16"><path d="M2 3h8M4 6.5h9M4 10h6M6 13.5h8"/></svg>Traces</a>
-        <a class="nav" href="#issues"><svg viewBox="0 0 16 16"><path d="M8 2 14.5 13.5h-13z"/><path d="M8 6.5v3M8 11.5v.2"/></svg>Issues<span class="count err" id="issueCount"></span></a>
-        <a class="nav" href="#inbox"><svg viewBox="0 0 16 16"><path d="M2 9.5 4 3h8l2 6.5V13H2z"/><path d="M2 9.5h3.5l1 1.5h3l1-1.5H14"/></svg>Human inbox<span class="count" id="inboxCount"></span></a>
-      </div>
-      <div class="navgroup"><span class="label">Improve</span>
-        <a class="nav" href="#evals"><svg viewBox="0 0 16 16"><path d="M3 13V8M8 13V3M13 13V6"/></svg>Evals</a>
-        <a class="nav" href="#prompts"><svg viewBox="0 0 16 16"><path d="M3 2.5h7l3 3v8H3z"/><path d="M5.5 7.5h5M5.5 10h3.5"/></svg>Prompts</a>
-        <a class="nav" href="#costs"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M10 5.8C9.5 5.2 8.8 5 8 5 6.9 5 6 5.6 6 6.5s.9 1.2 2 1.5 2 .6 2 1.5-.9 1.5-2 1.5c-.8 0-1.6-.3-2-.9M8 3.8V5M8 11v1.2"/></svg>Costs</a>
-      </div>
       <div class="navgroup"><span class="label">Research</span>
         <a class="nav" href="#flow"><svg viewBox="0 0 16 16"><rect x="1.5" y="6" width="4" height="4" rx="1"/><rect x="10.5" y="2" width="4" height="4" rx="1"/><rect x="10.5" y="10" width="4" height="4" rx="1"/><path d="M5.5 8h2.5V4h2.5M8 8v4h2.5"/></svg>Ticket flow</a>
         <a class="nav" href="#harness"><svg viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 6h6M5 8.5h6M5 11h3.5"/></svg>Harness playbook</a>
@@ -665,13 +692,28 @@ pre.diff .del { background:color-mix(in srgb, var(--err) 14%, transparent); colo
         <a class="nav" href="#amb"><svg viewBox="0 0 16 16"><path d="M2 14 6.5 6l3 4.5L11.5 7 14 14z"/><path d="M11.5 7V2.5l2 1-2 1"/></svg>Be ambitious</a>
         <a class="nav" href="#know"><svg viewBox="0 0 16 16"><path d="M3 2.5h8.5v11H3z"/><path d="M5.5 5.5h4M5.5 8h4M11.5 11l2 2.5"/></svg>Knowledge &amp; handoff</a>
         <a class="nav" href="#research"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3.5 3.5"/></svg>Research notes</a>
-        <a class="nav" href="https://omarjesusperezortiz.github.io/agent-factory-lab/videos/" target="_blank" rel="noopener"><svg viewBox="0 0 16 16"><rect x="1.5" y="3" width="13" height="10" rx="2"/><path d="M6.5 6v4l3.5-2z"/></svg>Video feed ↗</a>
         <a class="nav" href="#learn"><svg viewBox="0 0 16 16"><path d="M2 3.5h4.5A1.5 1.5 0 0 1 8 5v8a1.5 1.5 0 0 0-1.5-1.5H2zM14 3.5H9.5A1.5 1.5 0 0 0 8 5v8a1.5 1.5 0 0 1 1.5-1.5H14z"/></svg>OpenTelemetry</a>
+      </div>
+      <div class="navgroup"><span class="label">Videos</span>
+        <a class="nav" href="#videos"><svg viewBox="0 0 16 16"><rect x="1.5" y="3" width="13" height="10" rx="2"/><path d="M6.5 6v4l3.5-2z"/></svg>Feed<span class="count vd-count" id="vdCount"></span></a>
+        <div class="vd-side" id="vdSide"></div>
+      </div>
+      <div class="navgroup nv-mock" id="nvMock" data-open="false">
+        <button type="button" class="nv-toggle" id="nvMockBtn" aria-expanded="false" aria-controls="nvMockList"><span class="label">Console mock</span><span class="nv-chev" aria-hidden="true">▸</span></button>
+        <div class="nv-list" id="nvMockList">
+          <a class="nav" href="#console"><svg viewBox="0 0 16 16"><circle cx="3.5" cy="8" r="2"/><circle cx="12.5" cy="3.5" r="2"/><circle cx="12.5" cy="12.5" r="2"/><path d="M5.3 7.1 10.7 4.4M5.3 8.9l5.4 2.7"/></svg>Console</a>
+          <a class="nav" href="#traces"><svg viewBox="0 0 16 16"><path d="M2 3h8M4 6.5h9M4 10h6M6 13.5h8"/></svg>Traces</a>
+          <a class="nav" href="#issues"><svg viewBox="0 0 16 16"><path d="M8 2 14.5 13.5h-13z"/><path d="M8 6.5v3M8 11.5v.2"/></svg>Issues<span class="count err" id="issueCount"></span></a>
+          <a class="nav" href="#inbox"><svg viewBox="0 0 16 16"><path d="M2 9.5 4 3h8l2 6.5V13H2z"/><path d="M2 9.5h3.5l1 1.5h3l1-1.5H14"/></svg>Human inbox<span class="count" id="inboxCount"></span></a>
+          <a class="nav" href="#evals"><svg viewBox="0 0 16 16"><path d="M3 13V8M8 13V3M13 13V6"/></svg>Evals</a>
+          <a class="nav" href="#prompts"><svg viewBox="0 0 16 16"><path d="M3 2.5h7l3 3v8H3z"/><path d="M5.5 7.5h5M5.5 10h3.5"/></svg>Prompts</a>
+          <a class="nav" href="#costs"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/><path d="M10 5.8C9.5 5.2 8.8 5 8 5 6.9 5 6 5.6 6 6.5s.9 1.2 2 1.5 2 .6 2 1.5-.9 1.5-2 1.5c-.8 0-1.6-.3-2-.9M8 3.8V5M8 11v1.2"/></svg>Costs</a>
+        </div>
       </div>
     </nav>
     <div class="foot">
-      <span><i class="dot s-success"></i>production · us-east-1</span>
-      <span><i class="dot"></i>sample data</span>
+      <span><i class="dot"></i>Console mock uses sample data</span>
+      <a class="vd-gh" href="https://github.com/omarjesusperezortiz/agent-factory-lab" target="_blank" rel="noopener">GitHub repo ↗</a>
     </div>
   </aside>
 
@@ -2046,6 +2088,21 @@ exit 2   # blocks the call; stderr goes to Claude</pre>
     </section>
   </section>
 
+  <!-- ============ VIDEOS ============ -->
+  <section class="view doc" id="v-videos" hidden>
+    <div id="vdFeed">
+      <div class="eyebrow">Video feed · updated every morning at 08:00</div>
+      <h1>Videos on agent factories</h1>
+      <p class="lede">A job on the Mac mini checks the followed channels each morning, reads every new transcript and writes a summary with a relevance score from 0 to 5. Videos that score 4 or more get an animated explainer, which opens here.</p>
+      <div class="vd-tags" id="vdTags" aria-label="Filter by tag"></div>
+      <div class="vd-list" id="vdList" aria-live="polite"><div class="vd-empty">Loading…</div></div>
+    </div>
+    <div id="vdPlayer" hidden>
+      <div class="vd-bar"><a href="#videos">← All videos</a><a id="vdWatch" target="_blank" rel="noopener">▶ Watch on YouTube</a><a id="vdOpen" target="_blank" rel="noopener">Open full page ↗</a></div>
+      <iframe class="vd-frame" id="vdFrame" title="Video explainer"></iframe>
+    </div>
+  </section>
+
   <!-- ============ KNOWLEDGE & HANDOFF ============ -->
   <section class="view doc" id="v-know" hidden>
     <div>
@@ -2502,14 +2559,112 @@ const totals = r => { const f = r.f || 1; let tin = 0, tout = 0; for (const s of
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => t.hidden = true, 2400); }
 
 // ---- routing ----
-const VIEW_NAMES = { console:'Console', traces:'Traces', issues:'Issues', inbox:'Human inbox', evals:'Evals', prompts:'Prompts', costs:'Costs', flow:'Ticket flow', harness:'Harness playbook', devsetup:'Dev setup', rag:'RAG & context', teams:'Teams & supervision', iceberg:'Iceberg (30)', spec:'Spec-driven', orch:'Orchestration', amb:'Be ambitious', know:'Knowledge & handoff', research:'Research notes', learn:'OpenTelemetry' };
+// Videos view: feed from videos/index.json, explainers opened in a frame (#videos/<folder>)
+const CONSOLE_VIEWS = ['console', 'traces', 'issues', 'inbox', 'evals', 'prompts', 'costs'];
+const SITE = 'https://omarjesusperezortiz.github.io/agent-factory-lab/';
+const vdEsc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c]);
+let vdRows = null, vdTag = '', vdBase = '';
+// page is "<folder>/" (an explainer under videos/) or "../#tab" (a dashboard tab)
+const vdHref = r => !r.page ? '' : r.page.startsWith('../#') ? r.page.slice(3) : '#videos/' + r.page.replace(/\/$/, '');
+function openMock(open) {
+  $('#nvMock').dataset.open = String(open);
+  $('#nvMockBtn').setAttribute('aria-expanded', String(open));
+}
+$('#nvMockBtn').addEventListener('click', () => openMock($('#nvMock').dataset.open !== 'true'));
+async function vdLoad() {
+  if (vdRows) return vdRows;
+  // On GitHub Pages the file sits next to the page; in the Artifact, fetch it from the live site
+  for (const base of ['', SITE]) {
+    try {
+      const r = await fetch(base + 'videos/index.json', { cache:'no-cache' });
+      if (r.ok) { vdRows = (await r.json()).sort((a, b) => b.date.localeCompare(a.date)); vdBase = base; break; }
+    } catch {}
+  }
+  if (!vdRows) { vdRows = []; return null; }
+  $('#vdCount').textContent = vdRows.length;
+  $('#vdSide').innerHTML = vdRows.filter(r => r.page).map(r => `<a href="${vdHref(r)}" title="${vdEsc(r.title)}">${vdEsc(r.title)}</a>`).join('');
+  // only tags shared by 2+ videos make useful filters
+  const n = {}; vdRows.forEach(r => (r.tags || []).forEach(t => { n[t] = (n[t] || 0) + 1; }));
+  const tags = Object.keys(n).filter(t => n[t] > 1).sort();
+  $('#vdTags').innerHTML = ['', ...tags].map(t => `<button type="button" data-t="${vdEsc(t)}">${t ? '#' + vdEsc(t) : 'all'}</button>`).join('');
+  vdMark();
+  return vdRows;
+}
+function vdMark() {
+  document.querySelectorAll('#vdSide a').forEach(a => a.hash === location.hash ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
+}
+function vdRender() {
+  if (!vdRows?.length) {
+    $('#vdList').innerHTML = `<div class="vd-empty">The feed couldn't load here. <a href="${SITE}#videos" target="_blank" rel="noopener">Open it on the live site ↗</a></div>`;
+    return;
+  }
+  const shown = vdRows.filter(r => !vdTag || (r.tags || []).includes(vdTag));
+  $('#vdList').innerHTML = shown.map(r => {
+    const yt = `https://www.youtube.com/watch?v=${vdEsc(r.id)}`;
+    return `<article class="vd-card">
+      <a href="${r.page ? vdHref(r) : yt}"${r.page ? '' : ' target="_blank" rel="noopener"'}><img loading="lazy" alt="" src="https://i.ytimg.com/vi/${vdEsc(r.id)}/mqdefault.jpg"></a>
+      <div>
+        <h2><a href="${yt}" target="_blank" rel="noopener">${vdEsc(r.title)}</a></h2>
+        <div class="vd-meta"><span>${vdEsc(r.channel)}</span><time>${vdEsc(r.date)}</time>
+          <span class="vd-score" title="Relevance ${r.score}/5" aria-label="Relevance ${r.score} of 5">${[1,2,3,4,5].map(n => `<i class="${n <= r.score ? 'on' : ''}"></i>`).join('')}</span></div>
+        <p>${vdEsc(r.summary)}</p>
+        <div class="vd-links">
+          ${r.page ? `<a class="vd-btn" href="${vdHref(r)}">▶ Explainer</a>` : r.score >= 4 && !r.explainer_failed ? '<span class="vd-wait">Explainer coming in a daily run</span>' : ''}
+          ${(r.tags || []).map(t => `<span class="vd-chip">#${vdEsc(t)}</span>`).join('')}
+        </div>
+      </div>
+    </article>`;
+  }).join('');
+  $('#vdTags').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.t === vdTag)));
+}
+$('#vdTags').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  vdTag = b.dataset.t === vdTag ? '' : b.dataset.t;
+  vdRender();
+});
+function vdShowView() {
+  for (const id of VIEWS) $('#v-' + id).hidden = id !== 'videos';
+  document.querySelectorAll('.nav').forEach(a => a.hash === '#videos' && location.hash === '#videos' ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));
+  vdMark();
+}
+async function showFeed() {
+  $('#vdFeed').hidden = false; $('#vdPlayer').hidden = true; $('#vdFrame').removeAttribute('src');
+  await vdLoad(); vdRender(); vdMark();
+}
+async function showVideo(folder) {
+  vdShowView();
+  $('#vdFeed').hidden = true; $('#vdPlayer').hidden = false;
+  window.scrollTo(0, 0);
+  await vdLoad();
+  const row = vdRows.find(r => (r.page || '').replace(/\/$/, '') === folder);
+  const url = (vdBase || (vdRows.length ? '' : SITE)) + 'videos/' + folder + '/';
+  $('#vdWatch').href = row ? `https://www.youtube.com/watch?v=${row.id}` : '#videos';
+  $('#vdOpen').href = url;
+  const f = $('#vdFrame');
+  if (f.getAttribute('src') !== url) f.src = url;
+  vdMark();
+}
+// Same-origin frame (GitHub Pages): drop the page's own back links and grow the frame to its content
+$('#vdFrame').addEventListener('load', () => {
+  const f = $('#vdFrame');
+  let d; try { d = f.contentDocument; } catch { return; }
+  if (!d?.body) return;
+  d.querySelector('nav.top')?.remove();
+  const fit = () => { f.style.height = d.documentElement.scrollHeight + 'px'; };
+  fit(); new ResizeObserver(fit).observe(d.body);
+});
+const VIEW_NAMES = { console:'Console', traces:'Traces', issues:'Issues', inbox:'Human inbox', evals:'Evals', prompts:'Prompts', costs:'Costs', flow:'Ticket flow', harness:'Harness playbook', devsetup:'Dev setup', rag:'RAG & context', teams:'Teams & supervision', iceberg:'Iceberg (30)', spec:'Spec-driven', orch:'Orchestration', amb:'Be ambitious', know:'Knowledge & handoff', videos:'Videos', research:'Research notes', learn:'OpenTelemetry' };
 const VIEWS = Object.keys(VIEW_NAMES);
 function route() {
   const h = location.hash.slice(1);
+  // #videos/<folder> opens one explainer inside the Videos view
+  if (h.startsWith('videos/')) { showVideo(h.slice(7)); return; }
   // a section anchor inside a view (e.g. #h-checks): open its view, then scroll to it
   const target = h && !VIEWS.includes(h) ? document.getElementById(h) : null;
   const host = target?.closest('.view');
-  const v = host ? host.id.slice(2) : VIEWS.includes(h) ? h : 'console';
+  const v = host ? host.id.slice(2) : VIEWS.includes(h) ? h : 'research';
+  if (v === 'videos') showFeed();
+  if (CONSOLE_VIEWS.includes(v)) openMock(true);
   for (const id of VIEWS) $('#v-' + id).hidden = id !== v;
   if (host) { document.querySelectorAll('.nav').forEach(a => a.hash === '#' + v ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current')); target.scrollIntoView(); return; }
   document.querySelectorAll('.nav').forEach(a => a.hash === '#' + v ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'));

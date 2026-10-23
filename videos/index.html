@@ -4,98 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Video feed · agent-factory-lab</title>
-<meta name="description" content="Videos on AI coding agents, summarised and scored daily by an unattended job.">
-<style>
-:root {
-  --bg:#0d1315; --panel:#131b1e; --panel2:#18232a; --line:#22312f; --edge:#3a4d4b;
-  --fg:#e2ece9; --muted:#87998f; --accent:#3ec7b4; --tool:#e3a64b; --ok:#7bd88f;
-  --sans:"Instrument Sans", ui-sans-serif, system-ui, sans-serif;
-  --mono:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-  color-scheme: dark;
-}
-@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
-  --bg:#f3f6f5; --panel:#ffffff; --panel2:#eef3f1; --line:#dbe4e1; --edge:#a9bab5;
-  --fg:#12201e; --muted:#586a65; --accent:#0d8a7d; --tool:#a8670f; --ok:#2b8a4a; color-scheme: light } }
-:root[data-theme="light"] {
-  --bg:#f3f6f5; --panel:#ffffff; --panel2:#eef3f1; --line:#dbe4e1; --edge:#a9bab5;
-  --fg:#12201e; --muted:#586a65; --accent:#0d8a7d; --tool:#a8670f; --ok:#2b8a4a; color-scheme: light }
-* { box-sizing:border-box; }
-body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.5 var(--sans); padding:28px 16px 60px; }
-main { max-width:860px; margin:0 auto; display:grid; gap:18px; }
-a { color:var(--accent); }
-header { display:grid; gap:6px; }
-.vf-eyebrow { font:12px var(--mono); color:var(--muted); text-transform:uppercase; letter-spacing:.08em; }
-h1 { margin:0; font-size:28px; line-height:1.2; }
-.vf-lede { margin:0; color:var(--muted); max-width:62ch; }
-.vf-tags { display:flex; flex-wrap:wrap; gap:6px; }
-.vf-tags button { border:1px solid var(--line); background:var(--panel); color:var(--fg); border-radius:999px; padding:3px 10px; font:12.5px var(--mono); cursor:pointer; }
-.vf-tags button[aria-pressed="true"] { border-color:var(--accent); color:var(--accent); }
-.vf-list { display:grid; gap:12px; }
-.vf-card { display:grid; grid-template-columns:200px minmax(0,1fr); gap:16px; padding:14px; background:var(--panel); border:1px solid var(--line); border-radius:12px; }
-.vf-card img { width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:8px; background:var(--panel2); display:block; }
-.vf-card h2 { margin:0 0 4px; font-size:17px; line-height:1.3; }
-.vf-card h2 a { color:var(--fg); text-decoration:none; }
-.vf-card h2 a:hover { color:var(--accent); }
-.vf-meta { font:12.5px var(--mono); color:var(--muted); display:flex; flex-wrap:wrap; gap:4px 12px; align-items:center; }
-.vf-card p { margin:8px 0; }
-.vf-score { display:inline-flex; gap:2px; }
-.vf-score i { width:8px; height:8px; border-radius:2px; background:var(--line); }
-.vf-score i.on { background:var(--tool); }
-.vf-links { display:flex; flex-wrap:wrap; gap:6px 14px; font-size:13.5px; }
-.vf-chip { font:12px var(--mono); color:var(--muted); }
-.vf-empty { color:var(--muted); padding:24px; border:1px dashed var(--line); border-radius:12px; text-align:center; }
-@media (max-width:620px) { .vf-card { grid-template-columns:minmax(0,1fr); } h1 { font-size:23px; } }
-</style>
+<meta http-equiv="refresh" content="0; url=../#videos">
+<link rel="canonical" href="../#videos">
+<script>location.replace('../#videos');</script>
+<style>body { background:#0d1315; color:#e2ece9; font:15px system-ui, sans-serif; padding:24px 16px; } a { color:#3ec7b4; }</style>
 </head>
 <body>
-<main>
-  <header>
-    <div class="vf-eyebrow"><a href="../">agent-factory-lab</a> · video feed</div>
-    <h1>Videos on agent factories</h1>
-    <p class="vf-lede">A job on a Mac mini checks the followed channels every morning, reads each new transcript, and writes a summary with a relevance score from 0 to 5. Videos that score 4 or more also get an animated explainer.</p>
-  </header>
-  <div class="vf-tags" id="vfTags" aria-label="Filter by tag"></div>
-  <div class="vf-list" id="vfList" aria-live="polite"></div>
-</main>
-<script>
-(() => {
-  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c]);
-  const list = document.getElementById('vfList'), tagBar = document.getElementById('vfTags');
-  let rows = [], tag = new URLSearchParams(location.search).get('tag') || '';
-
-  function render() {
-    const shown = rows.filter(r => !tag || (r.tags || []).includes(tag));
-    list.innerHTML = shown.length ? shown.map(r => `
-      <article class="vf-card">
-        <a href="https://www.youtube.com/watch?v=${esc(r.id)}" target="_blank" rel="noopener"><img loading="lazy" alt="" src="https://i.ytimg.com/vi/${esc(r.id)}/mqdefault.jpg"></a>
-        <div>
-          <h2><a href="https://www.youtube.com/watch?v=${esc(r.id)}" target="_blank" rel="noopener">${esc(r.title)}</a></h2>
-          <div class="vf-meta"><span>${esc(r.channel)}</span><time>${esc(r.date)}</time>
-            <span class="vf-score" title="Relevance ${r.score}/5" aria-label="Relevance ${r.score} of 5">${[1,2,3,4,5].map(n => `<i class="${n <= r.score ? 'on' : ''}"></i>`).join('')}</span></div>
-          <p>${esc(r.summary)}</p>
-          <div class="vf-links">
-            ${r.page ? `<a href="${esc(r.page)}">Animated explainer →</a>` : ''}
-            ${(r.tags || []).map(t => `<span class="vf-chip">#${esc(t)}</span>`).join('')}
-          </div>
-        </div>
-      </article>`).join('') : '<div class="vf-empty">No videos yet.</div>';
-    tagBar.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.t === tag)));
-  }
-
-  tagBar.addEventListener('click', e => {
-    const b = e.target.closest('button'); if (!b) return;
-    tag = b.dataset.t === tag ? '' : b.dataset.t;
-    history.replaceState(null, '', tag ? '?tag=' + encodeURIComponent(tag) : location.pathname);
-    render();
-  });
-
-  fetch('index.json', { cache:'no-cache' }).then(r => r.json()).then(data => {
-    rows = data.sort((a, b) => b.date.localeCompare(a.date));
-    const tags = [...new Set(rows.flatMap(r => r.tags || []))].sort();
-    tagBar.innerHTML = ['', ...tags].map(t => `<button type="button" data-t="${esc(t)}">${t ? '#' + esc(t) : 'all'}</button>`).join('');
-    render();
-  }).catch(() => { list.innerHTML = '<div class="vf-empty">Could not load index.json.</div>'; });
-})();
-</script>
+<p>The video feed moved into the dashboard: <a href="../#videos">open it here</a>.</p>
 </body>
 </html>

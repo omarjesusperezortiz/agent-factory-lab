@@ -95,7 +95,9 @@ This is an unattended run. Rules for this run:
 - Write ONE self-contained page to {out}/index.html (copy the skill's template.html as the start). No other files outside {out}/.
 - Use the watch skill with the local engine for frames and transcript; put temporary files under {tmp}.
 - Do not open a browser, publish an Artifact, edit other files, or run git. The calling script commits.
-- Add a link back to the feed (`../`) and to the video at the top of the page.
+- At the top of the page, put the back links in `<nav class="top">`: one to the feed (`../../#videos`) and one to the video.
+  The dashboard opens this page in a frame and removes that nav there, so nothing else on the page should depend on it.
+- The page must also read well inside a frame about 1100px wide: no fixed full-viewport heights.
 """
 
 

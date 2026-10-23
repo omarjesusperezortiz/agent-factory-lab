@@ -11,7 +11,9 @@ https://omarjesusperezortiz.github.io/agent-factory-lab/
   - From a new session, read it with the Artifact tool first.
   - Then publish `src/dashboard.html` with that `url` so the link stays the same.
 - `research/`: sources and videos. `decisions/`: one file per decision. `handoffs/`: session handoffs, newest first.
-- `videos/`: the public video feed (`index.html` renders `index.json`; `channels.txt` lists followed channels; `<date>-<slug>/` holds explainers).
+- `videos/`: data for the dashboard's Videos view (`#videos`). `index.json` is the feed, `channels.txt` lists followed channels, `<date>-<slug>/index.html` is a standalone explainer.
+  - The dashboard opens an explainer at `#videos/<date>-<slug>` in a frame and removes its `<nav class="top">`. `videos/index.html` only redirects to `../#videos`.
+  - Sidebar groups: Research, Videos (explainer links added from `index.json`), Console mock (collapsed). The default view is Research notes.
   - Filled daily at 08:00 by `scripts/video-feed.sh` (launchd agent `com.omar.video-feed`, template in `scripts/`). It runs in its own clone at `~/projects/agent-factory-lab-feed` and pushes straight to `main`.
   - Log: `~/Library/Logs/video-feed.log`. Run now: `launchctl kickstart gui/$(id -u)/com.omar.video-feed`.
 - `private/`: gitignored. Material from work or company repos lives there and never goes into the public site without the user's explicit yes.
