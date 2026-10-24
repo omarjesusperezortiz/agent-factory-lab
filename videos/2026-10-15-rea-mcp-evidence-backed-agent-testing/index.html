@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>REA: an agent that tests with evidence, not screenshots</title>
+<style>
+:root { --bg:#f4f4f2; --fg:#151515; --muted:#666; --accent:#0d8a7d; --line:#ddd; --panel:#fff;
+  --sans:"Inter", ui-sans-serif, system-ui, sans-serif; --mono:"JetBrains Mono", ui-monospace, Menlo, monospace; color-scheme:light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#0b0d0e; --fg:#ececec; --muted:#9a9a9a; --accent:#3ec7b4; --line:#262a2c; --panel:#141719; color-scheme:dark; } }
+:root[data-theme="dark"] { --bg:#0b0d0e; --fg:#ececec; --muted:#9a9a9a; --accent:#3ec7b4; --line:#262a2c; --panel:#141719; color-scheme:dark; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.55 var(--sans); }
+a { color:var(--accent); }
+main { max-width:1180px; margin:0 auto; padding:32px 16px 64px; display:grid; gap:18px; }
+.top { display:flex; gap:16px; flex-wrap:wrap; font-size:14px; }
+h1 { margin:0; font-size:28px; letter-spacing:-.02em; } .lede { color:var(--muted); max-width:72ch; margin:0; }
+h2 { margin:18px 0 0; font-size:19px; }
+.ctl { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+.seg { display:inline-flex; flex-wrap:wrap; border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+.seg button { background:var(--panel); border:0; border-right:1px solid var(--line); padding:6px 12px; cursor:pointer; color:var(--muted); font:inherit; font-size:13px; }
+.seg button[aria-pressed="true"] { color:var(--fg); background:color-mix(in srgb, var(--accent) 14%, var(--panel)); }
+.play { font:inherit; font-size:13px; font-weight:600; background:var(--accent); color:var(--bg); border:0; border-radius:8px; padding:7px 13px; cursor:pointer; }
+.cap { border-left:3px solid var(--accent); padding:4px 0 4px 14px; max-width:80ch; min-height:64px; } .cap p { margin:0 0 4px; } .cap small { color:var(--muted); }
+.rx-tbl { border-collapse:collapse; width:100%; font-size:14px; }
+.rx-tbl th, .rx-tbl td { text-align:left; vertical-align:top; padding:9px 10px; border-bottom:1px solid var(--line); }
+.rx-tbl th { color:var(--muted); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+.rx-src { margin:0; padding-left:20px; } .rx-src li { margin:4px 0; }
+.rx-wrap { overflow-x:auto; }
+
+/* ---- stage: always dark, its own tokens; every class is prefixed .x ---- */
+.x { --c:#6fd3b5; --card:#1a1c1c; --card2:#222525; --ln:#2d3131; --tx:#ececec; --mu:#8d9392; --gr:#7bd88f; --yl:#e8c468; --rd:#f0716a;
+  background:#0e0e0e; color:var(--tx); border:1px solid #222; border-radius:14px; min-height:460px; padding:26px; position:relative; overflow:hidden;
+  display:grid; align-content:center; font-size:14px; }
+.x .vc { background:var(--card); border:1px solid var(--ln); border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,.45); }
+.x .vi { opacity:0; transform:translateY(10px); transition:opacity .5s, transform .5s; } .x .vi.on { opacity:1; transform:none; }
+.x .row { display:flex; gap:22px; align-items:center; justify-content:center; flex-wrap:wrap; }
+.x .mu { color:var(--mu); } .x .co { color:var(--c); } .x .gr { color:var(--gr); } .x .yl { color:var(--yl); } .x .rd { color:var(--rd); } .x .mono { font-family:var(--mono); }
+.x .pill { display:inline-flex; align-items:center; gap:8px; background:var(--card2); border:1px solid var(--ln); border-radius:99px; padding:4px 12px; font-weight:600; font-size:13px; }
+.x .win-h { display:flex; align-items:center; gap:6px; padding:9px 12px; border-bottom:1px solid var(--ln); }
+.x .win-h i { width:9px; height:9px; border-radius:50%; background:#ff5f57; } .x .win-h i:nth-child(2) { background:#febc2e; } .x .win-h i:nth-child(3) { background:#28c840; }
+.x .win-h span { margin:0 auto; font:11px var(--mono); color:var(--mu); }
+.x .rx-lab { font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--mu); font-weight:600; }
+.x .rx-tag { display:inline-block; font:600 10.5px var(--mono); padding:2px 7px; border-radius:99px; border:1px solid currentColor; white-space:nowrap; }
+
+/* scene 1: screenshot lane vs wire lane */
+.x .s1-wrap { display:grid; gap:18px; width:100%; max-width:1000px; margin:0 auto; }
+.x .s1-lane { display:grid; grid-template-columns:120px 1fr; gap:16px; align-items:center; padding:14px 16px; }
+.x .s1-shots { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.x .s1-shot { width:120px; height:70px; border-radius:8px; background:var(--card2); border:1px solid var(--ln); padding:8px; display:grid; gap:5px; align-content:start; }
+.x .s1-shot i { display:block; height:6px; border-radius:3px; background:#333a39; } .x .s1-shot i.b { width:50%; background:#3d4a47; }
+.x .s1-shot b { font:600 12px var(--mono); color:var(--tx); }
+.x .s1-chain { display:flex; align-items:stretch; gap:8px; flex-wrap:wrap; }
+.x .s1-node { flex:1 1 110px; min-width:100px; background:var(--card2); border:1px solid var(--ln); border-radius:10px; padding:9px 10px; display:grid; gap:6px; transition:border-color .3s, background .3s; }
+.x .s1-node .rx-lab { font-size:10px; } .x .s1-node code { font:12px var(--mono); color:var(--tx); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.x .s1-node.s1-hot { border-color:var(--c); background:color-mix(in srgb, var(--c) 10%, var(--card2)); }
+.x .s1-ev { font:600 10.5px var(--mono); color:var(--c); opacity:0; transform:scale(.6); transition:opacity .3s, transform .3s cubic-bezier(.3,1.6,.5,1); justify-self:start; border:1px solid var(--c); border-radius:99px; padding:1px 7px; }
+.x .s1-node.s1-hot .s1-ev { opacity:1; transform:none; }
+.x .s1-hid { flex:1 1 110px; min-width:100px; border:1px dashed #444; border-radius:10px; padding:9px 10px; color:var(--mu); font-size:12px; display:grid; align-content:center; }
+
+/* scene 2: claim sorter */
+.x .s2-wrap { display:grid; gap:18px; width:100%; max-width:960px; margin:0 auto; }
+.x .s2-claim { padding:14px 18px; display:flex; gap:14px; align-items:center; flex-wrap:wrap; min-height:64px; }
+.x .s2-claim .s2-txt { font-size:16px; font-weight:600; flex:1 1 300px; }
+.x .s2-q { font:600 12px var(--mono); color:var(--mu); transition:color .3s; } .x .s2-q.on { color:var(--c); }
+.x .s2-cols { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+.x .s2-col { padding:12px; display:grid; gap:10px; align-content:start; min-height:170px; border-top:3px solid var(--k); }
+.x .s2-col h4 { margin:0; font-size:15px; color:var(--k); display:flex; justify-content:space-between; }
+.x .s2-col p { margin:0; font-size:12px; color:var(--mu); }
+.x .s2-card { background:var(--card2); border:1px solid var(--ln); border-radius:8px; padding:8px 10px; font-size:12.5px; display:grid; gap:4px; }
+
+/* scene 3: install + reach map */
+.x .s3-term { width:min(400px,100%); font:12.5px var(--mono); } .x .s3-term .s3-b { padding:12px 14px; display:grid; gap:7px; min-height:170px; }
+.x .s3-reach { display:grid; gap:9px; width:min(440px,100%); }
+.x .s3-tile { display:grid; grid-template-columns:28px 1fr auto; gap:10px; align-items:center; padding:10px 12px; }
+.x .s3-tile .s3-ic { width:28px; height:28px; border-radius:7px; background:var(--card2); display:grid; place-items:center; font-size:14px; }
+.x .s3-tile b { font-size:13.5px; } .x .s3-tile small { display:block; color:var(--mu); font-size:11.5px; }
+.x .s3-tile.s3-no { opacity:.55; } .x .s3-tile.s3-no.on { opacity:.55; }
+
+/* scene 4: fan-in to a behavior list */
+.x .s4-grid { display:grid; grid-template-columns:200px 26px minmax(0,1fr) 26px 210px; gap:10px; align-items:center; width:100%; max-width:1020px; margin:0 auto; }
+.x .s4-src { display:grid; gap:12px; }
+.x .s4-card { padding:10px 12px; display:grid; gap:8px; }
+.x .s4-card svg { width:100%; height:70px; display:block; }
+.x .s4-arrow { color:var(--c); font-size:20px; text-align:center; }
+.x .s4-doc { font-size:12.5px; } .x .s4-doc ul { list-style:none; margin:0; padding:10px 12px; display:grid; gap:7px; }
+.x .s4-doc li { display:flex; gap:8px; justify-content:space-between; align-items:center; }
+.x .s4-board { display:grid; grid-template-columns:repeat(3,1fr); gap:5px; height:70px; }
+.x .s4-board div { background:#262a29; border-radius:4px; padding:4px; display:grid; gap:4px; align-content:start; } .x .s4-board i { display:block; height:9px; border-radius:2px; background:#3a4341; }
+.x .s4-edge { stroke:#4f5c59; stroke-width:1.2; } .x .s4-dot { fill:var(--c); }
+.x .s4-app .s4-edge { stroke-dasharray:80; stroke-dashoffset:80; transition:stroke-dashoffset 1s ease; }
+.x .s4-app.on .s4-edge { stroke-dashoffset:0; }
+.x .s4-app .s4-dot { transform-box:fill-box; transform-origin:center; transform:scale(0); transition:transform .4s cubic-bezier(.3,1.6,.5,1); }
+.x .s4-app.on .s4-dot { transform:scale(1); }
+.x .s4-del { font-size:12px; line-height:1.4; }
+.x .s4-del s { color:var(--rd); }
+
+/* scene 5: competitor sweep */
+.x .s5-wrap { display:grid; grid-template-columns:200px 1fr; gap:22px; align-items:center; width:100%; max-width:980px; margin:0 auto; }
+.x .s5-me { padding:16px; display:grid; gap:6px; text-align:center; }
+.x .s5-rows { display:grid; gap:9px; }
+.x .s5-row { display:grid; grid-template-columns:110px 1fr; gap:12px; align-items:center; padding:9px 12px; }
+.x .s5-chips { display:flex; gap:6px; flex-wrap:wrap; }
+.x .s5-chip { font-size:11.5px; padding:3px 9px; border-radius:99px; background:var(--card2); border:1px solid var(--ln); color:var(--mu); white-space:nowrap; }
+.x .s5-chip.s5-deep { color:#0e0e0e; background:var(--c); border-color:var(--c); font-weight:600; }
+.x .s5-legend { display:flex; gap:14px; font-size:12px; color:var(--mu); flex-wrap:wrap; }
+
+/* scene 6: the billing trace */
+.x .s6-wrap { display:grid; gap:16px; width:100%; max-width:980px; margin:0 auto; }
+.x .s6-pipe { display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:center; }
+.x .s6-step { padding:8px 14px; border-radius:10px; background:var(--card2); border:1px solid var(--ln); font-size:13px; display:flex; gap:8px; align-items:center; transition:border-color .3s; }
+.x .s6-step b { font-size:12px; opacity:0; transition:opacity .3s; }
+.x .s6-step.s6-ok { border-color:#2f5a3a; } .x .s6-step.s6-ok b { opacity:1; color:var(--gr); }
+.x .s6-step.s6-bad { border-color:var(--rd); background:color-mix(in srgb, var(--rd) 12%, var(--card2)); } .x .s6-step.s6-bad b { opacity:1; color:var(--rd); }
+.x .s6-body { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(0,1fr); gap:16px; }
+.x .s6-acc { padding:14px 16px; display:grid; gap:12px; }
+.x .s6-r { display:grid; grid-template-columns:86px 1fr; gap:10px; align-items:center; }
+.x .s6-r > b { font-size:13px; }
+.x .s6-bars { display:grid; gap:4px; }
+.x .s6-bar { display:flex; align-items:center; gap:8px; font:11.5px var(--mono); color:var(--mu); }
+.x .s6-bar i { display:block; height:10px; width:0; border-radius:3px; transition:width .8s cubic-bezier(.2,.8,.2,1); }
+.x .s6-bar.s6-pv i { background:#5b6b67; } .x .s6-bar.s6-ch i { background:var(--c); }
+.x .s6-bar span { white-space:nowrap; }
+.x .s6-side { display:grid; gap:8px; align-content:start; }
+.x .s6-side .s2-card { font-size:12.5px; }
+
+/* scene 7: pre-launch sweep */
+.x .s7-wrap { display:grid; grid-template-columns:220px minmax(0,1fr); gap:26px; align-items:center; width:100%; max-width:960px; margin:0 auto; }
+.x .s7-phone { width:180px; height:300px; border:2px solid #3a3f3e; border-radius:26px; padding:28px 10px 12px; position:relative; margin:0 auto; background:#141616; }
+.x .s7-phone::before { content:""; position:absolute; top:10px; left:50%; width:44px; height:6px; margin-left:-22px; border-radius:3px; background:#2a2e2d; }
+.x .s7-hdr { height:30px; width:220px; border-radius:6px; background:#2b3533; display:flex; align-items:center; gap:6px; padding:0 8px; font:600 10.5px var(--sans); color:var(--tx); transition:width .7s ease, background .4s; white-space:nowrap; }
+.x .s7-hdr span { background:#3d4a47; border-radius:4px; padding:2px 6px; }
+.x .s7-hdr.s7-bad { background:color-mix(in srgb, var(--rd) 35%, #2b3533); }
+.x .s7-hdr.s7-fix { width:100%; background:#2b3533; }
+.x .s7-edge { position:absolute; top:22px; bottom:8px; right:-3px; width:3px; background:var(--rd); opacity:0; transition:opacity .3s; border-radius:2px; }
+.x .s7-edge.on { opacity:1; }
+.x .s7-body { display:grid; gap:7px; margin-top:12px; } .x .s7-body i { display:block; height:34px; border-radius:6px; background:#1f2423; }
+.x .s7-clip { overflow:visible; }
+.x .s7-list { display:grid; gap:9px; }
+.x .s7-item { display:grid; grid-template-columns:80px 1fr auto; gap:12px; align-items:center; padding:10px 14px; }
+.x .s7-item small { display:block; color:var(--mu); font-size:11.5px; }
+.x .s7-fixd { font:600 11px var(--mono); color:var(--gr); opacity:0; transition:opacity .3s; white-space:nowrap; } .x .s7-fixd.on { opacity:1; }
+
+@media (max-width:760px) {
+  .x { padding:18px 12px; min-height:0; font-size:13px; }
+  .x .s1-lane { grid-template-columns:1fr; gap:8px; }
+  .x .s1-shot { width:100px; height:62px; }
+  .x .s2-cols { grid-template-columns:1fr; } .x .s2-col { min-height:0; }
+  .x .s4-grid { grid-template-columns:1fr; } .x .s4-arrow { transform:rotate(90deg); }
+  .x .s5-wrap { grid-template-columns:1fr; } .x .s5-row { grid-template-columns:1fr; gap:6px; }
+  .x .s6-body { grid-template-columns:1fr; } .x .s6-r { grid-template-columns:70px 1fr; }
+  .x .s7-wrap { grid-template-columns:1fr; } .x .s7-item { grid-template-columns:1fr auto; } .x .s7-item .rx-tag { grid-column:1 / -1; justify-self:start; }
+  .x .s7-phone { width:160px; height:250px; } .x .s7-hdr { width:190px; }
+}
+</style>
+
+<main>
+  <nav class="top"><a href="../../research/#videos">← Video feed</a><a href="https://www.youtube.com/watch?v=rw0fqnrZgNM" target="_blank" rel="noopener">▶ Watch the video (AI LABS, 12:16)</a></nav>
+  <h1>REA: an agent that tests with evidence, not screenshots</h1>
+  <p class="lede">Reverse Engineer Anything (REA) is an MCP server plus a skill that lets Claude Code or Codex follow a click down to the request it sends, save every request and response as evidence, and label each finding <em>seen</em>, <em>guessed</em> or <em>unknown</em>. Seven scenes: how it works, then the video's five use cases.</p>
+  <div class="ctl"><div class="seg" id="steps"></div><button type="button" class="play" id="play">▶ Play all</button></div>
+  <div class="x" id="stage"></div>
+  <div class="cap" id="cap" aria-live="polite"></div>
+
+  <h2>What this means for the factory</h2>
+  <div class="rx-wrap"><table class="rx-tbl">
+    <thead><tr><th>Idea from the video</th><th>What we do with it</th></tr></thead>
+    <tbody>
+      <tr><td>Every capture gets an evidence ID; findings must cite one</td><td>Agent reports in Traces and the Human inbox carry an evidence ID or the label <b>seen / guessed / unknown</b>. A claim marked seen with no ID gets bounced back to the agent.</td></tr>
+      <tr><td>Black-box QA: "don't read the code, don't change anything"</td><td>A separate QA agent tests the preview URL from the browser side only, against the spec and the home-page promises. It found the billing bug that a code review missed.</td></tr>
+      <tr><td>Write the behavior list before building</td><td>When a ticket says "like app X", the first artifact is a behavior list (click, drag, delete). It becomes the acceptance test for the build agent.</td></tr>
+      <tr><td>Pre-launch sweep of what actually ships</td><td>Before release, scan the bundle that reaches the browser: keys in JS, public source maps, and data that can be fetched without the backend's permission.</td></tr>
+      <tr><td>Limit: it only sees what reaches the browser</td><td>Server-side logic stays <i>unknown</i>. Pair REA with code review and server logs; don't treat a clean REA run as a full audit.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Sources</h2>
+  <ol class="rx-src">
+    <li><a href="https://www.youtube.com/watch?v=rw0fqnrZgNM" target="_blank" rel="noopener">GitHub's #1 Trending Skill Is Insane (5 Use Cases)</a> by AI LABS (12:16). All demos and numbers on this page come from it.</li>
+    <li><a href="https://github.com/morluto/rea" target="_blank" rel="noopener">morluto/rea</a> on GitHub: "Reverse engineer anything from your terminal or agent with one CLI and MCP server."</li>
+    <li><a href="https://www.npmjs.com/package/rea-agents" target="_blank" rel="noopener">rea-agents on npm</a>: installed with <code>npx rea-agents setup</code>. The video shows v6.4.0; v6.7.0 was current when this page was written.</li>
+  </ol>
+</main>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const on = (el, sel) => el.querySelectorAll(sel).forEach(n => n.classList.add('on'));
+  const count = (node, to, ms, fmt = v => v) => { if (reduced) { node.textContent = fmt(to); return; } const t0 = performance.now(); const f = now => { const p = Math.min(1, (now - t0) / ms); node.textContent = fmt(Math.round(to * p)); if (p < 1) requestAnimationFrame(f); }; requestAnimationFrame(f); };
+  const win = url => `<div class="win-h"><i></i><i></i><i></i><span>${url}</span></div>`;
+  const tag = (k) => ({ seen:'<span class="rx-tag gr">seen</span>', guessed:'<span class="rx-tag yl">guessed</span>', unknown:'<span class="rx-tag mu">unknown</span>' })[k];
+
+  // Small force-graph used for Obsidian and for our app.
+  const P = [[30,35],[75,15],[80,55],[125,30],[150,60],[170,18],[110,62]], E = [[0,1],[0,2],[1,3],[2,3],[3,4],[3,5],[2,6],[4,6]];
+  const graph = () => `<svg viewBox="0 0 200 75">${E.map(([a, b]) => `<line class="s4-edge" x1="${P[a][0]}" y1="${P[a][1]}" x2="${P[b][0]}" y2="${P[b][1]}"/>`).join('')}${P.map(([x, y], i) => `<circle class="s4-dot" cx="${x}" cy="${y}" r="${i === 3 ? 6 : 4}"/>`).join('')}</svg>`;
+
+  const SCENES = [
+    { k:'Screenshot vs wire',
+      cap:'<p><b>A browser tool sees pixels; REA follows the click to the code and the network.</b> It traces the click to the code that ran and saves what went out and what came back, each with its own evidence ID. Here it shows that the preview is worked out in the browser and never asks the server.</p><small>That proof stops at the browser. Whatever the company\'s servers do with the request stays hidden from REA.</small>',
+      html:() => `<div class="s1-wrap">
+        <div class="vc s1-lane vi" data-s="1"><div><div class="rx-lab">Browser tool</div><div class="mu" style="font-size:12px">screenshots</div></div>
+          <div class="s1-shots"><div class="s1-shot"><i></i><i class="b"></i><b>before</b></div><span class="mu">→ click →</span><div class="s1-shot"><i></i><i class="b"></i><b>$155.52</b></div>
+            <span class="yl vi" data-s="2" style="font-size:13px">Looks right. But how did it get that number?</span></div></div>
+        <div class="vc s1-lane vi" data-s="3"><div><div class="rx-lab co">REA</div><div class="mu" style="font-size:12px">follows the wire</div></div>
+          <div class="s1-chain">
+            <div class="s1-node"><span class="rx-lab">Click</span><code>Price invoice</code><span class="s1-ev">ev_01</span></div>
+            <div class="s1-node"><span class="rx-lab">Code that ran</span><code>in-page script</code><span class="s1-ev">ev_02</span></div>
+            <div class="s1-node"><span class="rx-lab">Sent</span><code>no request</code><span class="s1-ev">ev_03</span></div>
+            <div class="s1-node"><span class="rx-lab">Server charges</span><code>$311.03</code><span class="s1-ev">ev_04</span></div>
+            <div class="s1-hid vi" data-s="4">Server internals: hidden from REA</div>
+          </div></div></div>`,
+      run:(t, el) => {
+        t(() => on(el, '[data-s="1"]'), 100); t(() => on(el, '[data-s="2"]'), 900); t(() => on(el, '[data-s="3"]'), 1500);
+        el.querySelectorAll('.s1-node').forEach((n, i) => t(() => n.classList.add('s1-hot'), 2000 + i * 550));
+        t(() => on(el, '[data-s="4"]'), 4400);
+        return 5000;
+      } },
+
+    { k:'Seen · guessed · unknown',
+      cap:'<p><b>A guess can\'t pass as a fact.</b> The skill makes Claude tag every claim: <span style="color:var(--accent)">seen</span> when REA captured it, guessed when it was inferred from other clues, unknown when nothing backs it.</p><small>The labels are only as honest as the agent applying them. Spot-check that "seen" findings cite a real evidence ID.</small>',
+      html:() => `<div class="s2-wrap">
+        <div class="vc s2-claim"><span class="rx-lab">Claim</span><span class="s2-txt">…</span><span class="s2-q">source?</span></div>
+        <div class="s2-cols">
+          <div class="vc s2-col" style="--k:var(--gr)" data-c="seen"><h4>Seen <span class="mono" style="font-size:11px">captured</span></h4><p>Backed by something REA saved.</p></div>
+          <div class="vc s2-col" style="--k:var(--yl)" data-c="guessed"><h4>Guessed <span class="mono" style="font-size:11px">inferred</span></h4><p>Worked out from other clues.</p></div>
+          <div class="vc s2-col" style="--k:var(--mu)" data-c="unknown"><h4>Unknown <span class="mono" style="font-size:11px">no proof</span></h4><p>Nothing backs it up.</p></div>
+        </div></div>`,
+      run:(t, el) => {
+        const claims = [
+          ['Hooli\'s preview shows half the real total', 'seen', 'ev_04 · /billing'],
+          ['A settings list built into the page causes it', 'guessed', 'from page code, not observed'],
+          ['How the server computes tax', 'unknown', 'never reaches the browser'],
+        ];
+        const txt = el.querySelector('.s2-txt'), q = el.querySelector('.s2-q');
+        claims.forEach(([c, k, why], i) => {
+          const at = 300 + i * 1500;
+          t(() => { txt.textContent = c; q.classList.remove('on'); q.textContent = 'source?'; }, at);
+          t(() => { q.classList.add('on'); q.textContent = why; }, at + 600);
+          t(() => { const d = document.createElement('div'); d.className = 's2-card vi'; d.innerHTML = `<span>${c}</span><span>${tag(k)}</span>`; el.querySelector(`[data-c="${k}"]`).appendChild(d); requestAnimationFrame(() => requestAnimationFrame(() => d.classList.add('on'))); }, at + 1100);
+        });
+        return 5000;
+      } },
+
+    { k:'Setup and reach',
+      cap:'<p><b>One command installs it for every agent you use.</b> <code>npx rea-agents setup</code> finds your coding tools, installs the skill globally (not per project) and connects an MCP server with about 170 tools.</p><small>Desktop apps work only if their code lives on your machine. An app that loads everything from the internet leaves REA nothing to read.</small>',
+      html:() => `<div class="row" style="align-items:stretch">
+        <div class="vc s3-term">${win('~/my-app')}<div class="s3-b">
+          <div><span class="mu">$</span> <span class="s3-typed"></span></div>
+          <div class="vi mu" data-s="1">Detected: Claude Code, Codex, Cursor, OpenCode…</div>
+          <div class="vi" data-s="2">Which agents should use REA? <span class="co">› Claude Code ◉ Codex ◉</span></div>
+          <div class="vi mu" data-s="3">Install Hopper for binary analysis? optional</div>
+          <div class="vi gr" data-s="4">✓ rea MCP connected · <span class="s3-n">0</span> tools</div>
+        </div></div>
+        <div class="s3-reach">
+          <div class="vc s3-tile vi" data-s="5"><span class="s3-ic">🌐</span><span><b>Websites</b><small>everything that reaches the browser</small></span><span class="gr">✓</span></div>
+          <div class="vc s3-tile vi" data-s="6"><span class="s3-ic">▣</span><span><b>Desktop app built like a website</b><small>handled the same way as a site</small></span><span class="gr">✓</span></div>
+          <div class="vc s3-tile vi" data-s="7"><span class="s3-ic">⚙</span><span><b>Desktop app with local program files</b><small>reads the files directly · Hopper goes deeper</small></span><span class="gr">✓</span></div>
+          <div class="vc s3-tile s3-no vi" data-s="8"><span class="s3-ic">☁</span><span><b>App that loads everything online</b><small>nothing saved locally to read</small></span><span class="rd">✗</span></div>
+        </div></div>`,
+      run:(t, el) => {
+        const s = 'npx rea-agents setup', ty = el.querySelector('.s3-typed');
+        [...s].forEach((_, i) => t(() => { ty.textContent = s.slice(0, i + 1); }, 200 + i * 40));
+        [1, 2, 3].forEach(i => t(() => on(el, `[data-s="${i}"]`), 1000 + (i - 1) * 500));
+        t(() => { on(el, '[data-s="4"]'); count(el.querySelector('.s3-n'), 170, 900, v => '~' + v); }, 2600);
+        [5, 6, 7, 8].forEach((i, j) => t(() => on(el, `[data-s="${i}"]`), 2900 + j * 450));
+        return 5000;
+      } },
+
+    { k:'1 · Borrow a feature',
+      cap:'<p><b>Write the behavior down before you build it.</b> REA went through Obsidian\'s code for its graph view and through Notion (via its MCP) for the board view, then wrote one behavior list for the agent to build against.</p><small>Behavior is what screenshots miss. Our app deliberately differs from Obsidian: deleting a page turns its links back into plain text instead of leaving broken links.</small>',
+      html:() => `<div class="s4-grid">
+        <div class="s4-src">
+          <div class="vc s4-card vi" data-s="1"><span class="rx-lab">Obsidian · graph</span>${graph()}</div>
+          <div class="vc s4-card vi" data-s="1"><span class="rx-lab">Notion · board</span><div class="s4-board"><div><i></i><i></i></div><div><i></i></div><div><i></i><i></i><i></i></div></div></div>
+        </div>
+        <div class="s4-arrow vi" data-s="2">→</div>
+        <div class="vc s4-doc vi" data-s="2">${win('behavior-list.md')}<ul>
+          <li class="vi" data-b><span>Where each node is placed</span>${tag('seen')}</li>
+          <li class="vi" data-b><span>How link lines are drawn</span>${tag('seen')}</li>
+          <li class="vi" data-b><span>Strongly linked pages pull closer</span>${tag('seen')}</li>
+          <li class="vi" data-b><span>Dragging a node, step by step</span>${tag('seen')}</li>
+          <li class="vi" data-b><span>Board columns and moves</span>${tag('seen')}</li>
+          <li class="vi" data-b><span>Details REA couldn't pin down</span>${tag('unknown')}</li>
+        </ul></div>
+        <div class="s4-arrow vi" data-s="3">→</div>
+        <div class="vc s4-card s4-app vi" data-s="3"><span class="rx-lab co">Our app · graph view</span>${graph()}
+          <div class="s4-del vi" data-s="4">Delete a page: <s>[[Roadmap]]</s> → Roadmap<br><span class="mu">links become plain text</span></div></div>
+      </div>`,
+      run:(t, el) => {
+        t(() => on(el, '[data-s="1"]'), 100); t(() => on(el, '[data-s="2"]'), 800);
+        el.querySelectorAll('[data-b]').forEach((li, i) => t(() => li.classList.add('on'), 1200 + i * 300));
+        t(() => on(el, '[data-s="3"]'), 3200); t(() => on(el, '[data-s="4"]'), 4300);
+        return 5000;
+      } },
+
+    { k:'2 · Read the competition',
+      cap:'<p><b>The sign-in page leaks the roadmap.</b> For a demo meeting note-taker, plain research on the top five competitors returned pricing and how each records meetings. REA also read the code each sign-in page loads, which revealed features the websites never mention.</p><small>Claude lists the competitors first; you choose the top five for REA to go through in depth.</small>',
+      html:() => `<div class="s5-wrap">
+        <div class="vc s5-me vi" data-s="1"><span class="rx-lab">We're building</span><b style="font-size:16px">Meeting note-taker</b><span class="mu" style="font-size:12px">"list my competitors, research the top 5"</span></div>
+        <div style="display:grid;gap:10px">
+          <div class="s5-rows">${['A', 'B', 'C', 'D', 'E'].map(n => `<div class="vc s5-row vi" data-r><b>Competitor ${n}</b><div class="s5-chips"><span class="s5-chip vi">pricing</span><span class="s5-chip vi">how it records</span><span class="s5-chip s5-deep vi">sign-in code → unlisted features</span></div></div>`).join('')}</div>
+          <div class="s5-legend vi" data-s="9"><span><span class="s5-chip">grey</span> plain web research</span><span><span class="s5-chip s5-deep">accent</span> only with REA</span></div>
+        </div></div>`,
+      run:(t, el) => {
+        t(() => on(el, '[data-s="1"]'), 100);
+        const rows = el.querySelectorAll('[data-r]');
+        rows.forEach((r, i) => { t(() => r.classList.add('on'), 600 + i * 220); const c = r.querySelectorAll('.s5-chip');
+          t(() => { c[0].classList.add('on'); c[1].classList.add('on'); }, 1900 + i * 150);
+          t(() => c[2].classList.add('on'), 3000 + i * 250); });
+        t(() => on(el, '[data-s="9"]'), 4300);
+        return 5000;
+      } },
+
+    { k:'3 · Test your own feature',
+      cap:'<p><b>The bug was invisible in the code.</b> Told to test billing from the site alone, REA found two accounts shown one price and charged another. Line items, discount and tax were right; only the last step, adding up the total, went wrong.</p><small>The pricing code itself looked fine. The suspected cause, a settings list built into the page, is labelled as a guess, not a fact.</small>',
+      html:() => `<div class="s6-wrap">
+        <div class="s6-pipe">${['Line items', 'Discount', 'Tax', 'Total'].map((s, i) => `${i ? '<span class="mu">→</span>' : ''}<div class="s6-step"><span>${s}</span><b>${i < 3 ? '✓' : '✗'}</b></div>`).join('')}</div>
+        <div class="s6-body">
+          <div class="vc s6-acc vi" data-s="1"><div class="s5-legend"><span><span class="s6-bar s6-pv" style="display:inline-flex"><i style="width:14px"></i></span> shown in preview</span><span><span class="s6-bar s6-ch" style="display:inline-flex"><i style="width:14px"></i></span> actually charged</span></div>
+            ${[['Northwind', 478.13, 478.13], ['Hooli', 155.52, 311.03], ['Initech', 0, 104.73]].map(([n, pv, ch]) => `<div class="s6-r"><b>${n}</b><div class="s6-bars">
+              <div class="s6-bar s6-pv"><i data-w="${pv / 478.13 * 70}"></i><span>$${pv.toFixed(2)}</span></div>
+              <div class="s6-bar s6-ch"><i data-w="${ch / 478.13 * 70}"></i><span>$${ch.toFixed(2)}</span></div></div></div>`).join('')}
+            <span class="mu" style="font-size:12px">Globex, Umbrella and Soylent also match.</span></div>
+          <div class="s6-side">
+            <span class="rx-lab vi" data-s="2">Also found</span>
+            <div class="s2-card vi" data-s="2"><span>Server accepts a negative number of seats</span>${tag('seen')}</div>
+            <div class="s2-card vi" data-s="3"><span>Sells more seats than the plan allows</span>${tag('seen')}</div>
+            <div class="s2-card vi" data-s="4"><span>One invoice left no billing-log record</span>${tag('seen')}</div>
+            <div class="s2-card vi" data-s="5"><span>Cause: settings list built into the page</span>${tag('guessed')}</div>
+          </div></div></div>`,
+      run:(t, el) => {
+        const st = el.querySelectorAll('.s6-step');
+        st.forEach((s, i) => t(() => s.classList.add(i < 3 ? 's6-ok' : 's6-bad'), 300 + i * 450));
+        t(() => { on(el, '[data-s="1"]'); el.querySelectorAll('.s6-bar i[data-w]').forEach(b => b.style.width = b.dataset.w + '%'); }, 2000);
+        [2, 3, 4, 5].forEach((i, j) => t(() => on(el, `[data-s="${i}"]`), 3000 + j * 400));
+        return 5000;
+      } },
+
+    { k:'4–5 · Pre-launch sweep',
+      cap:'<p><b>Run it on the whole site before you publish.</b> A performance pass caught the dashboard header running off the edge of a phone screen and fixed it. A security pass on an app seeded with flaws found the exposed keys and a logic hole, sorted by danger, each with a fix.</p><small>"Nothing on the screen tells you it\'s happening": the keys sat in files any visitor downloads.</small>',
+      html:() => `<div class="s7-wrap">
+        <div style="display:grid;gap:8px;justify-items:center"><span class="rx-lab">Use case 4 · performance</span>
+          <div class="s7-phone"><div class="s7-hdr"><b>Dashboard</b><span>May ▾</span><span>Logo</span><span>+ Add</span></div><div class="s7-edge"></div><div class="s7-body"><i></i><i></i><i></i><i></i></div></div>
+          <span class="s7-st mu" style="font-size:12px">checking speed, links, layout…</span></div>
+        <div style="display:grid;gap:8px"><span class="rx-lab">Use case 5 · security</span>
+          <div class="s7-list">
+            <div class="vc s7-item vi" data-s="1"><span class="rx-tag rd">critical</span><span><b>OpenAI key in public/app.js</b><small>anyone loading the page gets the file</small></span><span class="s7-fixd">fix ✓</span></div>
+            <div class="vc s7-item vi" data-s="1"><span class="rx-tag rd">critical</span><span><b>Live Stripe secret key</b><small>same file, full account access</small></span><span class="s7-fixd">fix ✓</span></div>
+            <div class="vc s7-item vi" data-s="1"><span class="rx-tag rd">critical</span><span><b>Public source map with a service-role key</b><small>app.js.map bypasses row-level security</small></span><span class="s7-fixd">fix ✓</span></div>
+            <div class="vc s7-item vi" data-s="1"><span class="rx-tag yl">high</span><span><b>Logic hole: customer data without backend access</b><small>the subtle one, hidden in code</small></span><span class="s7-fixd">fix ✓</span></div>
+          </div></div></div>`,
+      run:(t, el) => {
+        const h = el.querySelector('.s7-hdr'), e = el.querySelector('.s7-edge'), s = el.querySelector('.s7-st');
+        t(() => { h.classList.add('s7-bad'); e.classList.add('on'); s.textContent = 'header runs past the screen edge'; s.className = 's7-st rd'; }, 700);
+        t(() => { h.classList.remove('s7-bad'); h.classList.add('s7-fix'); e.classList.remove('on'); s.textContent = 'fixed by the agent'; s.className = 's7-st gr'; }, 2000);
+        el.querySelectorAll('.s7-item').forEach((it, i) => t(() => it.classList.add('on'), 1000 + i * 450));
+        el.querySelectorAll('.s7-fixd').forEach((f, i) => t(() => f.classList.add('on'), 3300 + i * 300));
+        return 5000;
+      } },
+  ];
+
+  const stage = $('stage'); let cur = 0, auto = false, timers = [];
+  const clear = () => { timers.forEach(clearTimeout); timers = []; };
+  $('steps').innerHTML = SCENES.map((s, i) => `<button type="button" data-i="${i}">${i + 1}. ${s.k}</button>`).join('');
+  function show(i) {
+    clear(); cur = i; const s = SCENES[i];
+    $('steps').querySelectorAll('button').forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
+    stage.innerHTML = s.html(); $('cap').innerHTML = s.cap;
+    const t = (fn, ms) => timers.push(setTimeout(fn, reduced ? 0 : ms));
+    const end = s.run(t, stage);
+    if (auto) t(() => i < SCENES.length - 1 ? show(i + 1) : stop(), end + 2000);
+  }
+  function stop() { auto = false; $('play').textContent = '▶ Play all'; }
+  $('steps').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { stop(); show(+b.dataset.i); } });
+  $('play').addEventListener('click', () => { if (auto) { stop(); clear(); return; } auto = true; $('play').textContent = '❚❚ Pause'; show(cur === SCENES.length - 1 ? 0 : cur); });
+  show(0);
+})();
+</script>
+</html>
