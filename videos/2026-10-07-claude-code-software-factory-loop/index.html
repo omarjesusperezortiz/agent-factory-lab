@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Software factory in Claude Code</title>
+<style>
+:root { --bg:#f4f4f2; --fg:#151515; --muted:#666; --accent:#b8691f; --line:#ddd; --panel:#fff;
+  --sans:"Inter", ui-sans-serif, system-ui, sans-serif; --mono:"JetBrains Mono", ui-monospace, Menlo, monospace; color-scheme:light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#0b0d0e; --fg:#ececec; --muted:#9a9a9a; --accent:#e9a95b; --line:#262a2c; --panel:#141719; color-scheme:dark; } }
+:root[data-theme="dark"] { --bg:#0b0d0e; --fg:#ececec; --muted:#9a9a9a; --accent:#e9a95b; --line:#262a2c; --panel:#141719; color-scheme:dark; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.55 var(--sans); }
+a { color:var(--accent); }
+main { max-width:1180px; margin:0 auto; padding:32px 16px 64px; display:grid; gap:18px; min-width:0; }
+.top { display:flex; gap:16px; flex-wrap:wrap; font-size:14px; }
+h1 { margin:0; font-size:28px; letter-spacing:-.02em; } .lede { color:var(--muted); max-width:74ch; margin:0; }
+h2 { margin:18px 0 0; font-size:19px; }
+.ctl { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+.seg { display:inline-flex; flex-wrap:wrap; border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+.seg button { background:var(--panel); border:0; border-right:1px solid var(--line); padding:6px 12px; cursor:pointer; color:var(--muted); font:inherit; font-size:13px; }
+.seg button[aria-pressed="true"] { color:var(--fg); background:color-mix(in srgb, var(--accent) 16%, var(--panel)); }
+.play { font:inherit; font-size:13px; font-weight:600; background:var(--accent); color:var(--bg); border:0; border-radius:8px; padding:7px 13px; cursor:pointer; }
+.cap { border-left:3px solid var(--accent); padding:4px 0 4px 14px; max-width:82ch; } .cap p { margin:0 0 4px; } .cap small { color:var(--muted); }
+.zf-tbl { border-collapse:collapse; width:100%; font-size:14px; }
+.zf-tbl th, .zf-tbl td { text-align:left; vertical-align:top; padding:9px 10px; border-bottom:1px solid var(--line); }
+.zf-tbl th { color:var(--muted); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+.zf-tbl code, .zf-list code { font:12.5px var(--mono); }
+.zf-wrap { overflow-x:auto; }
+.zf-list { margin:0; padding-left:20px; } .zf-list li { margin:4px 0; }
+
+/* ---- stage: always dark, colours from the video's dashboard; every class is prefixed zf- under .x ---- */
+.x { --c:#e9a95b; --card:#20222c; --card2:#262935; --ln:#2f3240; --tx:#e4e5ea; --mu:#868ba0; --fa:#5b6075;
+  --pass:#50fa7b; --chg:#ffb86c; --hum:#ff79c6; --mrg:#bd93f9; --act:#8be9fd;
+  background:#14151b; color:var(--tx); border:1px solid #23252f; border-radius:14px; min-height:460px; padding:26px; position:relative; overflow:hidden;
+  display:grid; align-content:center; font-size:14px; min-width:0; }
+.x.zf-measure * { transition:none !important; }
+.x .vc { background:var(--card); border:1px solid var(--ln); border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,.4); }
+.x .vi { opacity:0; transform:translateY(10px); transition:opacity .5s, transform .5s; } .x .vi.on { opacity:1; transform:none; }
+.x .mu { color:var(--mu); } .x .co { color:var(--c); } .x .mono { font-family:var(--mono); }
+.x .win-h { display:flex; align-items:center; gap:6px; padding:9px 12px; border-bottom:1px solid var(--ln); min-width:0; }
+.x .win-h i { width:9px; height:9px; border-radius:50%; background:#ff5f57; flex:none; } .x .win-h i:nth-child(2) { background:#febc2e; } .x .win-h i:nth-child(3) { background:#28c840; }
+.x .win-h span { margin:0 auto; font:11px var(--mono); color:var(--mu); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+.x .zf-lab { font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--mu); font-weight:600; }
+.x .zf-m { font:600 10.5px var(--mono); padding:1px 7px; border-radius:99px; border:1px solid currentColor; white-space:nowrap; }
+.x .zf-op { color:var(--c); } .x .zf-so { color:var(--act); }
+.x .zf-chip { font:600 10.5px var(--mono); padding:2px 8px; border-radius:6px; background:#2a2d3a; color:var(--fa); white-space:nowrap; transition:background .3s, color .3s; }
+.x .zf-chip.zf-pass { background:color-mix(in srgb, var(--pass) 18%, #20222c); color:var(--pass); }
+.x .zf-chip.zf-chg { background:color-mix(in srgb, var(--chg) 18%, #20222c); color:var(--chg); }
+.x .zf-chip.zf-hum { background:color-mix(in srgb, var(--hum) 18%, #20222c); color:var(--hum); }
+.x .zf-chip.zf-mrg { background:color-mix(in srgb, var(--mrg) 18%, #20222c); color:var(--mrg); }
+.x .zf-chip.zf-act { background:color-mix(in srgb, var(--act) 16%, #20222c); color:var(--act); }
+
+/* scene 1: the factory line */
+.x .s1 { display:grid; gap:16px; width:100%; max-width:1080px; margin:0 auto; }
+.x .s1-orch { display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:10px 14px; border:1px dashed color-mix(in srgb, var(--c) 55%, transparent); border-radius:10px; font-size:13px; }
+.x .s1-orch code { font:12px var(--mono); color:var(--c); }
+.x .s1-flow { display:flex; align-items:center; gap:8px; }
+.x .s1-ar { color:var(--fa); font-size:16px; flex:none; }
+.x .s1-feat { flex:1.3 1 0; min-width:0; padding:12px; display:grid; gap:6px; font-size:13px; }
+.x .s1-n { flex:1 1 0; min-width:0; padding:11px 10px; display:grid; gap:6px; justify-items:start; border:1px solid var(--ln); transition:border-color .3s, background .3s; }
+.x .s1-n b { font-size:13px; white-space:nowrap; }
+.x .s1-n.zf-run { border-color:var(--c); background:color-mix(in srgb, var(--c) 10%, var(--card)); }
+.x .s1-n.zf-ok { border-color:#3c6b4a; }
+.x .s1-revs { flex:1.25 1 0; min-width:0; display:grid; gap:6px; }
+.x .s1-revs .s1-n { padding:7px 10px; grid-auto-flow:column; justify-content:space-between; align-items:center; }
+.x .s1-revs .s1-n b { font-size:12.5px; }
+.x .s1-outs { flex:1 1 0; min-width:0; display:grid; gap:8px; }
+.x .s1-out { padding:9px 10px; border-radius:10px; border:1px solid var(--ln); background:var(--card); font-size:12.5px; font-weight:600; display:grid; gap:2px; opacity:.35; transition:opacity .4s, border-color .4s; }
+.x .s1-out small { font-weight:400; color:var(--mu); font-size:11px; }
+.x .s1-out.on { opacity:1; } .x .s1-out.s1-mg.on { border-color:var(--mrg); } .x .s1-out.s1-hm.on { border-color:var(--hum); }
+.x .s1-back { justify-self:center; font:12px var(--mono); color:var(--chg); border:1px dashed color-mix(in srgb, var(--chg) 60%, transparent); border-radius:99px; padding:5px 14px; }
+
+/* scene 2: files hold the state */
+.x .s2 { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:20px; width:100%; max-width:1000px; margin:0 auto; align-items:start; }
+.x .s2-tree { font:12.5px var(--mono); }
+.x .s2-tree .b { padding:12px 14px; display:grid; gap:6px; }
+.x .s2-f { display:flex; align-items:center; gap:10px; justify-content:space-between; min-width:0; }
+.x .s2-f > span:first-child { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; }
+.x .s2-f.s2-in { padding-left:18px; }
+.x .s2-who { font-size:10.5px; color:var(--mu); white-space:nowrap; flex:none; }
+.x .s2-json { font:12.5px/1.7 var(--mono); }
+.x .s2-json .b { padding:12px 14px; white-space:pre; overflow:hidden; }
+.x .s2-k { color:var(--act); } .x .s2-v { color:var(--c); transition:color .3s; }
+.x .s2-dash { grid-column:1 / -1; display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:center; font-size:12.5px; }
+
+/* scene 3: wait for all four */
+.x .s3 { display:grid; grid-template-columns:minmax(0,.9fr) minmax(0,1.3fr) minmax(0,.9fr); gap:18px; width:100%; max-width:1040px; margin:0 auto; align-items:center; }
+.x .s3-bld { padding:14px; display:grid; gap:8px; font-size:13px; }
+.x .s3-bld code { font:12px var(--mono); overflow-wrap:anywhere; }
+.x .s3-revs { padding:12px 14px; display:grid; gap:8px; }
+.x .s3-r { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:10px; align-items:center; font-size:13px; }
+.x .s3-r code { font:11px var(--mono); color:var(--mu); display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.x .s3-bar { display:grid; grid-template-columns:repeat(4,1fr); gap:5px; margin-top:4px; }
+.x .s3-bar i { height:7px; border-radius:99px; background:#2a2d3a; transition:background .3s; } .x .s3-bar i.on { background:var(--pass); }
+.x .s3-gate { font:600 11px var(--mono); color:var(--mu); text-align:center; letter-spacing:.06em; transition:color .3s; } .x .s3-gate.on { color:var(--pass); }
+.x .s3-rule { padding:14px; display:grid; gap:10px; font-size:12.5px; }
+.x .s3-rounds { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+.x .s3-rounds span { font:600 11px var(--mono); text-align:center; padding:5px 0; border-radius:6px; border:1px solid var(--ln); color:var(--fa); transition:all .3s; }
+.x .s3-rounds span.on { border-color:var(--c); color:var(--c); }
+.x .s3-loop { font:11.5px var(--mono); color:var(--chg); border:1px dashed color-mix(in srgb, var(--chg) 55%, transparent); border-radius:8px; padding:7px 9px; }
+
+/* scene 4: the approver escalates */
+.x .s4 { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1fr); gap:20px; width:100%; max-width:1000px; margin:0 auto; align-items:center; }
+.x .s4-ap { padding:14px 16px; display:grid; gap:8px; position:relative; }
+.x .s4-h { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.x .s4-c { display:grid; grid-template-columns:18px minmax(0,1fr); gap:8px; font-size:12.5px; padding:5px 8px; border-radius:8px; border:1px solid transparent; transition:all .3s; }
+.x .s4-c b { font-weight:600; }
+.x .s4-c i { font-style:normal; color:var(--fa); text-align:center; }
+.x .s4-c.s4-ok i { color:var(--pass); }
+.x .s4-c.s4-scan { border-color:var(--ln); background:var(--card2); }
+.x .s4-c.s4-hit { border-color:var(--hum); background:color-mix(in srgb, var(--hum) 10%, var(--card)); } .x .s4-c.s4-hit i { color:var(--hum); }
+.x .s4-stamp { position:absolute; right:14px; bottom:14px; font:800 18px var(--mono); color:var(--hum); border:2px solid var(--hum); border-radius:6px; padding:2px 10px; transform:rotate(-8deg) scale(1.6); opacity:0; transition:all .35s cubic-bezier(.3,1.6,.5,1); }
+.x .s4-stamp.on { opacity:1; transform:rotate(-8deg) scale(1); }
+.x .s4-term { font:12px var(--mono); }
+.x .s4-term .b { padding:12px 14px; display:grid; gap:7px; min-height:220px; align-content:start; }
+.x .s4-term .b > div { overflow-wrap:anywhere; }
+
+/* scene 5: three jobs at once */
+.x .s5 { display:grid; gap:12px; width:100%; max-width:1040px; margin:0 auto; }
+.x .s5-lane { padding:12px 16px; display:grid; grid-template-columns:minmax(0,.9fr) minmax(0,1.6fr); gap:18px; align-items:center; }
+.x .s5-who { display:grid; gap:4px; min-width:0; }
+.x .s5-who b { font:600 12.5px var(--mono); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.x .s5-who small { font:11px var(--mono); color:var(--mu); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.x .s5-trk { position:relative; height:46px; margin:0 10px; }
+.x .s5-rail { position:absolute; left:0; right:0; top:12px; height:2px; background:#2f3240; }
+.x .s5-fill { position:absolute; left:0; top:12px; height:2px; width:0; background:var(--c); transition:width .6s ease; }
+.x .s5-st { position:absolute; top:7px; width:12px; height:12px; margin-left:-6px; border-radius:50%; background:#14151b; border:2px solid #3a3e4f; }
+.x .s5-st span { position:absolute; top:18px; left:50%; transform:translateX(-50%); font-size:10.5px; color:var(--fa); white-space:nowrap; }
+.x .s5-dot { position:absolute; top:3px; left:0; width:20px; height:20px; margin-left:-10px; border-radius:50%; background:var(--c); box-shadow:0 0 0 4px color-mix(in srgb, var(--c) 25%, transparent); transition:left .6s ease, background .3s, box-shadow .3s; }
+.x .s5-dot.zf-hum { background:var(--hum); box-shadow:0 0 0 4px color-mix(in srgb, var(--hum) 25%, transparent); }
+.x .s5-dot.zf-mrg { background:var(--mrg); box-shadow:0 0 0 4px color-mix(in srgb, var(--mrg) 25%, transparent); }
+.x .s5-note { grid-column:2; font:11.5px var(--mono); color:var(--mu); min-height:1.6em; margin-top:-6px; }
+.x .s5-note .zf-hm { color:var(--hum); } .x .s5-note .zf-mg { color:var(--mrg); }
+.x .s5-fix { justify-self:center; font:12px var(--mono); color:var(--pass); border:1px dashed color-mix(in srgb, var(--pass) 55%, transparent); border-radius:99px; padding:5px 14px; }
+
+/* scene 6: smart orchestrator, mixed crew */
+.x .s6 { display:grid; gap:16px; width:100%; max-width:1000px; margin:0 auto; }
+.x .s6-or { padding:12px 16px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; justify-content:space-between; }
+.x .s6-sw { display:inline-flex; border:1px solid var(--ln); border-radius:99px; overflow:hidden; font:600 11.5px var(--mono); }
+.x .s6-sw span { padding:4px 11px; color:var(--fa); transition:all .3s; white-space:nowrap; }
+.x .s6-sw span.on { background:var(--card2); color:var(--tx); }
+.x .s6-crew { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:8px; }
+.x .s6-a { padding:10px 8px; display:grid; gap:7px; justify-items:center; text-align:center; font-size:12px; border:1px solid var(--ln); transition:border-color .3s; }
+.x .s6-a b { font-size:12px; white-space:nowrap; }
+.x .s6-a.zf-lit { border-color:color-mix(in srgb, var(--c) 70%, transparent); }
+.x .s6-ctx { font:10px var(--mono); color:var(--mu); }
+.x .s6-foot { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; }
+.x .s6-box { padding:12px 14px; font-size:12.5px; display:grid; gap:6px; }
+.x .s6-big { font:700 28px var(--mono); color:var(--c); line-height:1; }
+
+/* scene 7: wire in the world */
+.x .s7 { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,.9fr) minmax(0,1fr); gap:18px; width:100%; max-width:1040px; margin:0 auto; align-items:center; }
+.x .s7-ins, .x .s7-outs { display:grid; gap:10px; }
+.x .s7-in { padding:10px 12px; display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:center; font-size:13px; }
+.x .s7-in small { grid-column:1 / -1; color:var(--mu); font-size:11.5px; }
+.x .s7-core { padding:18px 14px; display:grid; gap:10px; justify-items:center; text-align:center; border-color:color-mix(in srgb, var(--c) 60%, transparent); }
+.x .s7-core b { font-size:15px; }
+.x .s7-mini { font:11px var(--mono); color:var(--mu); line-height:1.8; }
+
+@media (max-width:760px) {
+  .x { padding:16px 12px; min-height:0; }
+  .x .s1-flow { flex-direction:column; align-items:stretch; }
+  .x .s1-ar { transform:rotate(90deg); align-self:center; line-height:1; }
+  .x .s1-feat, .x .s1-n, .x .s1-revs, .x .s1-outs { flex:none; }
+  .x .s1-revs { grid-template-columns:1fr 1fr; }
+  .x .s1-outs { grid-template-columns:1fr 1fr; }
+  .x .s2, .x .s4 { grid-template-columns:minmax(0,1fr); gap:12px; }
+  .x .s2-json .b { font-size:11.5px; }
+  .x .s3 { grid-template-columns:minmax(0,1fr); gap:10px; }
+  .x .s4-term .b { min-height:0; }
+  .x .s5-lane { grid-template-columns:minmax(0,1fr); gap:6px; padding:10px 12px; }
+  .x .s5-note { grid-column:1; margin-top:0; }
+  .x .s5-st span { font-size:9.5px; }
+  .x .s6-crew { grid-template-columns:repeat(4,minmax(0,1fr)); }
+  .x .s6-foot { grid-template-columns:minmax(0,1fr); }
+  .x .s7 { grid-template-columns:minmax(0,1fr); gap:10px; }
+}
+</style>
+
+<main>
+  <nav class="top"><a href="../../research/#videos">← Video feed</a><a href="https://www.youtube.com/watch?v=ctoaIC4LHmI">Watch the video (ZazenCodes, 28 min) ↗</a></nav>
+  <h1>A software factory inside your repo, built from one prompt</h1>
+  <p class="lede">ZazenCodes asks Claude Code (Opus 5.5, high effort) to build a factory out of a skill, seven sub-agents and some markdown files. A feature goes in, gets a spec, a build, four reviews and a final gate, and lands on <code>main</code> or waits for a human. The running example is his first real job: making the Obsidian course pages on his own site free, so only the videos stay paywalled.</p>
+  <div class="ctl"><div class="seg" id="steps"></div><button type="button" class="play" id="play">▶ Play all</button></div>
+  <div class="x" id="stage"></div>
+  <div class="cap" id="cap" aria-live="polite"></div>
+
+  <h2>What this means for agent-factory-lab</h2>
+  <div class="zf-wrap"><table class="zf-tbl">
+    <tr><th>His factory</th><th>What we take from it</th></tr>
+    <tr><td>One session runs <code>/factory</code> and only orchestrates; each sub-agent writes exactly one file</td><td>The console's Traces view can be a plain read of a per-job folder. No database is needed until there are many jobs.</td></tr>
+    <tr><td>The orchestrator is the only writer of <code>job.json</code>; the dashboard only reads</td><td>One writer per state file. That avoids races when several jobs run at once, and the UI never changes state by accident.</td></tr>
+    <tr><td><code>MAX_RESUMES = 2</code>, so at most 3 review rounds, then <code>ESCALATE</code></td><td>Put a hard cap on every review loop and send the open CHANGES to the Human inbox, instead of looping forever.</td></tr>
+    <tr><td>Approver escalates money/access, deploy/CI, schema/email/dependencies, and product calls like free vs paid</td><td>A ready-made rule list for what our Human inbox should catch. Everything else can merge without us.</td></tr>
+    <tr><td>One git worktree and branch per job, ports <code>5100 + 10n</code></td><td>Parallel jobs need their own checkout and their own dev server port, or the reviewers look at each other's pages.</td></tr>
+    <tr><td>Merges failed because the main checkout was dirty (<code>backlog.md</code>)</td><td>Files the factory edits on every run must be exempt from its own "clean tree" check. Our daily video job resets its clone for the same reason.</td></tr>
+  </table></div>
+
+  <h2>Try it on one repo</h2>
+  <ol class="zf-list">
+    <li>Copy <code>BUILD_PROMPT.md</code> from the source folder into Claude Code in a real project, with a strong model and high effort.</li>
+    <li>Restart the session so it loads the new agents, start the dashboard, and commit the factory first (the skill needs a clean tree).</li>
+    <li>Run <code>/factory &lt;feature&gt;</code> on something small. Read every file in <code>factory/jobs/&lt;id&gt;/</code> before you trust the approver.</li>
+    <li>Only then open a second session and try <code>/factory next</code> in parallel.</li>
+  </ol>
+
+  <h2>Sources</h2>
+  <ul class="zf-list">
+    <li><a href="https://www.youtube.com/watch?v=ctoaIC4LHmI">Build Your Own AI Software Factory with Claude Code</a> (ZazenCodes, 7 Oct 2026). The video credits the term "software factory" to Bob Bemer at GE in 1968.</li>
+    <li><a href="https://github.com/zazencodes/zazencodes-season-3/tree/main/src/software-factory-claude-code">Source code for the factory</a>: <code>BUILD_PROMPT.md</code>, the <code>factory</code> skill, the seven agents in <code>.claude/agents/</code>, the dashboard and two finished jobs.</li>
+    <li><a href="https://github.com/zazencodes/zazencodes-season-3/blob/main/src/software-factory-claude-code/.claude/skills/factory/SKILL.md"><code>SKILL.md</code></a>: the loop, <code>job.json</code>, the worktree and port rules, and merge.</li>
+    <li><a href="https://github.com/zazencodes/zazencodes-season-3/blob/main/src/software-factory-claude-code/.claude/agents/approver.md"><code>approver.md</code></a>: when to APPROVE and when to ESCALATE.</li>
+  </ul>
+</main>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const on = (el, sel) => el.querySelectorAll(sel).forEach(n => n.classList.add('on'));
+  const count = (node, to, ms) => { if (reduced || ms === 0) { node.textContent = to; return; } const t0 = performance.now(); const f = now => { const p = Math.min(1, (now - t0) / ms); node.textContent = Math.round(to * p); if (p < 1) requestAnimationFrame(f); }; requestAnimationFrame(f); };
+  const win = url => `<div class="win-h"><i></i><i></i><i></i><span>${url}</span></div>`;
+  const JOB = '001-obsidian-course-unpaywall';
+  const REV = [['Security', 'Opus', 'op'], ['UX', 'Sonnet', 'so'], ['UI design', 'Sonnet', 'so'], ['Code', 'Sonnet', 'so']];
+
+  const SCENES = [
+    { k:'The factory line',
+      cap:'<p><b>One Claude session orchestrates, and seven sub-agents do the work.</b> Spec, build, four reviews in parallel, then a final gate that merges or hands the job to you.</p><small>The orchestrator never writes code, specs or reviews. It spawns the agents and moves the job along.</small>',
+      html:() => `<div class="s1">
+        <div class="s1-orch vi" data-s="0"><span class="zf-lab">orchestrator</span> your Claude Code session running <code>/factory</code> <span class="mu">· spawns every agent · the only writer of job.json</span></div>
+        <div class="s1-flow">
+          <div class="vc s1-feat vi" data-s="0"><span class="zf-lab">feature</span>Obsidian course pages should not be paywalled, only the videos</div>
+          <span class="s1-ar">→</span>
+          <div class="vc s1-n" data-n="1"><b>Spec writer</b><span class="zf-m zf-op">Opus</span></div>
+          <span class="s1-ar">→</span>
+          <div class="vc s1-n" data-n="2"><b>Builder</b><span class="zf-m zf-op">Opus</span></div>
+          <span class="s1-ar">→</span>
+          <div class="s1-revs">${REV.map(([n, m, c]) => `<div class="vc s1-n" data-n="3"><b>${n}</b><span class="zf-m zf-${c}">${m}</span></div>`).join('')}</div>
+          <span class="s1-ar">→</span>
+          <div class="vc s1-n" data-n="4"><b>Approver</b><span class="zf-m zf-op">Opus</span></div>
+          <span class="s1-ar">→</span>
+          <div class="s1-outs"><div class="s1-out s1-mg" data-o="m">merge to main<small>APPROVE · low risk</small></div><div class="s1-out s1-hm" data-o="h">needs human<small>ESCALATE</small></div></div>
+        </div>
+        <div class="s1-back vi" data-s="5">↺ any reviewer says CHANGES → the same builder is resumed, at most twice</div>
+      </div>`,
+      run:(t, el) => {
+        t(() => on(el, '[data-s="0"]'), 100);
+        [1, 2, 3, 4].forEach((n, i) => {
+          t(() => el.querySelectorAll(`[data-n="${n}"]`).forEach(x => x.classList.add('zf-run')), 600 + i * 650);
+          t(() => el.querySelectorAll(`[data-n="${n}"]`).forEach(x => x.classList.replace('zf-run', 'zf-ok')), 1150 + i * 650);
+        });
+        t(() => el.querySelectorAll('.s1-out').forEach(x => x.classList.add('on')), 3300);
+        t(() => on(el, '[data-s="5"]'), 3800);
+        return 4400;
+      } },
+
+    { k:'Files hold the state',
+      cap:'<p><b>The whole state is markdown plus one <code>job.json</code>.</b> Each agent writes exactly one file, and the dashboard only reads them.</p><small><code>factory/jobs/</code> is gitignored, so the state is lost on a fresh clone. He says he would have an agent back it up to cloud storage.</small>',
+      html:() => `<div class="s2">
+        <div class="vc s2-tree">${win('factory/jobs/' + JOB + '/')}<div class="b">
+          ${[['job.json', 'orchestrator', 0], ['spec.md', 'spec-writer', 1], ['build.md', 'builder · + commits on branch', 2], ['round-1/', '', 3],
+             ['review-security.md', 'reviewer-security', 3, 1], ['review-ux.md', 'reviewer-ux', 3, 1], ['review-ui.md', 'reviewer-ui', 3, 1], ['review-code.md', 'reviewer-code', 3, 1], ['decision.md', 'approver', 4]]
+            .map(([f, w, s, ind]) => `<div class="s2-f vi${ind ? ' s2-in' : ''}" data-s="${s}"><span>${f}</span><span class="s2-who">${w}</span></div>`).join('')}
+        </div></div>
+        <div class="vc s2-json">${win('job.json')}<div class="b">{ <span class="s2-k">"id"</span>: "001-obsidian-…",
+  <span class="s2-k">"branch"</span>: "factory/001-…",
+  <span class="s2-k">"stage"</span>: <span class="s2-v" id="s2-stage">"spec"</span>,
+  <span class="s2-k">"round"</span>: <span class="s2-v" id="s2-round">0</span>,
+  <span class="s2-k">"reviews"</span>: {
+    ${['security', 'ux', 'ui', 'code'].map(r => `<span class="s2-k">"${r}"</span>: <span class="s2-v" data-r="${r}">"pending"</span>`).join(',\n    ')} } }</div></div>
+        <div class="s2-dash vi" data-s="5"><span class="zf-chip zf-act">dashboard.html</span><span class="mu">reads these files every few seconds and draws the board: spec · build · review · approve · merged · needs human</span></div>
+      </div>`,
+      run:(t, el) => {
+        const st = v => { const s = el.querySelector('#s2-stage'); s.textContent = `"${v}"`; s.style.color = v === 'needs-human' ? 'var(--hum)' : ''; };
+        t(() => on(el, '[data-s="0"]'), 100);
+        t(() => on(el, '[data-s="1"]'), 700);
+        t(() => { st('build'); on(el, '[data-s="2"]'); }, 1300);
+        t(() => { st('review'); el.querySelector('#s2-round').textContent = '1'; on(el, '[data-s="3"]'); }, 1900);
+        ['ux', 'ui', 'security', 'code'].forEach((r, i) => t(() => { const v = el.querySelector(`[data-r="${r}"]`); v.textContent = '"PASS"'; v.style.color = 'var(--pass)'; }, 2400 + i * 300));
+        t(() => { st('approve'); }, 3700);
+        t(() => { on(el, '[data-s="4"]'); st('needs-human'); }, 4200);
+        t(() => on(el, '[data-s="5"]'), 4600);
+        return 5000;
+      } },
+
+    { k:'Wait for all four',
+      cap:'<p><b>A round ends only when all four verdicts are in.</b> The reviewers run in parallel and each verdict lands on the dashboard as soon as it arrives. The builder is never resumed in the middle of a round.</p><small>If any reviewer says CHANGES, the orchestrator messages the same builder by name. After two resumes it stops and escalates with the open CHANGES.</small>',
+      html:() => `<div class="s3">
+        <div class="vc s3-bld vi" data-s="0"><span class="zf-lab">builder</span><code>builder-${JOB}</code><span class="mu">build.md, line 1:</span><code class="co">STATUS: READY</code></div>
+        <div class="vc s3-revs vi" data-s="0">
+          <span class="zf-lab">round 1 · four reviewers, one message</span>
+          ${[['ux', 'UX'], ['ui', 'UI design'], ['security', 'Security'], ['code', 'Code']].map(([r, n]) => `<div class="s3-r"><div>${n}<code>round-1/review-${r}.md</code></div><span class="zf-chip" data-r="${r}">pending</span></div>`).join('')}
+          <div class="s3-bar">${'<i></i>'.repeat(4)}</div>
+          <div class="s3-gate">WAIT FOR ALL</div>
+        </div>
+        <div class="vc s3-rule vi" data-s="1"><span class="zf-lab">the loop's cap</span>
+          <div class="s3-rounds"><span class="on">round 1</span><span>round 2</span><span>round 3</span></div>
+          <div class="s3-loop">CHANGES → SendMessage builder-${JOB.slice(0, 3)}…<br>resumes left: 2</div>
+          <span class="mu">After round 3, still CHANGES → decision.md: <span style="color:var(--hum)">ESCALATE</span></span></div>
+      </div>`,
+      run:(t, el) => {
+        t(() => on(el, '[data-s="0"]'), 100);
+        t(() => on(el, '[data-s="1"]'), 500);
+        const bars = el.querySelectorAll('.s3-bar i');
+        [['ux', 1000], ['ui', 1500], ['security', 2500], ['code', 3200]].forEach(([r, ms], i) => {
+          if (r === 'security') t(() => { const c = el.querySelector('[data-r="security"]'); c.textContent = 'thinking'; c.classList.add('zf-act'); }, 1700);
+          t(() => { const c = el.querySelector(`[data-r="${r}"]`); c.textContent = 'PASS'; c.className = 'zf-chip zf-pass'; bars[i].classList.add('on'); }, ms);
+        });
+        t(() => { const g = el.querySelector('.s3-gate'); g.textContent = 'ALL PASS → APPROVER'; g.classList.add('on'); }, 3700);
+        return 4300;
+      } },
+
+    { k:'The approver escalates',
+      cap:'<p><b>The final gate merges only what it would merge itself.</b> A clean build that touches what is free and what is paid is a business decision, so it goes to a human. One <code>/factory approve</code> later, it is on <code>main</code>.</p><small>The video shows the escalation but not the full decision.md. The rule it fits is the last line of <code>approver.md</code>. The merge happens locally: the factory never pushes.</small>',
+      html:() => `<div class="s4">
+        <div class="vc s4-ap vi" data-s="0">
+          <div class="s4-h"><span class="zf-lab">approver · Opus</span><span class="zf-m zf-op">decision.md</span></div>
+          <span class="mu" style="font-size:12px">APPROVE only if all hold</span>
+          ${['Every acceptance criterion met, one spot-checked', 'All four final reviews say PASS', '<code>git merge-tree</code> shows no conflicts'].map(c => `<div class="s4-c" data-c="ok"><i>○</i><span>${c}</span></div>`).join('')}
+          <span class="mu" style="font-size:12px">ESCALATE if the change</span>
+          ${['touches money, access or identity', 'changes deploy, CI, hosting or build scripts', 'migrates a schema, sends email, adds a dependency', 'rests on a product call, like <b>what is free versus paid</b>'].map((c, i) => `<div class="s4-c" data-c="e${i}"><i>○</i><span>${c}</span></div>`).join('')}
+          <span class="s4-stamp">ESCALATE</span>
+        </div>
+        <div class="vc s4-term vi" data-s="0">${win('zazencodes.com-vuefire')}<div class="b">
+          <div class="vi" data-s="2"><span class="zf-chip zf-hum">needs-human</span> <span class="mu">${JOB}</span></div>
+          <div><span class="mu">›</span> <span class="s4-typed"></span></div>
+          <div class="vi mu" data-s="3">git merge --no-ff factory/${JOB}</div>
+          <div class="vi mu" data-s="3">git worktree remove …-factory/${JOB.slice(0, 3)}</div>
+          <div class="vi" data-s="4"><span class="zf-chip zf-mrg">merged</span></div>
+          <div class="vi" data-s="5"><span class="mu">$</span> git status<br>Your branch is ahead of 'origin/main' by 4 commits.</div>
+        </div></div>
+      </div>`,
+      run:(t, el) => {
+        t(() => on(el, '[data-s="0"]'), 100);
+        const ok = el.querySelectorAll('[data-c="ok"]');
+        ok.forEach((c, i) => t(() => { c.classList.add('s4-ok'); c.querySelector('i').textContent = '✓'; }, 500 + i * 300));
+        [0, 1, 2, 3].forEach(i => {
+          const c = el.querySelector(`[data-c="e${i}"]`);
+          t(() => c.classList.add('s4-scan'), 1500 + i * 400);
+          if (i < 3) t(() => { c.classList.remove('s4-scan'); c.querySelector('i').textContent = '–'; }, 1850 + i * 400);
+          else t(() => { c.classList.replace('s4-scan', 's4-hit'); c.querySelector('i').textContent = '!'; }, 1850 + i * 400);
+        });
+        t(() => el.querySelector('.s4-stamp').classList.add('on'), 3400);
+        t(() => on(el, '[data-s="2"]'), 3600);
+        const cmd = '/factory approve ' + JOB;
+        [...cmd].forEach((_, i) => t(() => { el.querySelector('.s4-typed').textContent = cmd.slice(0, i + 1); }, 3900 + i * 25));
+        t(() => on(el, '[data-s="3"]'), 4900);
+        t(() => on(el, '[data-s="4"]'), 5300);
+        t(() => on(el, '[data-s="5"]'), 5600);
+        return 6000;
+      } },
+
+    { k:'Three jobs at once',
+      cap:'<p><b>A worktree per job lets three sessions race through the same factory.</b> Each job gets its own branch, checkout and dev-server port, so the reviewers never see each other\'s pages.</p><small>Two jobs stalled at the end. One was a fair escalation (it would invalidate the blog prerender cache). The other was approved but couldn\'t merge because <code>backlog.md</code> was dirty in the main checkout. He made that file exempt from the check.</small>',
+      html:() => {
+        const ST = ['spec', 'build', 'review', 'approve', 'merged'];
+        const lanes = [['002-blog-reading-time', 'tmux 1 · Opus 5.5', 5120], ['003-code-copy-button', 'tmux 2 · Opus 5.5', 5130], ['004-not-found-page', 'tmux 3 · Sonnet 5.5, low effort', 5140]];
+        return `<div class="s5">${lanes.map(([id, who, port], i) => `<div class="vc s5-lane vi" data-s="0" data-l="${i}">
+          <div class="s5-who"><b>${id}</b><small>${who}</small><small>../zazencodes.com-vuefire-factory/${id.slice(0, 3)} · port ${port}</small></div>
+          <div class="s5-trk"><div class="s5-rail"></div><div class="s5-fill"></div>${ST.map((s, j) => `<div class="s5-st" style="left:${j * 25}%"><span>${s}</span></div>`).join('')}<div class="s5-dot"></div></div>
+          <div class="s5-note"></div></div>`).join('')}
+          <div class="s5-fix vi" data-s="9">fix: merge check ignores factory/backlog.md → both merged</div></div>`;
+      },
+      run:(t, el) => {
+        t(() => on(el, '[data-s="0"]'), 100);
+        const L = [...el.querySelectorAll('.s5-lane')];
+        const go = (i, p, ms, note, cls) => t(() => {
+          const l = L[i], d = l.querySelector('.s5-dot');
+          d.style.left = (p * 25) + '%'; l.querySelector('.s5-fill').style.width = (p * 25) + '%';
+          d.classList.remove('zf-hum', 'zf-mrg'); if (cls) d.classList.add(cls);
+          if (note !== undefined) l.querySelector('.s5-note').innerHTML = note;
+        }, ms);
+        go(2, 1, 700, 'Sonnet orchestrator, but the sub-agents are still Opus'); go(0, 1, 1100); go(1, 1, 1300);
+        go(2, 2, 1700); go(0, 2, 2100); go(1, 2, 2700, 'copy button: the trickiest feature, still in review');
+        go(2, 3, 2500); go(0, 3, 2900);
+        go(2, 3, 3300, '<span class="zf-hm">approved, but merge blocked: main checkout dirty (backlog.md)</span>', 'zf-hum');
+        go(0, 3, 3600, '<span class="zf-hm">escalated: merging re-renders every blog post once</span>', 'zf-hum');
+        t(() => on(el, '[data-s="9"]'), 4100);
+        go(2, 4, 4500, '<span class="zf-mg">merged</span>', 'zf-mrg'); go(0, 4, 4700, '<span class="zf-mg">merged after his OK</span>', 'zf-mrg');
+        go(1, 3, 5000); go(1, 4, 5500, '<span class="zf-mg">merged</span>', 'zf-mrg');
+        return 6000;
+      } },
+
+    { k:'Smart boss, mixed crew',
+      cap:'<p><b>Put the strongest model at the top and in the gates.</b> His orchestrator is Opus; spec, build, security and approval run on Opus, and three reviewers run on Sonnet. Switching the orchestrator to Sonnet on low effort barely changed the speed, because the sub-agents set the pace.</p><small>Quality costs tokens: every sub-agent starts a fresh context and re-reads the repo. He ran all of it on his Max plan, not on API tokens.</small>',
+      html:() => `<div class="s6">
+        <div class="vc s6-or vi" data-s="0"><span><span class="zf-lab">orchestrator</span> &nbsp;the session you type <code class="mono co">/factory</code> into</span>
+          <span class="s6-sw"><span class="on" data-m="o">Opus 5.5 · high</span><span data-m="s">Sonnet 5.5 · low</span></span></div>
+        <div class="s6-crew">${[['spec-writer', 'Opus', 'op'], ['builder', 'Opus', 'op'], ['security', 'Opus', 'op'], ['ux', 'Sonnet', 'so'], ['ui', 'Sonnet', 'so'], ['code', 'Sonnet', 'so'], ['approver', 'Opus', 'op']]
+          .map(([n, m, c]) => `<div class="vc s6-a vi" data-s="1"><b>${n}</b><span class="zf-m zf-${c}">${m}</span><span class="s6-ctx">fresh context</span></div>`).join('')}</div>
+        <div class="s6-foot">
+          <div class="vc s6-box vi" data-s="2"><span class="zf-lab">fresh contexts per job, one round</span><span class="s6-big"><span class="s6-n">0</span></span><span class="mu">Each starts empty and re-reads AGENTS.md and the job's files. Every extra round adds four fresh reviewers; the builder is resumed with its context.</span></div>
+          <div class="vc s6-box vi" data-s="3"><span class="zf-lab">his intuition</span><span>A smart orchestrator with cheaper workers where the judgment is lighter. He also wonders about a weak builder judged and fixed by Opus reviewers.</span></div>
+        </div>
+      </div>`,
+      run:(t, el) => {
+        t(() => on(el, '[data-s="0"]'), 100);
+        el.querySelectorAll('.s6-a').forEach((a, i) => { t(() => a.classList.add('zf-lit'), 400 + i * 180); t(() => a.classList.remove('zf-lit'), 1100 + i * 180); });
+        t(() => on(el, '[data-s="1"]'), 300);
+        t(() => { on(el, '[data-s="2"]'); count(el.querySelector('.s6-n'), 7, 800); }, 1800);
+        t(() => { el.querySelector('[data-m="o"]').classList.remove('on'); el.querySelector('[data-m="s"]').classList.add('on'); }, 2800);
+        t(() => on(el, '[data-s="3"]'), 3300);
+        return 4000;
+      } },
+
+    { k:'Wire in the world',
+      cap:'<p><b>Next, the trigger stops being you.</b> Issues, Slack messages and production errors feed the factory, and it keeps watching after the merge so it can undo a feature that breaks the app.</p><small>Only worktree support was built in the video. The other three are his roadmap, and they echo the 1968 idea of a factory with measurement built in.</small>',
+      html:() => `<div class="s7">
+        <div class="s7-ins">
+          ${[['git worktrees', 'built', 'zf-pass', 'several jobs at once'], ['GitHub issues · Slack', 'next', 'zf-chg', 'intake from people, not only from you'], ['Sentry errors', 'next', 'zf-chg', 'real bugs, with context, pulled in from production']]
+            .map(([n, s, c, d], i) => `<div class="vc s7-in vi" data-s="${i}"><span>${n}</span><span class="zf-chip ${c}">${s}</span><small>${d}</small></div>`).join('')}
+        </div>
+        <div class="vc s7-core vi" data-s="0"><span class="zf-lab">your factory</span><b>spec → build → review → approve</b><span class="s7-mini">one skill · seven agents<br>markdown state · your rules</span></div>
+        <div class="s7-outs">
+          <div class="vc s7-in vi" data-s="3"><span>merge to main</span><span class="zf-chip zf-mrg">done today</span><small>where the video's loop ends</small></div>
+          <div class="vc s7-in vi" data-s="4"><span>CPU · memory after deploy</span><span class="zf-chip zf-chg">next</span><small>stay in the loop after release, roll back what wrecks it</small></div>
+        </div>
+      </div>`,
+      run:(t, el) => {
+        [0, 1, 2, 3, 4].forEach(i => t(() => on(el, `[data-s="${i}"]`), 200 + i * 550));
+        return 3200;
+      } },
+  ];
+
+  const stage = $('stage'), cap = $('cap'); let cur = 0, auto = false, timers = [], w = 0;
+  const clear = () => { timers.forEach(clearTimeout); timers = []; };
+  $('steps').innerHTML = SCENES.map((s, i) => `<button type="button" data-i="${i}">${i + 1}. ${s.k}</button>`).join('');
+
+  // reserve the tallest scene's height (in its final state) so the page never jumps between scenes
+  function fit(force) {
+    const nw = Math.round(stage.clientWidth); if (!nw || (nw === w && !force)) return;
+    w = nw; stage.style.minHeight = ''; cap.style.minHeight = '';
+    let h = 0, c = 0; stage.classList.add('zf-measure');
+    SCENES.forEach(s => { stage.innerHTML = s.html(); cap.innerHTML = s.cap; s.run((fn) => fn(), stage); stage.querySelectorAll('.vi').forEach(n => n.classList.add('on'));
+      h = Math.max(h, stage.offsetHeight); c = Math.max(c, cap.offsetHeight); });
+    stage.classList.remove('zf-measure');
+    stage.style.minHeight = h + 'px'; cap.style.minHeight = c + 'px';
+    show(cur, true);
+  }
+  function show(i, keepAuto) {
+    clear(); cur = i; const s = SCENES[i];
+    $('steps').querySelectorAll('button').forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
+    stage.innerHTML = s.html(); cap.innerHTML = s.cap;
+    const t = (fn, ms) => timers.push(setTimeout(fn, reduced ? 0 : ms));
+    const end = s.run(t, stage);
+    if (auto) t(() => i < SCENES.length - 1 ? show(i + 1) : stop(), end + 2200);
+  }
+  function stop() { auto = false; $('play').textContent = '▶ Play all'; }
+  $('steps').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { stop(); show(+b.dataset.i); } });
+  $('play').addEventListener('click', () => { if (auto) { stop(); clear(); return; } auto = true; $('play').textContent = '❚❚ Pause'; show(cur === SCENES.length - 1 ? 0 : cur); });
+  new ResizeObserver(() => fit()).observe(stage);
+  document.fonts?.ready.then(() => fit(true));
+  show(0);
+})();
+</script>
+</html>

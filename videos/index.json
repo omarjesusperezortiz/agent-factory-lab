@@ -103,5 +103,23 @@
     "page": null,
     "slug": "vercel-ceo-seven-agent-workflow-tips",
     "transcript": true
+  },
+  {
+    "id": "ctoaIC4LHmI",
+    "channel": "ZazenCodes",
+    "date": "2026-10-07",
+    "title": "Build Your Own AI Software Factory with Claude Code",
+    "summary": "Builds a software factory inside an existing repo from one prompt: a /factory skill as orchestrator, seven sub-agents (spec writer, builder, four parallel reviewers, approver) and markdown files as the only state. Jobs loop through review at most three rounds, the approver escalates money, deploy and product calls to a human, and git worktrees let several jobs run at once.",
+    "tags": [
+      "software-factory",
+      "claude-code",
+      "sub-agents",
+      "review-loops",
+      "git-worktrees"
+    ],
+    "score": 5,
+    "page": "2026-10-07-claude-code-software-factory-loop/",
+    "slug": "claude-code-software-factory-loop",
+    "transcript": true
   }
 ]
