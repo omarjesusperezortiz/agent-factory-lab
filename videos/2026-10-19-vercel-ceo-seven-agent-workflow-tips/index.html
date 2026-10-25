@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vercel's CEO on working with agents: seven habits</title>
+<style>
+:root { --bg:#f4f4f2; --fg:#151515; --muted:#666; --accent:#0d8a7d; --line:#ddd; --panel:#fff;
+  --sans:"Inter", ui-sans-serif, system-ui, sans-serif; --mono:"JetBrains Mono", ui-monospace, Menlo, monospace; color-scheme:light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#0b0d0e; --fg:#ececec; --muted:#9a9a9a; --accent:#3ec7b4; --line:#262a2c; --panel:#141719; color-scheme:dark; } }
+:root[data-theme="dark"] { --bg:#0b0d0e; --fg:#ececec; --muted:#9a9a9a; --accent:#3ec7b4; --line:#262a2c; --panel:#141719; color-scheme:dark; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.55 var(--sans); }
+a { color:var(--accent); }
+main { max-width:1180px; margin:0 auto; padding:32px 16px 64px; display:grid; gap:18px; }
+.top { display:flex; gap:16px; flex-wrap:wrap; font-size:14px; }
+h1 { margin:0; font-size:28px; letter-spacing:-.02em; } .lede { color:var(--muted); max-width:72ch; margin:0; }
+h2 { margin:18px 0 0; font-size:19px; }
+.ctl { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+.seg { display:inline-flex; flex-wrap:wrap; border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+.seg button { background:var(--panel); border:0; border-right:1px solid var(--line); padding:6px 12px; cursor:pointer; color:var(--muted); font:inherit; font-size:13px; }
+.seg button[aria-pressed="true"] { color:var(--fg); background:color-mix(in srgb, var(--accent) 14%, var(--panel)); }
+.play { font:inherit; font-size:13px; font-weight:600; background:var(--accent); color:var(--bg); border:0; border-radius:8px; padding:7px 13px; cursor:pointer; }
+.cap { border-left:3px solid var(--accent); padding:4px 0 4px 14px; max-width:80ch; min-height:64px; } .cap p { margin:0 0 4px; } .cap small { color:var(--muted); }
+.vt-tbl { border-collapse:collapse; width:100%; font-size:14px; }
+.vt-tbl th, .vt-tbl td { text-align:left; vertical-align:top; padding:9px 10px; border-bottom:1px solid var(--line); }
+.vt-tbl th { color:var(--muted); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+.vt-src { margin:0; padding-left:20px; } .vt-src li { margin:4px 0; }
+.vt-wrap { overflow-x:auto; }
+
+/* ---- stage: always dark, its own tokens; every class is prefixed .x ---- */
+.x { --c:#d97757; --card:#1c1c1c; --card2:#232323; --ln:#2e2e2e; --tx:#ececec; --mu:#8d8d8d; --gr:#7bd88f; --yl:#e8c468; --rd:#f0716a;
+  background:#0e0e0e; color:var(--tx); border:1px solid #222; border-radius:14px; min-height:440px; padding:26px; position:relative; overflow:hidden;
+  display:grid; align-content:center; font-size:14px; }
+.x .vc { background:var(--card); border:1px solid var(--ln); border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,.45); }
+.x .vi { opacity:0; transform:translateY(10px); transition:opacity .5s, transform .5s; } .x .vi.on { opacity:1; transform:none; }
+.x .mu { color:var(--mu); } .x .co { color:var(--c); } .x .gr { color:var(--gr); } .x .rd { color:var(--rd); } .x .yl { color:var(--yl); } .x .mono { font-family:var(--mono); }
+.x .pill { display:inline-flex; align-items:center; gap:8px; background:var(--card2); border:1px solid var(--ln); border-radius:99px; padding:5px 12px; font-weight:600; font-size:13px; }
+.x .win-h { display:flex; align-items:center; gap:6px; padding:9px 12px; border-bottom:1px solid var(--ln); }
+.x .win-h i { width:9px; height:9px; border-radius:50%; background:#ff5f57; } .x .win-h i:nth-child(2) { background:#febc2e; } .x .win-h i:nth-child(3) { background:#28c840; }
+.x .win-h span { margin:0 auto; font:11px var(--mono); color:var(--mu); }
+.x .vt-two { display:grid; grid-template-columns:1fr 1fr; gap:22px; align-items:center; }
+.x .vt-h { font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--mu); margin-bottom:10px; }
+.x .vt-pan { padding:16px 18px; }
+
+/* 1 · tower vs MVP */
+.x .vt-tower { display:flex; flex-direction:column-reverse; gap:6px; min-height:206px; }
+.x .vt-blk { padding:8px 12px; border-radius:8px; background:var(--card2); border:1px solid var(--ln); font-size:13px; transition:background .4s, border-color .4s, transform .4s; }
+.x .vt-blk.vt-base { border-color:#5a3a2a; }
+.x .vt-tower.vt-bad .vt-blk { background:#2a1a1a; border-color:#5a2c2c; }
+.x .vt-tower.vt-bad .vt-blk.vt-base { background:#4a1f1f; border-color:var(--rd); color:#fff; }
+.x .vt-tower.vt-shake { animation:vt-shake .45s 2; }
+@keyframes vt-shake { 25% { transform:translateX(-4px) rotate(-.6deg); } 75% { transform:translateX(4px) rotate(.6deg); } }
+.x .vt-feat { display:flex; gap:10px; align-items:center; padding:7px 0; border-bottom:1px dashed var(--ln); font-size:13px; }
+.x .vt-box { width:16px; height:16px; border-radius:4px; border:1px solid #444; display:grid; place-items:center; font-size:11px; color:#0e0e0e; transition:background .3s; }
+.x .vt-feat.on .vt-box { background:var(--gr); border-color:var(--gr); }
+.x .vt-verdict { margin-top:12px; font-weight:600; }
+
+/* 2 · direction */
+.x .vt-svg { width:100%; height:auto; display:block; }
+.x .vt-svg path { fill:none; stroke-width:3; stroke-linecap:round; transition:stroke-dashoffset 2.2s ease; }
+.x .vt-cnt { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+.x .vt-doc { display:grid; grid-template-columns:auto 1fr auto; gap:10px; align-items:center; padding:8px 0; border-bottom:1px dashed var(--ln); font-size:13px; }
+.x .vt-ag { width:22px; height:22px; border-radius:50%; border:2px solid #444; transition:border-color .3s; }
+.x .vt-doc.run .vt-ag { border-color:var(--c); border-top-color:transparent; animation:vt-spin .8s linear infinite; }
+.x .vt-doc.ok .vt-ag { border-color:var(--gr); } .x .vt-doc.drift .vt-ag { border-color:var(--yl); }
+@keyframes vt-spin { to { transform:rotate(360deg); } }
+.x .vt-score { display:flex; align-items:baseline; gap:8px; margin-top:12px; }
+.x .vt-score b { font-size:30px; }
+
+/* 3 · security debt + gates */
+.x .vt-bars { position:relative; display:flex; align-items:flex-end; gap:8px; height:180px; padding:0 4px; border-bottom:1px solid var(--ln); }
+.x .vt-bars i { flex:1; height:0; background:#3b3b3b; border-radius:4px 4px 0 0; transition:height .7s cubic-bezier(.2,.8,.2,1); }
+.x .vt-cap { position:absolute; left:0; right:0; bottom:34%; border-top:2px dashed var(--yl); }
+.x .vt-cap span { position:absolute; right:0; top:-20px; font-size:11px; color:var(--yl); white-space:nowrap; }
+.x .vt-bug { position:absolute; width:10px; height:10px; border-radius:50%; background:var(--rd); box-shadow:0 0 10px var(--rd); opacity:0; transform:scale(0); transition:opacity .3s, transform .3s; }
+.x .vt-bug.on { opacity:1; transform:scale(1); }
+.x .vt-belt { position:relative; height:92px; margin-top:6px; }
+.x .vt-belt:before { content:""; position:absolute; left:0; right:0; top:46px; height:2px; background:var(--ln); }
+.x .vt-gate { position:absolute; top:20px; width:22%; height:54px; border:1px solid var(--ln); border-radius:8px; display:grid; place-items:end center; padding-bottom:4px; font-size:11px; color:var(--mu); background:rgba(255,255,255,.02); transition:border-color .3s, color .3s; text-align:center; line-height:1.2; }
+.x .vt-gate.ok { border-color:#2f5a3a; color:var(--gr); } .x .vt-gate.no { border-color:var(--rd); color:var(--rd); }
+.x .vt-chip { position:absolute; top:36px; left:0; padding:2px 9px; border-radius:6px; background:var(--c); color:#0e0e0e; font:600 11px var(--mono); transition:left .8s ease; z-index:2; white-space:nowrap; }
+
+/* 4 · trade-off sliders */
+.x .vt-sl { display:grid; grid-template-columns:120px 1fr 120px; gap:12px; align-items:center; padding:9px 0; font-size:13px; }
+.x .vt-sl > span:last-child { text-align:right; }
+.x .vt-trk { position:relative; height:6px; border-radius:99px; background:#2a2a2a; }
+.x .vt-knob { position:absolute; top:-6px; left:50%; width:18px; height:18px; margin-left:-9px; border-radius:50%; background:var(--tx); transition:left .7s cubic-bezier(.3,1.3,.5,1); }
+.x .vt-sl.vt-lock .vt-knob { background:var(--c); }
+.x .vt-lockb { grid-column:1 / -1; display:flex; gap:8px; align-items:center; font-size:12px; margin-top:-2px; }
+.x .vt-md { font:12.5px/1.7 var(--mono); padding:14px 16px; }
+.x .vt-md .vt-t { display:inline-block; margin-left:6px; padding:0 7px; border-radius:5px; background:#1f2e22; color:var(--gr); font-size:11px; }
+
+/* 5 · breaker */
+.x .vt-arena { position:relative; height:230px; }
+.x .vt-app { position:absolute; right:0; top:20px; width:58%; padding:12px 14px; }
+.x .vt-u { position:absolute; left:0; width:9px; height:9px; border-radius:50%; background:var(--mu); transition:left .9s ease-in, opacity .3s; }
+.x .vt-find { font-size:12.5px; padding:5px 0; border-bottom:1px dashed var(--ln); }
+.x .vt-ring { position:relative; width:220px; height:220px; margin:0 auto; }
+.x .vt-ring svg { position:absolute; inset:0; }
+.x .vt-rn { position:absolute; transform:translate(-50%,-50%); padding:5px 11px; border-radius:99px; background:var(--card2); border:1px solid var(--ln); font-size:12px; font-weight:600; white-space:nowrap; transition:border-color .3s; }
+.x .vt-rn.on { border-color:var(--c); }
+.x .vt-mid { position:absolute; inset:0; display:grid; place-items:center; align-content:center; text-align:center; }
+.x .vt-mid b { font-size:36px; line-height:1; transition:color .3s; }
+
+/* 6 · first-time user */
+.x .vt-term { font:12px/1.6 var(--mono); padding:12px 14px; display:grid; gap:4px; }
+.x .vt-form { position:relative; padding:16px 18px; display:grid; gap:9px; }
+.x .vt-fld { display:grid; gap:3px; font-size:12px; color:var(--mu); }
+.x .vt-fld div { height:26px; border:1px solid var(--ln); border-radius:6px; background:#151515; transition:border-color .3s; }
+.x .vt-fld.stuck div { border-color:var(--rd); }
+.x .vt-btn { justify-self:start; padding:5px 14px; border-radius:6px; background:#333; font-size:12px; color:var(--mu); }
+.x .vt-cur { position:absolute; left:20px; top:20px; font-size:18px; transition:left .8s ease, top .8s ease; }
+.x .vt-pin { position:absolute; right:10px; bottom:46px; max-width:62%; padding:7px 10px; border-radius:8px; background:#3a1f1f; border:1px solid var(--rd); font-size:12px; }
+.x .vt-flows { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:14px; justify-content:center; }
+
+/* 7 · feedback triage */
+.x .vt-tri { display:grid; grid-template-columns:1fr 92px 1fr; gap:16px; align-items:center; }
+.x .vt-msg { padding:9px 12px; font-size:12.5px; margin-bottom:8px; transition:opacity .4s, transform .5s; }
+.x .vt-msg.gone { opacity:.25; transform:translateX(8px); }
+.x .vt-msg em { font-style:normal; font-size:11px; color:var(--mu); display:block; }
+.x .vt-sort { height:92px; display:grid; place-items:center; text-align:center; font-size:12px; border-radius:50%; width:92px; }
+.x .vt-sort.run { border-color:var(--c); box-shadow:0 0 0 4px rgba(217,119,87,.15); }
+.x .vt-lane { padding:10px 12px; min-height:92px; margin-bottom:10px; }
+.x .vt-lane .vt-msg { margin:6px 0 0; box-shadow:none; }
+.x .vt-clock { display:flex; gap:8px; align-items:baseline; justify-content:center; margin-top:14px; }
+.x .vt-clock b { font:700 24px var(--mono); }
+
+@media (max-width:760px) {
+  .x { padding:18px 14px; min-height:0; }
+  .x .vt-two { grid-template-columns:1fr; gap:16px; }
+  .x .vt-tri { grid-template-columns:1fr; }
+  .x .vt-sort { width:auto; height:auto; border-radius:12px; padding:8px; }
+  .x .vt-sl { grid-template-columns:76px 1fr 76px; gap:8px; font-size:11px; }
+  .x .vt-tower { min-height:0; }
+  .x .vt-bars { height:130px; }
+  .x .vt-ring { width:190px; height:190px; }
+  .x .vt-arena { height:250px; }
+  .x .vt-app { width:70%; }
+}
+</style>
+
+<main>
+  <nav class="top"><a href="../../research/#videos">← Video feed</a><a href="https://www.youtube.com/watch?v=y2ifUC9_zuU" target="_blank" rel="noopener">▶ Watch the video (AI LABS, 14:20)</a></nav>
+  <h1>Vercel's CEO on working with agents: seven habits</h1>
+  <p class="lede">AI LABS picked seven tips from an interview with Vercel's CEO and turned each one into something you can set up in Claude Code: a <code>/direction</code> command, quality gates, a breaker agent, a first-time-user agent, and MCP-fed triage. One running example throughout: <b>Sitfirst</b>, the furniture-store booking app from the video's terminal, with orders, catalog and chat specs.</p>
+  <div class="ctl"><div class="seg" id="steps"></div><button type="button" class="play" id="play">▶ Play all</button></div>
+  <div class="x" id="stage"></div>
+  <div class="cap" id="cap" aria-live="polite"></div>
+
+  <h2>What this means for the factory</h2>
+  <div class="vt-wrap"><table class="vt-tbl">
+    <tr><th>Tip</th><th>What to build</th><th>Where it lives in our factory</th></tr>
+    <tr><td>1. Test before you commit</td><td>Every PRD gets a throwaway MVP run first; an agent verifies claims (model tricks, prompt guides) from scratch.</td><td>A "spike" stage before the planner hands work to builders.</td></tr>
+    <tr><td>2. Direction, not volume</td><td><code>/direction</code>: one sub-agent per requirement doc, plus a main agent hunting unplanned changes, ending in a scorecard.</td><td>Evals view: a drift score next to tokens and PRs, so volume never reads as progress.</td></tr>
+    <tr><td>3. Security and slop debt</td><td>A security scan after each feature (Vercel's DeepSec, or our own) and a review agent as a gate, strictest on payments and auth.</td><td>Gate step in every pipeline run; nothing merges until it passes.</td></tr>
+    <tr><td>4. Must-not trade-offs</td><td>A "must not trade off" section in <code>CLAUDE.md</code>, where every rule has a committed test.</td><td>Per-project constraints file, checked by the evals runner.</td></tr>
+    <tr><td>5. Breaker agent</td><td>An agent whose job is to break the app (concurrency, latency, skipped steps) on a copy of the data, run in a find-fix loop.</td><td>Pre-ship stage; findings land in Issues.</td></tr>
+    <tr><td>6. See it as a new customer</td><td>A first-time-user agent that a hook blocks from reading code, plus browser tests of every key flow that write error-free-session results to JSON.</td><td>Evals: "error-free sessions" as a headline metric.</td></tr>
+    <tr><td>7. Speed on feedback</td><td>Gmail and Sentry MCPs feed a triage agent: clear bugs get fixed now, fuzzy ones go to a human. Track time from report to fix.</td><td>Human inbox for judgment calls; Traces for report-to-fix time.</td></tr>
+  </table></div>
+
+  <h2>Sources</h2>
+  <ul class="vt-src">
+    <li><a href="https://www.youtube.com/watch?v=y2ifUC9_zuU" target="_blank" rel="noopener">AI LABS: "Vercel's CEO Just Unveiled The Greatest AI Coding Workflow Ever"</a>. All tips, the Sitfirst project, and the DeepSec and breaker-agent setups shown on screen.</li>
+    <li>The video paraphrases an interview with Vercel's CEO but doesn't name or link it, so the quotes here come from the video's retelling, not the original interview.</li>
+  </ul>
+</main>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const on = (el, sel) => el.querySelectorAll(sel).forEach(n => n.classList.add('on'));
+  const count = (node, to, ms, fmt = v => v) => { if (reduced) { node.textContent = fmt(to); return; } const t0 = performance.now(); const f = now => { const p = Math.min(1, (now - t0) / ms); node.textContent = fmt(Math.round(to * p)); if (p < 1) requestAnimationFrame(f); }; requestAnimationFrame(f); };
+  const win = url => `<div class="win-h"><i></i><i></i><i></i><span>${url}</span></div>`;
+
+  const SCENES = [
+    { k:'Test first', cap:'<p><b>Build a cheap MVP before the real app, and check claims yourself.</b> A wrong early decision buried under every later feature means reworking the whole app. An MVP from one prompt shows whether the idea is worth building.</p><small>He also has an agent verify claims from scratch, such as a prompting guide\'s advice about a model, instead of going off vibes.</small>',
+      html:() => `<div class="vt-two">
+        <div class="vc vt-pan"><div class="vt-h">PRD → straight to the whole app</div>
+          <div class="vt-tower">${['Early decision: one store per account', 'Catalog', 'Orders', 'Chat', 'Payments'].map((s, i) => `<div class="vt-blk vi ${i ? '' : 'vt-base'}" data-b="${i}">${s}</div>`).join('')}</div>
+          <div class="vt-verdict rd vi" data-s="bad">✗ Week 3: the base is wrong → rework everything</div></div>
+        <div class="vc vt-pan"><div class="vt-h">PRD → MVP first</div>
+          <div class="mono mu" style="font-size:12px;margin-bottom:6px">specs/PRD.md → “build an MVP with the basic features”</div>
+          ${['Browse a store\'s catalog', 'Book a showroom slot', 'Chat with the store'].map(s => `<div class="vt-feat"><span class="vt-box">✓</span>${s}</div>`).join('')}
+          <div class="vt-verdict gr vi" data-s="ok">✓ Day 1: see it working, then build it or drop it cheaply</div></div></div>`,
+      run:(t, el) => {
+        el.querySelectorAll('[data-b]').forEach((b, i) => t(() => b.classList.add('on'), 200 + i * 380));
+        el.querySelectorAll('.vt-feat').forEach((f, i) => t(() => f.classList.add('on'), 500 + i * 450));
+        t(() => on(el, '[data-s="ok"]'), 2000);
+        t(() => { el.querySelector('.vt-tower').classList.add('vt-bad', 'vt-shake'); }, 2500);
+        t(() => on(el, '[data-s="bad"]'), 3000);
+        return 4000;
+      } },
+
+    { k:'Direction', cap:'<p><b>Tokens and shipped changes measure how much you build, not where it is going.</b> Building is cheap now, so every idea turns into a feature and the app drifts from the specs. <code>/direction</code> sends one agent per requirement doc, while the main agent looks for changes that are in no plan.</p><small>The report lets you choose: keep the drift and update the specs, or remove it.</small>',
+      html:() => `<div class="vt-two">
+        <div class="vc vt-pan"><div class="vt-h">Volume says “great week”</div>
+          <svg class="vt-svg" viewBox="0 0 400 170">
+            <path d="M20 140 L380 30" stroke="#2f5a3a" stroke-dasharray="6 6"/>
+            <path class="vt-act" d="M20 140 C120 110 180 95 230 92 S330 120 380 150" stroke="#f0716a" stroke-dasharray="460" stroke-dashoffset="460"/>
+            <text x="300" y="34" fill="#7bd88f" font-size="12">specs/ plan</text>
+            <text x="290" y="160" fill="#f0716a" font-size="12">what got built</text>
+          </svg>
+          <div class="vt-cnt"><span class="pill mono">tokens <span class="vt-n1">0</span>M</span><span class="pill mono">changes shipped <span class="vt-n2">0</span></span></div></div>
+        <div class="vc vt-pan"><div class="vt-h mono" style="text-transform:none">› /direction</div>
+          ${[['specs/orders.md', 'aligned', 'ok'], ['specs/catalog.md', 'aligned', 'ok'], ['specs/chat.md', 'drift: AR room preview', 'drift']].map(([d, r, c]) => `<div class="vt-doc" data-c="${c}"><span class="vt-ag"></span><span class="mono">${d}</span><span class="vt-r mu">…</span></div>`).join('')}
+          <div class="vt-doc vi" data-s="main"><span class="vt-ag" style="border-color:var(--yl)"></span><span>Main agent: unplanned</span><span class="yl">loyalty points</span></div>
+          <div class="vt-score vi" data-s="score"><b class="yl"><span class="vt-n3">0</span>/100</b><span class="mu">on course · 2 items to keep or cut</span></div></div></div>`,
+      run:(t, el) => {
+        const res = ['aligned', 'aligned', 'drift: AR room preview'];
+        t(() => { el.querySelector('.vt-act').style.strokeDashoffset = '0'; count(el.querySelector('.vt-n1'), 24, 2200, v => (v / 10).toFixed(1)); count(el.querySelector('.vt-n2'), 38, 2200); }, 200);
+        el.querySelectorAll('.vt-doc[data-c]').forEach((d, i) => {
+          t(() => d.classList.add('run'), 500);
+          t(() => { d.classList.replace('run', d.dataset.c); const r = d.querySelector('.vt-r'); r.textContent = res[i]; r.className = 'vt-r ' + (d.dataset.c === 'ok' ? 'gr' : 'yl'); }, 1300 + i * 500);
+        });
+        t(() => on(el, '[data-s="main"]'), 2900);
+        t(() => { on(el, '[data-s="score"]'); count(el.querySelector('.vt-n3'), 64, 900); }, 3400);
+        return 4400;
+      } },
+
+    { k:'Security debt', cap:'<p><b>Agents write more code than anyone can review, and attackers have agents too.</b> Scan for security holes after every feature (Vercel built DeepSec for this). Decide how much slop debt each part of the app can carry, and guard the critical parts with quality gates.</p><small>A test tells you a change works. A gate, such as a review agent that holds every change to your standards, also tells you whether it is good enough.</small>',
+      html:() => `<div class="vt-two">
+        <div class="vc vt-pan"><div class="vt-h">Code written per week</div>
+          <div class="vt-bars">${'<i></i>'.repeat(7)}<div class="vt-cap vi" data-s="cap"><span>what one person can review</span></div>
+            ${[[62, 30], [74, 18], [84, 40], [90, 12]].map(([x, y]) => `<span class="vt-bug" style="left:${x}%;top:${y}%"></span>`).join('')}</div>
+          <div class="mu vi" data-s="atk" style="font-size:12px;margin-top:8px"><span class="rd">●</span> holes found by cheap attacker models</div></div>
+        <div class="vc vt-pan"><div class="vt-h">Change: <span class="mono" style="text-transform:none">feat/checkout</span></div>
+          <div class="vt-belt"><span class="vt-chip">PR #38</span>
+            ${['Tests', 'DeepSec scan', 'Review agent'].map((g, i) => `<div class="vt-gate" style="left:${18 + i * 27}%">${g}</div>`).join('')}</div>
+          <div class="vi rd" data-s="held" style="font-weight:600">✗ Held: /pay swallows errors (slop in a critical path)</div>
+          <div class="vi mu" data-s="held2" style="font-size:12.5px;margin-top:4px">Nothing goes live until it passes every gate.</div></div></div>`,
+      run:(t, el) => {
+        const h = [14, 20, 30, 44, 60, 78, 96];
+        el.querySelectorAll('.vt-bars i').forEach((b, i) => t(() => { b.style.height = h[i] + '%'; if (h[i] > 34) b.style.background = '#5a4a3a'; }, 150 + i * 160));
+        t(() => on(el, '[data-s="cap"]'), 1100);
+        el.querySelectorAll('.vt-bug').forEach((b, i) => t(() => b.classList.add('on'), 1500 + i * 250));
+        t(() => on(el, '[data-s="atk"]'), 1700);
+        const chip = el.querySelector('.vt-chip'), gs = el.querySelectorAll('.vt-gate');
+        [[19, 0, 'ok'], [46, 1, 'ok'], [73, 2, 'no']].forEach(([x, g, r], i) => {
+          t(() => { chip.style.left = x + '%'; }, 600 + i * 900);
+          t(() => gs[g].classList.add(r), 1300 + i * 900);
+        });
+        t(() => { chip.style.background = 'var(--rd)'; on(el, '[data-s="held"]'); }, 3300);
+        t(() => on(el, '[data-s="held2"]'), 3700);
+        return 4300;
+      } },
+
+    { k:'Must not trade off', cap:'<p><b>Every agent decision trades something off. Agree on the trade-offs before you start, and write down the ones you will never make.</b> Put a "must not trade off" section in <code>CLAUDE.md</code> and attach a test to each rule, so a forgotten instruction still fails a check.</p><small>An agent juggling a lot of context forgets written rules. Committed tests (and <code>/direction</code>) don\'t.</small>',
+      html:() => `<div class="vt-two">
+        <div class="vc vt-pan"><div class="vt-h">What the agent may trade</div>
+          ${[['Ship speed', 'Polish', 0], ['Features', 'Cost', 0], ['Speed', 'Payment safety', 1], ['Features', 'Booking < 2 s', 1]].map(([a, b, l]) => `<div class="vt-sl ${l ? 'vt-lock' : ''}"><span>${a}</span><div class="vt-trk"><span class="vt-knob"></span></div><span>${b}</span>${l ? '<div class="vt-lockb vi"><span class="co">🔒 locked</span><span class="mu">· has a test</span></div>' : ''}</div>`).join('')}</div>
+        <div class="vc vt-md"><div class="mu">CLAUDE.md</div>
+          <div>## Must not trade off</div>
+          <div class="vi" data-s="r1">- Never double-charge a payment<span class="vt-t vi" data-s="t1">tests/payments.spec.ts ✓</span></div>
+          <div class="vi" data-s="r2">- Booking confirms in under 2 s<span class="vt-t vi" data-s="t2">tests/booking-perf.spec.ts ✓</span></div>
+          <div class="vi mu" data-s="git" style="margin-top:8px">$ git commit -m "lock non-negotiables"</div></div></div>`,
+      run:(t, el) => {
+        const ks = el.querySelectorAll('.vt-knob');
+        t(() => { ks[0].style.left = '22%'; ks[1].style.left = '74%'; }, 400);
+        t(() => { ks[0].style.left = '68%'; ks[1].style.left = '30%'; }, 1300);
+        t(() => { ks[2].style.left = '86%'; ks[3].style.left = '86%'; }, 300);
+        t(() => { ks[2].style.left = '40%'; ks[3].style.left = '40%'; }, 1300);
+        t(() => { ks[2].style.left = '86%'; ks[3].style.left = '86%'; on(el, '.vt-lockb'); }, 1900);
+        ['r1', 't1', 'r2', 't2', 'git'].forEach((s, i) => t(() => on(el, `[data-s="${s}"]`), 900 + i * 500));
+        return 3800;
+      } },
+
+    { k:'Breaker agent', cap:'<p><b>An agent tests its own work the way it built it, so everything passes. A breaker agent attacks it the way real traffic does.</b> It simulates many users at once, collisions and skipped steps, measures latency, and reports each break. Then a loop fixes the breaks and runs it again until none come back.</p><small>It works on a copy of the app\'s data, so the attack never touches real records.</small>',
+      html:() => `<div class="vt-two">
+        <div class="vt-arena">
+          ${Array.from({ length: 12 }, (_, i) => `<span class="vt-u" style="top:${18 + (i * 37) % 190}px"></span>`).join('')}
+          <div class="vc vt-app">${'<div class="mono mu" style="font-size:11px;margin-bottom:6px">sitfirst · staging copy of data</div>'}
+            <div class="vt-find vi rd" data-f="0">✗ 2 users booked the same slot (race)</div>
+            <div class="vt-find vi yl" data-f="1">⚠ p95 4.8 s at 200 concurrent users</div>
+            <div class="vt-find vi rd" data-f="2">✗ checkout works with no date picked</div></div></div>
+        <div class="vt-ring">
+          <svg viewBox="0 0 220 220"><circle cx="110" cy="110" r="84" fill="none" stroke="#2e2e2e" stroke-width="2"/>
+            <circle class="vt-tok" cx="110" cy="26" r="6" fill="#d97757" style="transform-origin:110px 110px;transition:transform .9s ease"/></svg>
+          <span class="vt-rn" style="left:50%;top:12%">Break</span><span class="vt-rn" style="left:86%;top:72%">Fix</span><span class="vt-rn" style="left:14%;top:72%">Re-run</span>
+          <div class="vt-mid"><b class="vt-open rd">0</b><span class="mu" style="font-size:12px">open breaks</span></div></div></div>`,
+      run:(t, el) => {
+        el.querySelectorAll('.vt-u').forEach((u, i) => { t(() => { u.style.left = '40%'; }, 100 + i * 90); t(() => { u.style.opacity = '0'; }, 1000 + i * 90); });
+        const n = el.querySelector('.vt-open'), rn = el.querySelectorAll('.vt-rn'), tok = el.querySelector('.vt-tok');
+        el.querySelectorAll('[data-f]').forEach((f, i) => t(() => { f.classList.add('on'); n.textContent = i + 1; }, 900 + i * 450));
+        [[0, 3], [1, 1], [2, 1], [0, 0]].forEach(([r, v], i) => t(() => {
+          tok.style.transform = `rotate(${i * 120}deg)`;
+          rn.forEach(x => x.classList.remove('on')); rn[r].classList.add('on');
+          if (i) { n.textContent = v; if (!v) n.className = 'vt-open gr'; }
+        }, 2400 + i * 700));
+        return 5000;
+      } },
+
+    { k:'New customer', cap:'<p><b>You can never be a first-time user of your own app, so make an agent be one.</b> A hook blocks it from reading or editing code; it can only run the app in a browser and report where it gets stuck. A second agent runs browser tests of every key flow and writes the results to JSON: Vercel\'s "error-free sessions".</p><small>Building for yourself only tests whether you like the app. Customers get stuck where you never would, and they leave without saying why.</small>',
+      html:() => `<div class="vt-two">
+        <div class="vc vt-term">
+          <div class="mu">first-time-user agent</div>
+          <div class="vi" data-s="c1">$ cat src/signup.tsx</div>
+          <div class="vi rd" data-s="c2">✗ blocked by PreToolUse hook: run the app only</div>
+          <div class="vi" data-s="c3">$ npm run dev → open browser</div>
+          <div class="vi gr" data-s="c4">✓ allowed</div></div>
+        <div class="vc vi" data-s="br">${win('sitfirst.app/signup')}
+          <div class="vt-form">
+            <div class="vt-fld">Name<div></div></div><div class="vt-fld">Email<div></div></div><div class="vt-fld vt-sid">Store ID<div></div></div>
+            <span class="vt-btn">Create account</span>
+            <span class="vt-cur">↖</span>
+            <div class="vt-pin vi" data-s="pin">“What's a Store ID? I'd leave here.”</div></div></div></div>
+        <div class="vt-flows vi" data-s="fl"><span class="mu mono" style="font-size:12px">flows.json</span>
+          <span class="pill"><span class="gr">✓</span> browse</span><span class="pill"><span class="gr">✓</span> book slot</span><span class="pill vi" data-s="pay"><span class="rd">✗</span> pay (slow step)</span>
+          <span class="pill mono">error-free <span class="vt-ef">0</span>%</span></div>`,
+      run:(t, el) => {
+        ['c1', 'c2', 'c3', 'c4'].forEach((s, i) => t(() => on(el, `[data-s="${s}"]`), 200 + i * 450));
+        t(() => on(el, '[data-s="br"]'), 1500);
+        const cur = el.querySelector('.vt-cur');
+        t(() => { cur.style.top = '40px'; cur.style.left = '80px'; }, 1800);
+        t(() => { cur.style.top = '88px'; cur.style.left = '110px'; }, 2300);
+        t(() => { cur.style.top = '136px'; cur.style.left = '90px'; el.querySelector('.vt-sid').classList.add('stuck'); }, 2800);
+        t(() => on(el, '[data-s="pin"]'), 3200);
+        t(() => { on(el, '[data-s="fl"]'); }, 3500);
+        t(() => { on(el, '[data-s="pay"]'); count(el.querySelector('.vt-ef'), 67, 700); }, 3900);
+        return 4800;
+      } },
+
+    { k:'Feedback speed', cap:'<p><b>To see how well a company uses agents, time what happens after a customer reports a problem.</b> Connect the Gmail and Sentry MCPs, and Claude sorts each report as it arrives. A clear break, like a failing payment, gets fixed right away. A report that needs judgment, like "I\'m confused", goes to you.</p><small>"Confused" can\'t be turned into a prompt. Someone has to talk to the customer before changing anything.</small>',
+      html:() => `<div class="vt-tri">
+        <div>
+          <div class="vt-h">Incoming</div>
+          <div class="vc vt-msg" data-m="0">Book button does nothing<em>Gmail · with screenshot</em></div>
+          <div class="vc vt-msg" data-m="1">PaymentIntent failed ×14<em>Sentry · no customer said a word</em></div>
+          <div class="vc vt-msg" data-m="2">I'm confused by the calendar<em>Gmail</em></div></div>
+        <div class="vc vt-sort">Claude<br><span class="mu">triage</span></div>
+        <div>
+          <div class="vc vt-lane"><div class="vt-h gr" style="margin:0">Fix now</div>
+            <div class="vc vt-msg vi" data-l="0">Book button → patched</div><div class="vc vt-msg vi" data-l="1">Payments → retry fixed</div></div>
+          <div class="vc vt-lane"><div class="vt-h yl" style="margin:0">Needs you</div>
+            <div class="vc vt-msg vi" data-l="2">Calendar confusion → talk to them</div></div></div></div>
+        <div class="vt-clock vi" data-s="clk"><span class="mu">report → fix</span><b class="co"><span class="vt-min">0</span> min</b></div>`,
+      run:(t, el) => {
+        const sort = el.querySelector('.vt-sort');
+        [0, 1, 2].forEach(i => {
+          t(() => { sort.classList.add('run'); el.querySelector(`[data-m="${i}"]`).classList.add('gone'); }, 400 + i * 800);
+          t(() => { el.querySelector(`[data-l="${i}"]`).classList.add('on'); sort.classList.remove('run'); }, 900 + i * 800);
+        });
+        t(() => { on(el, '[data-s="clk"]'); count(el.querySelector('.vt-min'), 12, 1000); }, 2900);
+        return 4200;
+      } },
+  ];
+
+  const stage = $('stage'); let cur = 0, auto = false, timers = [];
+  const clear = () => { timers.forEach(clearTimeout); timers = []; };
+  $('steps').innerHTML = SCENES.map((s, i) => `<button type="button" data-i="${i}">${i + 1}. ${s.k}</button>`).join('');
+  function show(i) {
+    clear(); cur = i; const s = SCENES[i];
+    $('steps').querySelectorAll('button').forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
+    stage.innerHTML = s.html(); $('cap').innerHTML = s.cap;
+    const t = (fn, ms) => timers.push(setTimeout(fn, reduced ? 0 : ms));
+    const end = s.run(t, stage);
+    if (auto) t(() => i < SCENES.length - 1 ? show(i + 1) : stop(), end + 2500);
+  }
+  function stop() { auto = false; $('play').textContent = '▶ Play all'; }
+  $('steps').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { stop(); show(+b.dataset.i); } });
+  $('play').addEventListener('click', () => { if (auto) { stop(); clear(); return; } auto = true; $('play').textContent = '❚❚ Pause'; show(cur === SCENES.length - 1 ? 0 : cur); });
+  show(0);
+})();
+</script>
