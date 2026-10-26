@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Elephant-Goldfish Model: plans reviewed by agents that never saw your chat</title>
+<style>
+:root { --bg:#f4f4f2; --fg:#151515; --muted:#666; --accent:#c4621f; --line:#ddd; --panel:#fff;
+  --sans:"Inter", ui-sans-serif, system-ui, sans-serif; --mono:"JetBrains Mono", ui-monospace, Menlo, monospace; color-scheme:light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#0b0d0e; --fg:#ececec; --muted:#9a9a9a; --accent:#f0843c; --line:#262a2c; --panel:#141719; color-scheme:dark; } }
+:root[data-theme="dark"] { --bg:#0b0d0e; --fg:#ececec; --muted:#9a9a9a; --accent:#f0843c; --line:#262a2c; --panel:#141719; color-scheme:dark; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.55 var(--sans); }
+main { max-width:1180px; margin:0 auto; padding:24px 16px 64px; display:grid; gap:18px; }
+.top { display:flex; gap:16px; flex-wrap:wrap; font-size:14px; }
+a { color:var(--accent); }
+h1 { margin:0; font-size:28px; letter-spacing:-.02em; } .lede { color:var(--muted); max-width:72ch; margin:0; }
+h2 { margin:18px 0 0; font-size:19px; }
+.ctl { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+.seg { display:inline-flex; flex-wrap:wrap; border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+.seg button { background:var(--panel); border:0; border-right:1px solid var(--line); padding:6px 12px; cursor:pointer; color:var(--muted); font:inherit; font-size:13px; }
+.seg button[aria-pressed="true"] { color:var(--fg); background:color-mix(in srgb, var(--accent) 14%, var(--panel)); }
+.play { font:inherit; font-size:13px; font-weight:600; background:var(--accent); color:var(--bg); border:0; border-radius:8px; padding:7px 13px; cursor:pointer; }
+.cap { border-left:3px solid var(--accent); padding:4px 0 4px 14px; max-width:80ch; } .cap p { margin:0 0 4px; } .cap small { color:var(--muted); }
+.eg-tbl { width:100%; border-collapse:collapse; font-size:14px; }
+.eg-tbl th, .eg-tbl td { text-align:left; vertical-align:top; padding:8px 10px; border-bottom:1px solid var(--line); }
+.eg-tbl th { color:var(--muted); font-weight:600; font-size:13px; }
+.eg-wrap { overflow-x:auto; }
+code { font-family:var(--mono); font-size:.9em; }
+ul.eg-src { margin:0; padding-left:20px; }
+
+/* ---- stage: always dark, its own tokens; every class is prefixed .x / .eg- ---- */
+.x { --c:#f0843c; --el:#6f9bf5; --card:#1c1c1c; --card2:#232323; --ln:#2e2e2e; --tx:#ececec; --mu:#8d8d8d; --gr:#7bd88f; --yl:#e8c468; --rd:#f0716a;
+  background:#0e0e0e; color:var(--tx); border:1px solid #222; border-radius:14px; min-height:440px; padding:26px; position:relative; overflow:hidden;
+  display:grid; align-content:center; }
+.x .vc { background:var(--card); border:1px solid var(--ln); border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,.45); }
+.x .vi { opacity:0; transform:translateY(10px); transition:opacity .5s, transform .5s; } .x .vi.on { opacity:1; transform:none; }
+.x .mu { color:var(--mu); } .x .co { color:var(--c); } .x .gr { color:var(--gr); } .x .yl { color:var(--yl); } .x .rd { color:var(--rd); } .x .el { color:var(--el); } .x .mono { font-family:var(--mono); }
+.x .pill { display:inline-flex; align-items:center; gap:8px; background:var(--card2); border:1px solid var(--ln); border-radius:99px; padding:5px 12px; font-weight:600; font-size:13px; white-space:nowrap; }
+.x .win-h { display:flex; align-items:center; gap:6px; padding:9px 12px; border-bottom:1px solid var(--ln); }
+.x .win-h i { width:9px; height:9px; border-radius:50%; background:#ff5f57; } .x .win-h i:nth-child(2) { background:#febc2e; } .x .win-h i:nth-child(3) { background:#28c840; }
+.x .win-h span { margin:0 auto; font:11px var(--mono); color:var(--mu); }
+.x .eg-hd { display:flex; align-items:center; gap:10px; padding:12px 14px; border-bottom:1px solid var(--ln); font-weight:700; }
+.x .eg-hd .eg-ic { font-size:22px; line-height:1; }
+.x .eg-hd small { font-weight:500; color:var(--mu); font-size:12px; margin-left:auto; white-space:nowrap; }
+
+/* scene 1: two memories */
+.x .eg-mem { display:grid; grid-template-columns:1fr 150px 1fr; gap:18px; align-items:center; width:min(900px,100%); margin:0 auto; }
+.x .eg-ani { min-height:250px; }
+.x .eg-ani.eg-e { border-color:#2c3c5e; } .x .eg-ani.eg-g { border-color:#5a3a22; }
+.x .eg-chips { display:flex; flex-wrap:wrap; gap:8px; padding:14px; }
+.x .eg-chip { font-size:12.5px; border-radius:8px; padding:6px 10px; background:var(--card2); border:1px solid var(--ln); white-space:nowrap; }
+.x .eg-chip.eg-b { border-color:#2c3c5e; color:#b9cdf8; } .x .eg-chip.eg-o { border-color:#5a3a22; color:#f6c39d; }
+.x .eg-chip.eg-x { text-decoration:line-through; color:var(--mu); border-style:dashed; }
+.x .eg-mid { position:relative; height:200px; }
+.x .eg-wall { position:absolute; right:8px; top:10px; bottom:10px; width:3px; border-radius:3px; background:#333; transition:background .3s, box-shadow .3s; }
+.x .eg-wall.on { background:var(--c); box-shadow:0 0 16px var(--c); }
+.x .eg-lock { position:absolute; right:-6px; top:50%; transform:translateY(-50%) scale(.6); opacity:0; font-size:18px; transition:transform .3s cubic-bezier(.3,1.6,.5,1), opacity .3s; }
+.x .eg-lock.on { opacity:1; transform:translateY(-50%) scale(1); }
+.x .eg-bub { position:absolute; left:0; font-size:11.5px; background:#20304f; color:#cfdcfa; border-radius:10px 10px 10px 2px; padding:5px 9px; white-space:nowrap; opacity:0;
+  transition:transform 1s cubic-bezier(.4,0,.6,1), opacity .4s; }
+.x .eg-bub.go { opacity:1; transform:translateX(52px); } .x .eg-bub.dead { opacity:.18; transform:translateX(40px) scale(.94); }
+
+/* scene 2: self-agreement */
+.x .eg-vs { display:grid; grid-template-columns:1fr 1fr; gap:22px; width:min(900px,100%); margin:0 auto; }
+.x .eg-chat { padding:12px 14px; display:grid; gap:8px; font-size:13px; min-height:220px; align-content:start; }
+.x .eg-msg { padding:7px 10px; border-radius:10px; max-width:92%; }
+.x .eg-msg.eg-u { background:#2a2a2a; justify-self:end; } .x .eg-msg.eg-a { background:#20304f; color:#cfdcfa; }
+.x .eg-msg.eg-ok { background:#1d3324; color:var(--gr); }
+.x .eg-plan { padding:12px 14px; display:grid; gap:7px; min-height:220px; align-content:start; }
+.x .eg-pl { display:flex; align-items:center; gap:8px; font-size:12.5px; padding:6px 8px; border-radius:7px; border:1px solid transparent; transition:background .4s, border-color .4s; }
+.x .eg-pl .eg-ln { height:6px; border-radius:6px; background:#333; flex:1; max-width:var(--w,80%); }
+.x .eg-pl.flag { background:#3a1f1f; border-color:#5c2c2c; }
+.x .eg-pl .eg-fl { display:none; color:#f8b4ae; } .x .eg-pl.flag .eg-fl { display:inline; } .x .eg-pl.flag .eg-ln { display:none; }
+.x .eg-foot { display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-top:1px solid var(--ln); font-size:13px; }
+.x .eg-big { font:700 22px var(--mono); }
+
+/* scene 3: bootstrap */
+.x .eg-boot { display:grid; grid-template-columns:300px 1fr; gap:22px; width:min(900px,100%); margin:0 auto; align-items:start; }
+.x .eg-term { font:12.5px var(--mono); } .x .eg-term .eg-tb { padding:12px 14px; display:grid; gap:8px; min-height:170px; align-content:start; }
+.x .eg-tree { padding:12px 16px; display:grid; gap:6px; font:13px var(--mono); }
+.x .eg-row { display:flex; align-items:center; gap:10px; padding:4px 6px; border-radius:6px; transition:background .3s; }
+.x .eg-row.scan { background:#2a2016; }
+.x .eg-row .eg-tag { margin-left:auto; font-size:11.5px; opacity:0; transform:scale(.7); transition:opacity .3s, transform .3s cubic-bezier(.3,1.6,.5,1); white-space:nowrap; }
+.x .eg-row.done .eg-tag { opacity:1; transform:none; }
+.x .eg-warn { display:flex; gap:10px; align-items:flex-start; padding:10px 14px; font-size:13px; border-color:#5a4b22; margin-top:14px; }
+
+/* scene 4: brainstorm -> draft */
+.x .eg-flow { display:grid; grid-template-columns:1fr 26px 1fr 26px 1.25fr; gap:8px; align-items:center; width:min(960px,100%); margin:0 auto; }
+.x .eg-arr { color:var(--mu); text-align:center; font-size:20px; }
+.x .eg-q { display:grid; gap:6px; padding:12px; font-size:12.5px; min-height:190px; align-content:start; }
+.x .eg-doc { padding:14px; display:grid; gap:7px; min-height:190px; align-content:start; }
+.x .eg-sec { display:flex; align-items:center; gap:9px; font-size:13px; padding:6px 8px; border-radius:7px; border:1px solid var(--ln); background:var(--card2); transition:border-color .3s, opacity .3s; opacity:.35; }
+.x .eg-sec.run { opacity:1; border-color:var(--c); } .x .eg-sec.on { opacity:1; border-color:#2f5a3a; }
+.x .eg-sec .eg-ck { margin-left:auto; font-size:11px; color:var(--mu); white-space:nowrap; } .x .eg-sec.on .eg-ck { color:var(--gr); }
+.x .eg-path { margin-top:16px; text-align:center; }
+
+/* scene 5: fan-out */
+.x .eg-fan { display:grid; grid-template-columns:130px 150px 1fr 170px; gap:18px; align-items:center; width:min(980px,100%); margin:0 auto; }
+.x .eg-node { padding:14px 12px; text-align:center; display:grid; gap:4px; justify-items:center; font-size:13px; transition:border-color .3s, box-shadow .3s; }
+.x .eg-node .eg-ic { font-size:26px; line-height:1; }
+.x .eg-node.run { border-color:var(--c); box-shadow:0 0 22px rgba(240,132,60,.25); }
+.x .eg-lenses { display:grid; gap:7px; }
+.x .eg-lens { display:grid; grid-template-columns:22px 1fr auto; gap:8px; align-items:center; padding:7px 10px; font-size:12.5px; border-radius:9px; transition:border-color .3s, opacity .3s; opacity:.35; }
+.x .eg-lens b { white-space:nowrap; } .x .eg-lens span.mu { font-size:11.5px; }
+.x .eg-lens.run { opacity:1; border-color:var(--c); } .x .eg-lens.on { opacity:1; border-color:#2f5a3a; }
+.x .eg-lens .eg-ck { color:var(--gr); opacity:0; transition:opacity .3s; } .x .eg-lens.on .eg-ck { opacity:1; }
+.x .eg-ctx { margin-top:10px; padding:10px; font-size:12px; display:grid; gap:6px; }
+.x .eg-bar { height:7px; border-radius:7px; background:#2a2a2a; overflow:hidden; } .x .eg-bar i { display:block; height:100%; width:0; background:var(--gr); transition:width 1s ease; }
+
+/* scene 6: rounds */
+.x .eg-rounds { width:min(860px,100%); margin:0 auto; display:grid; gap:26px; }
+.x .eg-track { position:relative; display:flex; justify-content:space-between; align-items:center; padding:0 6px; }
+.x .eg-track::before { content:""; position:absolute; left:24px; right:24px; top:50%; height:2px; background:#2e2e2e; }
+.x .eg-prog { position:absolute; left:24px; top:50%; height:2px; width:0; background:var(--c); transition:width .7s ease; }
+.x .eg-rd { position:relative; z-index:1; width:46px; height:46px; border-radius:50%; display:grid; place-items:center; font:700 15px var(--mono); background:var(--card); border:2px solid var(--ln); transition:border-color .3s, background .3s; }
+.x .eg-rd.run { border-color:var(--c); } .x .eg-rd.on { border-color:var(--gr); background:#1d3324; }
+.x .eg-rd small { position:absolute; top:52px; font:600 11px var(--sans); color:var(--mu); white-space:nowrap; }
+.x .eg-panel { display:grid; grid-template-columns:1fr 1.3fr; gap:18px; align-items:start; }
+.x .eg-rcard { padding:0; }
+.x .eg-find { display:grid; gap:7px; padding:12px 14px; min-height:100px; }
+.x .eg-fi { display:flex; gap:8px; align-items:center; font-size:12.5px; }
+.x .eg-btns { display:flex; gap:8px; justify-content:flex-end; padding:10px 14px; border-top:1px solid var(--ln); }
+.x .eg-btn { font:600 12px var(--sans); padding:6px 11px; border-radius:7px; border:1px solid var(--ln); background:var(--card2); color:var(--tx); transition:transform .15s, background .2s; white-space:nowrap; }
+.x .eg-btn.eg-pr { background:#ececec; color:#111; } .x .eg-btn.press { transform:scale(.92); background:var(--c); color:#111; }
+.x .eg-status { display:grid; gap:10px; justify-items:start; }
+.x .eg-st { transition:color .3s, border-color .3s; }
+.x .eg-st.prop { color:var(--gr); border-color:#2f5a3a; }
+
+/* scene 7: drift */
+.x .eg-drift { display:grid; grid-template-columns:1fr 1fr; gap:22px; width:min(900px,100%); margin:0 auto; position:relative; }
+.x .eg-col { padding:0; overflow:hidden; position:relative; }
+.x .eg-lines { padding:12px 14px; display:grid; gap:7px; font:12.5px var(--mono); }
+.x .eg-li { padding:5px 8px; border-radius:6px; border:1px solid transparent; transition:background .4s, border-color .4s; }
+.x .eg-li.ok { background:#18281d; } .x .eg-li.bad { background:#3a1f1f; border-color:#5c2c2c; }
+.x .eg-scan { position:absolute; left:0; right:0; top:42px; height:2px; background:var(--c); box-shadow:0 0 12px var(--c); opacity:0; transition:top 2s linear, opacity .3s; }
+.x .eg-scan.go { opacity:1; top:calc(100% - 4px); }
+.x .eg-stats { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin-top:18px; }
+.x .eg-stat { padding:10px 16px; display:grid; justify-items:center; font-size:12px; color:var(--mu); min-width:120px; }
+.x .eg-stat b { font:700 24px var(--mono); color:var(--tx); }
+
+@media (max-width:760px) {
+  .x { padding:18px 12px; min-height:0; }
+  .x .eg-mem { grid-template-columns:1fr; } .x .eg-mid { height:96px; } .x .eg-wall { right:auto; left:10px; right:10px; top:auto; bottom:6px; width:auto; height:3px; }
+  .x .eg-lock { right:50%; top:auto; bottom:-6px; transform:translateX(50%) scale(.6); } .x .eg-lock.on { transform:translateX(50%) scale(1); }
+  .x .eg-bub.go { transform:translateY(14px); } .x .eg-bub.dead { transform:translateY(10px) scale(.94); }
+  .x .eg-ani { min-height:0; }
+  .x .eg-vs, .x .eg-boot, .x .eg-drift, .x .eg-panel { grid-template-columns:1fr; }
+  .x .eg-chat, .x .eg-plan { min-height:0; }
+  .x .eg-flow { grid-template-columns:1fr; } .x .eg-arr { transform:rotate(90deg); height:18px; }
+  .x .eg-q, .x .eg-doc { min-height:0; }
+  .x .eg-fan { grid-template-columns:1fr 1fr; } .x .eg-lenses { grid-column:1 / -1; order:3; } .x .eg-fan > :last-child { grid-column:1 / -1; order:4; }
+  .x .eg-lens span.mu { display:none; }
+  .x .eg-rd { width:38px; height:38px; font-size:13px; } .x .eg-rd small { display:none; }
+  .x .eg-chip { font-size:11.5px; }
+}
+</style>
+
+<main>
+  <nav class="top"><a href="../../research/#videos">← Video feed</a><a href="https://www.youtube.com/watch?v=xxf6D9jynFw" target="_blank" rel="noopener">▶ Watch the video (AI LABS, 15:54)</a></nav>
+  <h1>Elephant-Goldfish Model: plans reviewed by agents that never saw your chat</h1>
+  <p class="lede">Google's open-source EGM plugin splits planning in two. An <b>Elephant</b> session that knows everything talks the feature through with you and writes the spec. Then <b>Goldfish</b> subagents with zero context tear it apart before any code exists. The running example is the one AI LABS used: a page in their fashion marketplace that shows each seller which sizes sell, which are sold out, and when to restock.</p>
+  <div class="ctl"><div class="seg" id="steps"></div><button type="button" class="play" id="play">▶ Play all</button></div>
+  <div class="x" id="stage"></div>
+  <div class="cap" id="cap" aria-live="polite"></div>
+
+  <h2>What this means for us</h2>
+  <div class="eg-wrap"><table class="eg-tbl">
+    <thead><tr><th>EGM idea</th><th>What to do in the factory</th></tr></thead>
+    <tbody>
+      <tr><td>Goldfish never see the chat</td><td>Make every reviewer agent start from the spec and the repo only. Never fork the planner's conversation into the reviewer, or it will just agree with itself.</td></tr>
+      <tr><td>One review subagent fans out to six lenses</td><td>Give the reviewers an orchestrator subagent that merges their output into one report. The main agent then reads one file instead of six transcripts.</td></tr>
+      <tr><td>The human owns the decisions</td><td>The report is noisy on purpose. Route it to the Human inbox as a triage list (keep / drop per finding), not as an auto-apply patch.</td></tr>
+      <tr><td>Bootstrap writes per-folder READMEs</td><td>READMEs aren't loaded automatically. Put a short <code>CLAUDE.md</code> (or <code>AGENTS.md</code>) next to each one that points to it, or the contracts will go unread.</td></tr>
+      <tr><td>Drift report after build</td><td>Run it as a scheduled check across the whole repo. It caught real bugs (sold products could be deleted) that a per-feature review would have missed.</td></tr>
+      <tr><td>Not for small fixes</td><td>Google says it isn't worth it for a change the agent can make in one pass. Gate it on cost-of-failure: big, expensive features only.</td></tr>
+      <tr><td>Check the generated CLAUDE.md</td><td>On install, Claude wrote from memory that subagents can't start subagents. Current Claude Code can, and the review needs that, so fix the line if it shows up.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Sources</h2>
+  <ul class="eg-src">
+    <li><a href="https://www.youtube.com/watch?v=xxf6D9jynFw" target="_blank" rel="noopener">EGM: Google's New Way To Use Claude Code Is Insane</a>, AI LABS (YouTube, 15:54)</li>
+    <li><a href="https://github.com/google/elephant-goldfish-model" target="_blank" rel="noopener">google/elephant-goldfish-model</a>: README with the skills, the Goldfish personas and the install commands</li>
+    <li><a href="https://medium.com/@drensin/elephants-goldfish-and-the-new-golden-age-of-software-engineering-c33641a48874" target="_blank" rel="noopener">Elephants, Goldfish, and the New Golden Age of Software Engineering</a>, Dave Rensin: the essay behind the method</li>
+    <li><a href="https://egm.dev" target="_blank" rel="noopener">egm.dev</a>: project site with the one-line install prompt</li>
+  </ul>
+</main>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const on = (el, sel) => el.querySelectorAll(sel).forEach(n => n.classList.add('on'));
+  const count = (node, to, ms, fmt = v => v) => { if (reduced) { node.textContent = fmt(to); return; } const t0 = performance.now(); const f = now => { const p = Math.min(1, (now - t0) / ms); node.textContent = fmt(Math.round(to * p)); if (p < 1) requestAnimationFrame(f); }; requestAnimationFrame(f); };
+  const win = url => `<div class="win-h"><i></i><i></i><i></i><span>${url}</span></div>`;
+  const type = (t, node, s, at, step = 40) => [...s].forEach((_, i) => t(() => { node.textContent = s.slice(0, i + 1); }, at + i * step));
+
+  const SCENES = [
+    { k:'Two memories',
+      cap:'<p><b>The Elephant remembers everything. The Goldfish only sees the plan and your code.</b> Your chat with the main agent goes to the Elephant and is walled off from every Goldfish, so nothing you said can sway the review.</p><small>Elephants are the skills (brainstorm, draft, review). Goldfish are the subagent files that get installed in <code>.claude/agents/</code>.</small>',
+      html:() => `<div class="eg-mem">
+        <div class="vc eg-ani eg-e"><div class="eg-hd"><span class="eg-ic">🐘</span>Elephant<small>remembers everything</small></div>
+          <div class="eg-chips">${['your chat', 'project history', 'how the app is built', 'what sellers use it for', 'critical user journeys'].map(c => `<span class="eg-chip eg-b vi" data-c>${c}</span>`).join('')}</div></div>
+        <div class="eg-mid">
+          <span class="eg-bub" style="top:28px">"keep it simple"</span>
+          <span class="eg-bub" style="top:84px">"sellers want restock tips"</span>
+          <span class="eg-bub" style="top:140px">"we discussed this"</span>
+          <div class="eg-wall"></div><span class="eg-lock">🔒</span></div>
+        <div class="vc eg-ani eg-g"><div class="eg-hd"><span class="eg-ic">🐠</span>Goldfish<small>zero context</small></div>
+          <div class="eg-chips"><span class="eg-chip eg-o vi" data-g>plan.md</span><span class="eg-chip eg-o vi" data-g>your app's code</span><span class="eg-chip eg-x vi" data-g>the chat</span><span class="eg-chip eg-x vi" data-g>the planner's opinions</span></div></div>
+      </div>`,
+      run:(t, el) => {
+        el.querySelectorAll('[data-c]').forEach((c, i) => t(() => c.classList.add('on'), 200 + i * 220));
+        const bs = el.querySelectorAll('.eg-bub');
+        t(() => { el.querySelector('.eg-wall').classList.add('on'); el.querySelector('.eg-lock').classList.add('on'); }, 1300);
+        bs.forEach((b, i) => { t(() => b.classList.add('go'), 1500 + i * 350); t(() => b.classList.replace('go', 'dead'), 2600 + i * 350); });
+        el.querySelectorAll('[data-g]').forEach((c, i) => t(() => c.classList.add('on'), 3000 + i * 220));
+        return 4200;
+      } },
+
+    { k:'Why not plan mode',
+      cap:'<p><b>A plan checked in the same chat that wrote it just agrees with itself.</b> Google\'s point: models stick to their own wrong ideas and go along with what you want. A fresh reader with no history catches what the author can\'t see.</p><small>These three objections come from the concept brief the Goldfish wrote for the seller-insights page in the video.</small>',
+      html:() => `<div class="eg-vs">
+        <div class="vc">${win('plan mode · same chat')}<div class="eg-chat">
+          <div class="eg-msg eg-u vi" data-s="1">Add a size-performance page for sellers</div>
+          <div class="eg-msg eg-a vi" data-s="2">Here's the plan: size sell-through, sold-out list, restock tips.</div>
+          <div class="eg-msg eg-u vi" data-s="3">Review it for problems?</div>
+          <div class="eg-msg eg-ok vi" data-s="4">✓ Looks good. It matches everything we discussed.</div></div>
+          <div class="eg-foot"><span class="mu">issues found</span><span class="eg-big">0</span></div></div>
+        <div class="vc">${win('goldfish · fresh context')}<div class="eg-plan">
+          <div class="eg-pl"><span class="mono mu">1</span><span class="eg-ln" style="--w:70%"></span></div>
+          <div class="eg-pl" data-f><span class="mono mu">2</span><span class="eg-ln" style="--w:85%"></span><span class="eg-fl">⚑ The seed data can't produce correct insights</span></div>
+          <div class="eg-pl"><span class="mono mu">3</span><span class="eg-ln" style="--w:55%"></span></div>
+          <div class="eg-pl" data-f><span class="mono mu">4</span><span class="eg-ln" style="--w:75%"></span><span class="eg-fl">⚑ "restocked" is never defined</span></div>
+          <div class="eg-pl" data-f><span class="mono mu">5</span><span class="eg-ln" style="--w:65%"></span><span class="eg-fl">⚑ View tracking adds a public write path</span></div>
+          <div class="eg-pl"><span class="mono mu">6</span><span class="eg-ln" style="--w:45%"></span></div></div>
+          <div class="eg-foot"><span class="mu">issues found</span><span class="eg-big co eg-n">0</span></div></div>
+      </div>`,
+      run:(t, el) => {
+        [1, 2, 3, 4].forEach((s, i) => t(() => on(el, `[data-s="${s}"]`), 200 + i * 550));
+        const fs = el.querySelectorAll('[data-f]'), n = el.querySelector('.eg-n');
+        fs.forEach((f, i) => t(() => { f.classList.add('flag'); n.textContent = i + 1; }, 2700 + i * 600));
+        return 4600;
+      } },
+
+    { k:'Bootstrap',
+      cap:'<p><b>Before planning anything, the Elephant learns the app: one README contract per code folder.</b> In the video, <code>/egm-bootstrap</code> wrote 28 new READMEs plus a section in the root README. Folders with no code (<code>public/</code>, <code>specs/</code>) were skipped.</p><small>Above 15 folders it asks first, because each one costs subagents. READMEs are for humans, so Claude won\'t read them unless a CLAUDE.md points it there.</small>',
+      html:() => `<div><div class="eg-boot">
+        <div class="vc eg-term">${win('claude')}<div class="eg-tb">
+          <div><span class="co">›</span> <span class="eg-ty"></span></div>
+          <div class="vi yl" data-s="1">Tree has &gt;15 directories. Map them all?</div>
+          <div class="vi" data-s="2"><span class="co">›</span> yes</div>
+          <div class="vi gr" data-s="4">● <span class="eg-n">0</span> new README.md contracts</div></div></div>
+        <div class="vc"><div class="eg-hd"><span class="eg-ic">📁</span>my-project<small>3 parallel workers</small></div><div class="eg-tree">
+          ${[['app/', '25 contracts', 1], ['components/', '1 contract', 1], ['lib/', '1 contract', 1], ['lib/actions/', '1 contract', 1], ['public/', 'no code · skipped', 0], ['specs/', 'no code · skipped', 0], ['README.md', 'section added', 1]]
+            .map(([f, tag, ok]) => `<div class="eg-row"><span>${f}</span><span class="eg-tag pill ${ok ? 'gr' : 'mu'}">${ok ? '✓ ' : ''}${tag}</span></div>`).join('')}
+        </div></div></div>
+        <div class="vc eg-warn vi" data-s="5"><span class="yl">⚠</span><span>Claude Code doesn't read READMEs on its own. The fix in the video: a <b>CLAUDE.md next to every README</b> that tells it to read the contract (AGENTS.md for Codex).</span></div></div>`,
+      run:(t, el) => {
+        type(t, el.querySelector('.eg-ty'), '/egm:egm-bootstrap', 150, 35);
+        t(() => on(el, '[data-s="1"]'), 900); t(() => on(el, '[data-s="2"]'), 1400);
+        const rows = el.querySelectorAll('.eg-row');
+        rows.forEach((r, i) => { t(() => r.classList.add('scan'), 1700 + i * 330); t(() => { r.classList.remove('scan'); r.classList.add('done'); }, 1950 + i * 330); });
+        t(() => { on(el, '[data-s="4"]'); count(el.querySelector('.eg-n'), 28, 900); }, 1800);
+        t(() => on(el, '[data-s="5"]'), 4300);
+        return 5000;
+      } },
+
+    { k:'Brainstorm → draft',
+      cap:'<p><b>The Elephant asks until the problem is clear, then writes the spec one approved section at a time.</b> <code>/egm-brainstorm</code> produces <code>concepts_brief.md</code>. <code>/egm-draft</code> turns it into the design doc and waits for your OK after each part, so you can steer before the next one builds on it.</p><small>Critical user journeys are written so tests can be written against them. "Alternatives considered" lists the options that weren\'t picked and why.</small>',
+      html:() => `<div><div class="eg-flow">
+        <div class="vc"><div class="eg-hd"><span class="eg-ic">🐘</span>brainstorm</div><div class="eg-q">
+          ${['Which sizes count as sold out?', 'What triggers a restock tip?', 'Track product views too?', 'Who sees this page?'].map(q => `<div class="eg-msg eg-a vi" data-q>${q}</div>`).join('')}</div></div>
+        <div class="eg-arr">→</div>
+        <div class="vc vi" data-s="b"><div class="eg-hd"><span class="eg-ic">📄</span>concepts_brief.md</div><div class="eg-doc">
+          <div class="mu" style="font-size:12.5px">the feature · what research found · what stands in the way · what has to be done</div>
+          <div class="pill co" style="justify-self:start">6 goldfish reviewed it</div></div></div>
+        <div class="eg-arr">→</div>
+        <div class="vc"><div class="eg-hd"><span class="eg-ic">📐</span>design draft</div><div class="eg-doc">
+          ${['Problem & scope', 'Critical user journeys', 'Technical plan', 'Alternatives considered', 'Step-by-step plan'].map(s => `<div class="eg-sec">${s}<span class="eg-ck">approve?</span></div>`).join('')}</div></div>
+        </div>
+        <div class="eg-path vi" data-s="p"><span class="pill mono">docs/designs/seller-insights.md · <span class="yl">in review</span></span></div></div>`,
+      run:(t, el) => {
+        el.querySelectorAll('[data-q]').forEach((q, i) => t(() => q.classList.add('on'), 150 + i * 300));
+        t(() => on(el, '[data-s="b"]'), 1500);
+        el.querySelectorAll('.eg-sec').forEach((s, i) => {
+          t(() => s.classList.add('run'), 2000 + i * 450);
+          t(() => { s.classList.replace('run', 'on'); s.querySelector('.eg-ck').textContent = '✓ approved'; }, 2350 + i * 450);
+        });
+        t(() => on(el, '[data-s="p"]'), 4500);
+        return 5200;
+      } },
+
+    { k:'Goldfish swarm',
+      cap:'<p><b>One review subagent fans out to six fresh Goldfish and hands you a single report.</b> Each lens reads only the spec and the code. Merging their reports inside that one subagent keeps them out of the main agent\'s context.</p><small>Lens names are the personas in the repo\'s <code>agents/</code> folder; the questions are how the video describes them. The context bar is the video\'s own illustration, not a measurement.</small>',
+      html:() => `<div class="eg-fan">
+        <div class="vc eg-node vi" data-s="1"><span class="eg-ic">📐</span><b>seller-insights.md</b><span class="mu">the spec</span></div>
+        <div class="vc eg-node vi" data-s="2" id="eg-orc"><span class="eg-ic">🐠</span><b>review</b><span class="mu">1 subagent</span></div>
+        <div class="eg-lenses">
+          ${[['Zoom Out', 'Is there an easier way? Does the app already do this?'], ['Naive Reader', 'Does it make sense to someone new to the app?'], ['Tech Lead', 'What breaks when many people use it at once?'], ['Design Critic', 'Can a model build it without guessing?'], ['Structural Validator', 'Is the doc set up correctly?'], ['Style Editor', 'Is it written clearly?']]
+            .map(([n, q]) => `<div class="vc eg-lens"><span>🐠</span><span><b>${n}</b><br><span class="mu">${q}</span></span><span class="eg-ck">✓</span></div>`).join('')}
+        </div>
+        <div><div class="vc eg-node vi" data-s="4"><span class="eg-ic">🧑‍💻</span><b>You</b><span class="gr">● 1 merged report</span></div>
+          <div class="vc eg-ctx vi" data-s="4"><span>Main agent context <b class="gr eg-pc">0%</b></span><div class="eg-bar"><i></i></div><span class="mu">not 84% from six raw reports</span></div></div>
+      </div>`,
+      run:(t, el) => {
+        t(() => on(el, '[data-s="1"]'), 100); t(() => on(el, '[data-s="2"]'), 500);
+        const orc = el.querySelector('#eg-orc'); t(() => orc.classList.add('run'), 800);
+        const ls = el.querySelectorAll('.eg-lens');
+        ls.forEach((l, i) => { t(() => l.classList.add('run'), 1000 + i * 180); t(() => l.classList.replace('run', 'on'), 2200 + i * 260); });
+        t(() => { orc.classList.remove('run'); on(el, '[data-s="4"]'); el.querySelector('.eg-bar i').style.width = '12%'; count(el.querySelector('.eg-pc'), 12, 900, v => v + '%'); }, 3900);
+        return 5000;
+      } },
+
+    { k:'Review rounds',
+      cap:'<p><b>The review runs in five rounds, numbered 5 to 9; after each one you ask for changes or move on.</b> Each round writes its report and patches the spec. When you end the review, the status changes from <i>in review</i> to <i>proposed</i>.</p><small>The output is noisy on purpose: you keep the useful notes and drop the rest. Repo pipeline: Zoom Out → Comprehension → Critic → Readiness.</small>',
+      html:() => `<div class="eg-rounds">
+        <div class="eg-track"><div class="eg-prog"></div>${[5, 6, 7, 8, 9].map((n, i) => `<div class="eg-rd">${n}${i === 0 ? '<small>Zoom Out</small>' : ''}</div>`).join('')}</div>
+        <div class="eg-panel">
+          <div class="eg-status"><span class="mu" style="font-size:13px">docs/designs/seller-insights.md</span>
+            <span class="pill eg-st">status: <span class="eg-stt">in review</span></span>
+            <span class="pill mono">reports: <span class="eg-rn">0</span>/5</span></div>
+          <div class="vc eg-rcard"><div class="eg-hd"><span class="eg-ic">🐠</span>Round <span class="eg-cur">5</span><small class="eg-sub">reading spec + code</small></div>
+            <div class="eg-find"><div class="eg-fi vi"><span class="gr">✓</span><span class="mu">finding accepted</span></div><div class="eg-fi vi"><span class="yl">!</span><span class="eg-ft">needs a decision from you</span></div><div class="eg-fi vi"><span class="gr">✓</span><span class="mu">finding accepted</span></div></div>
+            <div class="eg-btns"><span class="eg-btn" id="eg-ask">✎ Ask for changes</span><span class="eg-btn eg-pr" id="eg-nx">Next round →</span></div></div>
+        </div></div>`,
+      run:(t, el) => {
+        const rds = el.querySelectorAll('.eg-rd'), prog = el.querySelector('.eg-prog'), fi = el.querySelectorAll('.eg-fi');
+        const ask = el.querySelector('#eg-ask'), nx = el.querySelector('#eg-nx');
+        const step = 900;
+        rds.forEach((r, i) => {
+          const at = 200 + i * step;
+          t(() => { r.classList.add('run'); el.querySelector('.eg-cur').textContent = 5 + i; fi.forEach(f => f.classList.remove('on')); }, at);
+          fi.forEach((f, j) => t(() => f.classList.add('on'), at + 120 + j * 120));
+          const btn = i === 2 ? ask : nx;
+          t(() => btn.classList.add('press'), at + 620);
+          t(() => { btn.classList.remove('press'); r.classList.replace('run', 'on'); el.querySelector('.eg-rn').textContent = i + 1;
+            prog.style.width = `calc((100% - 48px) * ${i / 4})`; }, at + 800);
+        });
+        t(() => { const st = el.querySelector('.eg-st'); st.classList.add('prop'); el.querySelector('.eg-stt').textContent = 'proposed'; el.querySelector('.eg-sub').textContent = 'review finished'; }, 200 + 5 * step);
+        return 200 + 5 * step + 600;
+      } },
+
+    { k:'Drift report',
+      cap:'<p><b>After the build, the drift report checks the whole app against every contract.</b> In the video it checked 29 READMEs: 12 had no drift and 17 had findings, including real bugs. One example: shop owners could delete products that had already sold, though the contract says a sold product can only be archived.</p><small>It reports and you choose what to fix, the code or the spec. Other workflows mostly check one feature right after it is built.</small>',
+      html:() => `<div><div class="eg-drift">
+        <div class="vc eg-col"><div class="eg-hd"><span class="eg-ic">📜</span>README contracts</div><div class="eg-lines">
+          <div class="eg-li">checkout re-checks the price</div><div class="eg-li">orders: paid → shipped → delivered</div>
+          <div class="eg-li">sold products can only be archived</div><div class="eg-li">route table: sign-in per page</div></div></div>
+        <div class="vc eg-col"><div class="eg-hd"><span class="eg-ic">⌨️</span>live code</div><div class="eg-lines">
+          <div class="eg-li">checkout: uses the cart price</div><div class="eg-li">order status flow matches</div>
+          <div class="eg-li">lib/actions/selling.ts:287 deletes any product</div><div class="eg-li">app/: sign-in check per route</div></div></div>
+        <div class="eg-scan"></div></div>
+        <div class="eg-stats">
+          <div class="vc eg-stat vi" data-s="s"><b class="eg-a">0</b>READMEs checked</div>
+          <div class="vc eg-stat vi" data-s="s"><b class="gr eg-b">0</b>no drift</div>
+          <div class="vc eg-stat vi" data-s="s"><b class="yl eg-c">0</b>with findings</div></div></div>`,
+      run:(t, el) => {
+        t(() => el.querySelector('.eg-scan').classList.add('go'), 200);
+        const L = el.querySelectorAll('.eg-col:first-child .eg-li'), R = el.querySelectorAll('.eg-col:nth-child(2) .eg-li');
+        const bad = [0, 2];
+        L.forEach((l, i) => t(() => { const c = bad.includes(i) ? 'bad' : 'ok'; l.classList.add(c); R[i].classList.add(c); }, 500 + i * 480));
+        t(() => { on(el, '[data-s="s"]'); count(el.querySelector('.eg-a'), 29, 900); count(el.querySelector('.eg-b'), 12, 900); count(el.querySelector('.eg-c'), 17, 900); }, 2500);
+        return 3800;
+      } },
+  ];
+
+  const stage = $('stage'); let cur = 0, auto = false, timers = [];
+  const clear = () => { timers.forEach(clearTimeout); timers = []; };
+  $('steps').innerHTML = SCENES.map((s, i) => `<button type="button" data-i="${i}">${i + 1}. ${s.k}</button>`).join('');
+  function show(i) {
+    clear(); cur = i; const s = SCENES[i];
+    $('steps').querySelectorAll('button').forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
+    stage.innerHTML = s.html(); $('cap').innerHTML = s.cap;
+    const t = (fn, ms) => timers.push(setTimeout(fn, reduced ? 0 : ms));
+    const end = s.run(t, stage);
+    if (auto) t(() => i < SCENES.length - 1 ? show(i + 1) : stop(), end + 2500);
+  }
+  function stop() { auto = false; $('play').textContent = '▶ Play all'; }
+  $('steps').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { stop(); show(+b.dataset.i); } });
+  $('play').addEventListener('click', () => { if (auto) { stop(); clear(); return; } auto = true; $('play').textContent = '❚❚ Pause'; show(cur === SCENES.length - 1 ? 0 : cur); });
+  show(0);
+})();
+</script>
+</html>

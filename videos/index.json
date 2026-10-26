@@ -121,5 +121,23 @@
     "page": "2026-10-07-claude-code-software-factory-loop/",
     "slug": "claude-code-software-factory-loop",
     "transcript": true
+  },
+  {
+    "id": "xxf6D9jynFw",
+    "channel": "AI LABS",
+    "date": "2026-10-25",
+    "title": "EGM: Google's New Way To Use Claude Code Is Insane",
+    "summary": "Google's Elephant-Goldfish Model (EGM) is a spec-driven workflow where a context-rich main agent (the elephant) brainstorms and drafts a design doc with the user. Context-free sub-agents (the goldfish) then review it from several angles, such as simpler alternatives, scale issues, and whether the spec is clear enough to build from. The idea worth keeping is that reviewers should never see the planning chat, so they can't just agree with the planner. The workflow also has a drift report that compares per-folder READMEs against the code.",
+    "tags": [
+      "spec-driven-development",
+      "multi-agent-review",
+      "context-isolation",
+      "claude-code",
+      "planning"
+    ],
+    "score": 4,
+    "page": "2026-10-25-elephant-goldfish-model-context-free-review/",
+    "slug": "elephant-goldfish-model-context-free-review",
+    "transcript": true
   }
 ]
