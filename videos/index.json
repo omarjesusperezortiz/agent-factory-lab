@@ -139,5 +139,23 @@
     "page": "2026-10-25-elephant-goldfish-model-context-free-review/",
     "slug": "elephant-goldfish-model-context-free-review",
     "transcript": true
+  },
+  {
+    "id": "1kQ_1_QL5Es",
+    "channel": "AI LABS",
+    "date": "2026-10-28",
+    "title": "This Is Microsoft's New Plan To Fix Claude's Usage Limits",
+    "summary": "Microsoft's Token Economizer is a Claude Code/Codex plugin that learns from your past sessions to cut token use: it records repeated mistakes as 'micro skills', disables tools unused across sessions, and nudges the agent when it gets stuck. Microsoft reports 23-31% lower cost on 277 bugs with no loss in fixes, though it costs more at first and only pays off after about six tasks per project. The idea worth keeping is to treat wasted tokens as a feedback loop: mine session history for repeated failures and unused tool definitions, then feed them back as project facts and pruned tool sets.",
+    "tags": [
+      "token-economy",
+      "claude-code",
+      "context-management",
+      "tool-pruning",
+      "agent-memory"
+    ],
+    "score": 4,
+    "page": "2026-10-28-microsoft-token-economizer-session-learning/",
+    "slug": "microsoft-token-economizer-session-learning",
+    "transcript": true
   }
 ]
