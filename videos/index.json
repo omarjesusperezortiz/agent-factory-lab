@@ -157,5 +157,23 @@
     "page": "2026-10-28-microsoft-token-economizer-session-learning/",
     "slug": "microsoft-token-economizer-session-learning",
     "transcript": true
+  },
+  {
+    "id": "S49gppZl8H0",
+    "channel": "AI LABS",
+    "date": "2026-10-30",
+    "title": "Anthropic Just Released A New System For Using Claude Code",
+    "summary": "Anthropic's Claude Code team claims that as agents write far more code, the bottleneck is review, so they front-load verification with evals, use a separate reviewer agent, and tier checks by risk. The video turns this into a workflow of skills: write-eval, a builder/verifier/reviewer loop with fresh-context subagents, a review.md of learned rules, a risk classifier, a first-time-user agent, and a git-based fix-a-bug skill. The idea worth keeping is to cap builder/reviewer loops (rethink after 3 rounds, review only the latest diff, name the problem class), since about 59% of reviewer findings were repeats.",
+    "tags": [
+      "review-loops",
+      "evals",
+      "claude-code",
+      "multi-agent-orchestration",
+      "verification"
+    ],
+    "score": 5,
+    "page": "2026-10-30-claude-code-team-review-loop-system/",
+    "slug": "claude-code-team-review-loop-system",
+    "transcript": true
   }
 ]
