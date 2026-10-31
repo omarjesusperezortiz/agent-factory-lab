@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How the Claude Code team checks what agents build</title>
+<style>
+:root { --bg:#f4f4f2; --fg:#151515; --muted:#666; --accent:#c4552f; --line:#ddd; --panel:#fff;
+  --sans:"Inter", ui-sans-serif, system-ui, sans-serif; --mono:"JetBrains Mono", ui-monospace, Menlo, monospace; color-scheme:light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#0b0d0e; --fg:#ececec; --muted:#9a9a9a; --accent:#e58a68; --line:#262a2c; --panel:#141719; color-scheme:dark; } }
+:root[data-theme="dark"] { --bg:#0b0d0e; --fg:#ececec; --muted:#9a9a9a; --accent:#e58a68; --line:#262a2c; --panel:#141719; color-scheme:dark; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.55 var(--sans); }
+main { max-width:1180px; margin:0 auto; padding:24px 16px 64px; display:grid; gap:18px; }
+a { color:var(--accent); }
+.top { display:flex; gap:16px; flex-wrap:wrap; font-size:14px; }
+h1 { margin:0; font-size:28px; letter-spacing:-.02em; } .lede { color:var(--muted); max-width:72ch; margin:0; }
+h2 { margin:22px 0 4px; font-size:19px; }
+.ctl { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+.seg { display:inline-flex; flex-wrap:wrap; border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+.seg button { background:var(--panel); border:0; border-right:1px solid var(--line); padding:6px 12px; cursor:pointer; color:var(--muted); font:inherit; font-size:13px; }
+.seg button[aria-pressed="true"] { color:var(--fg); background:color-mix(in srgb, var(--accent) 14%, var(--panel)); }
+.play { font:inherit; font-size:13px; font-weight:600; background:var(--accent); color:var(--bg); border:0; border-radius:8px; padding:7px 13px; cursor:pointer; }
+.cap { border-left:3px solid var(--accent); padding:4px 0 4px 14px; max-width:80ch; } .cap p { margin:0 0 4px; } .cap small { color:var(--muted); }
+table.tk { border-collapse:collapse; width:100%; font-size:14px; }
+table.tk th, table.tk td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
+table.tk th { color:var(--muted); font-weight:600; }
+.wrap { overflow-x:auto; }
+code { font-family:var(--mono); font-size:.9em; }
+ol.src { margin:0; padding-left:20px; color:var(--muted); } ol.src li { margin:4px 0; }
+
+/* ---- stage: always dark, its own tokens; every class is prefixed .x ---- */
+.x { --c:#d97757; --card:#1c1c1c; --card2:#232323; --ln:#2e2e2e; --tx:#ececec; --mu:#8d8d8d; --gr:#7bd88f; --yl:#e8c468; --rd:#f0716a;
+  background:#0e0e0e; color:var(--tx); border:1px solid #222; border-radius:14px; min-height:440px; padding:26px; position:relative; overflow:hidden;
+  display:grid; align-content:center; }
+.x .vc { background:var(--card); border:1px solid var(--ln); border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,.45); }
+.x .vi { opacity:0; transform:translateY(10px); transition:opacity .5s, transform .5s; } .x .vi.on { opacity:1; transform:none; }
+.x .row { display:flex; gap:22px; align-items:center; justify-content:center; flex-wrap:wrap; }
+.x .mu { color:var(--mu); } .x .co { color:var(--c); } .x .gr { color:var(--gr); } .x .yl { color:var(--yl); } .x .rd { color:var(--rd); } .x .mono { font-family:var(--mono); }
+.x .pill { display:inline-flex; align-items:center; gap:8px; background:var(--card2); border:1px solid var(--ln); border-radius:99px; padding:6px 14px; font-weight:600; font-size:14px; }
+.x .win-h { display:flex; align-items:center; gap:6px; padding:9px 12px; border-bottom:1px solid var(--ln); }
+.x .win-h i { width:9px; height:9px; border-radius:50%; background:#ff5f57; } .x .win-h i:nth-child(2) { background:#febc2e; } .x .win-h i:nth-child(3) { background:#28c840; }
+.x .win-h span { margin:0 auto; font:11px var(--mono); color:var(--mu); }
+.x .lbl { font:600 11px var(--mono); letter-spacing:.08em; text-transform:uppercase; color:var(--mu); }
+
+/* scene 1: reframe + volume */
+.x .s1 { display:grid; gap:20px; justify-items:center; }
+.x .s1-q { display:grid; gap:6px; text-align:center; font-size:22px; font-weight:700; min-height:68px; }
+.x .s1-q .old { color:var(--mu); transition:opacity .5s; text-decoration:line-through; text-decoration-color:transparent; }
+.x .s1-q .old.cut { text-decoration-color:var(--rd); opacity:.5; }
+.x .s1-row { display:flex; gap:18px; flex-wrap:wrap; justify-content:center; align-items:stretch; }
+.x .s1-n { width:min(300px,100%); padding:14px 18px; display:grid; gap:8px; }
+.x .s1-n b { font:700 30px var(--mono); }
+.x .s1-n .bar, .x .s1-t .bar { height:10px; background:#262626; border-radius:99px; overflow:hidden; display:flex; }
+.x .s1-n .bar i, .x .s1-t .bar i { display:block; height:100%; width:0; transition:width 1.4s ease; }
+.x .s1-t { width:min(360px,100%); padding:14px 18px; display:grid; gap:10px; font-size:13px; }
+.x .s1-t .r { display:grid; gap:4px; }
+
+/* scene 2: evals first */
+.x .s2 { display:flex; gap:22px; flex-wrap:wrap; justify-content:center; align-items:center; }
+.x .s2-tree { width:min(300px,100%); font:12.5px var(--mono); } .x .s2-tree .b { padding:12px 16px; display:grid; gap:8px; min-height:150px; align-content:start; }
+.x .s2-tree .f { display:flex; gap:8px; align-items:center; } .x .s2-tree .f span { color:var(--mu); font-size:11px; margin-left:auto; }
+.x .s2-flow { display:grid; gap:12px; justify-items:start; }
+.x .s2-st { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.x .s2-st .pill { color:var(--mu); transition:color .3s, border-color .3s, background .3s; } .x .s2-st .pill.on { color:var(--tx); border-color:var(--c); background:#2a1f1a; } .x .s2-st .pill.ok { color:#0e0e0e; background:var(--gr); border-color:var(--gr); }
+.x .s2-gate { padding:12px 16px; display:flex; gap:12px; align-items:center; font-size:13px; max-width:340px; transition:border-color .4s; }
+.x .s2-gate .ic { font-size:22px; } .x .s2-gate.bl { border-color:var(--rd); } .x .s2-gate.go { border-color:var(--gr); }
+
+/* scene 3: build-verify-review loop */
+.x .s3 { display:grid; gap:18px; justify-items:center; }
+.x .s3-chain { display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center; }
+.x .s3-n { width:118px; padding:12px 8px; display:grid; gap:4px; text-align:center; font-size:12px; color:var(--mu); border-color:var(--ln); transition:border-color .3s, transform .3s; position:relative; }
+.x .s3-n b { color:var(--tx); font-size:14px; } .x .s3-n em { font-style:normal; font-size:10.5px; color:var(--c); }
+.x .s3-n.run { border-color:var(--c); transform:translateY(-4px); }
+.x .s3-st { width:min(430px,100%); padding:12px 16px; font:12.5px var(--mono); display:grid; gap:4px; }
+.x .s3-st .big { font-size:13px; }
+
+/* scene 4: rules learned */
+.x .s4 { display:flex; gap:24px; flex-wrap:wrap; justify-content:center; align-items:center; }
+.x .s4-doc { width:min(340px,100%); font-size:12.5px; } .x .s4-doc .b { padding:12px 16px; display:grid; gap:8px; }
+.x .s4-doc .h { font:600 11px var(--mono); color:var(--c); letter-spacing:.06em; text-transform:uppercase; }
+.x .s4-doc .ln { color:var(--mu); } .x .s4-rule { color:var(--gr); font-family:var(--mono); min-height:20px; }
+.x .s4-log { width:min(320px,100%); display:grid; gap:8px; align-content:start; min-height:210px; }
+.x .s4-ev { padding:9px 12px; font-size:12.5px; display:flex; gap:8px; align-items:center; }
+.x .s4-ev .t { font:600 10.5px var(--mono); color:var(--mu); width:68px; flex:none; }
+
+/* scene 5: risk tiers */
+.x .s5 { display:grid; gap:18px; justify-items:center; }
+.x .s5-q { font-size:20px; font-weight:700; text-align:center; }
+.x .s5-tiers { display:flex; gap:14px; flex-wrap:wrap; justify-content:center; }
+.x .s5-t { width:210px; padding:14px; display:grid; gap:6px; font-size:12.5px; color:var(--mu); border-color:var(--ln); transition:border-color .3s, transform .3s; }
+.x .s5-t b { font-size:15px; color:var(--tx); } .x .s5-t.sel { transform:translateY(-5px); }
+.x .s5-t.lo.sel { border-color:var(--gr); } .x .s5-t.md.sel { border-color:var(--yl); } .x .s5-t.hi.sel { border-color:var(--rd); }
+.x .s5-m { width:min(460px,100%); padding:12px 16px; display:flex; gap:14px; align-items:center; font-size:13px; }
+.x .s5-m .segs { flex:1; display:grid; grid-auto-flow:column; gap:5px; } .x .s5-m .segs i { height:8px; border-radius:99px; background:#2a2a2a; transition:background .3s; } .x .s5-m .segs i.on { background:var(--c); }
+.x .s5-m .w { width:84px; text-align:right; font:600 12px var(--mono); }
+
+/* scene 6: stop the ping-pong */
+.x .s6 { display:grid; gap:18px; justify-items:center; }
+.x .s6-court { width:min(560px,100%); padding:14px 18px; display:grid; gap:10px; }
+.x .s6-pp { position:relative; height:44px; display:flex; justify-content:space-between; align-items:center; }
+.x .s6-pp .pad { width:94px; text-align:center; font-size:12px; padding:6px; border-radius:8px; background:var(--card2); border:1px solid var(--ln); }
+.x .s6-ball { position:absolute; top:15px; left:94px; width:14px; height:14px; border-radius:50%; background:var(--c); animation:s6b .5s linear infinite alternate; }
+.x .s6-ball.stop { animation:none; left:calc(50% - 7px); background:var(--gr); transition:left .3s; }
+@keyframes s6b { to { left:calc(100% - 108px); } }
+.x .s6-meta { display:flex; justify-content:space-between; font-size:13px; align-items:baseline; } .x .s6-meta b { font:700 26px var(--mono); }
+.x .s6-bar { height:12px; border-radius:99px; background:#262626; overflow:hidden; display:flex; }
+.x .s6-bar i { display:block; height:100%; width:0; transition:width 1s ease; } .x .s6-bar i.o { background:var(--yl); } .x .s6-bar i.n { background:var(--c); }
+.x .s6-rules { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+.x .s6-r { width:200px; padding:12px; display:grid; gap:4px; font-size:12.5px; color:var(--mu); } .x .s6-r b { color:var(--tx); font-size:13.5px; } .x .s6-r .nn { font:700 11px var(--mono); color:var(--c); }
+
+/* scene 7: find + undo */
+.x .s7 { display:flex; gap:22px; flex-wrap:wrap; justify-content:center; align-items:stretch; }
+.x .s7-p { width:min(420px,100%); padding-bottom:12px; display:grid; align-content:start; }
+.x .s7-p .b { padding:12px 16px; display:grid; gap:10px; font-size:12.5px; }
+.x .s7-chips { display:flex; gap:8px; flex-wrap:wrap; } .x .s7-chips .pill { font-size:12px; padding:4px 10px; }
+.x .s7-chips .pill.blk { color:var(--rd); border-color:#5a2b28; text-decoration:line-through; }
+.x .s7-find { display:grid; gap:6px; } .x .s7-find div { padding:6px 10px; background:var(--card2); border-radius:8px; }
+.x .s7-git { width:100%; height:130px; }
+.x .s7-git .ln { stroke:#444; stroke-width:2; fill:none; } .x .s7-git circle { fill:#444; transition:fill .4s; } .x .s7-git circle.ok { fill:var(--gr); } .x .s7-git circle.bad { fill:var(--rd); }
+.x .s7-git .rb { stroke:var(--c); stroke-width:2; fill:none; stroke-dasharray:6 5; opacity:0; transition:opacity .5s; } .x .s7-git .rb.on { opacity:1; }
+.x .s7-git text { fill:var(--mu); font:11px var(--mono); }
+@media (max-width:760px) {
+  .x { padding:18px 12px; min-height:0; }
+  .x .s1-q, .x .s5-q { font-size:17px; }
+  .x .s3-n { width:92px; font-size:11px; } .x .s3-n b { font-size:12.5px; }
+  .x .s5-t { width:100%; }
+  .x .s6-r { width:100%; }
+  .x .s6-pp .pad { width:80px; font-size:11px; }
+  .x .s2-st .pill { font-size:12px; padding:5px 10px; white-space:nowrap; }
+  .x .s4-ev .t { width:58px; }
+}
+@media (prefers-reduced-motion: reduce) { .x .s6-ball { animation:none; } }
+</style>
+
+<main>
+  <nav class="top"><a href="../../research/#videos">← Video feed</a><a href="https://www.youtube.com/watch?v=S49gppZl8H0" target="_blank" rel="noopener">▶ Watch the video (AI LABS, 15:58)</a></nav>
+  <h1>How the Claude Code team checks what agents build</h1>
+  <p class="lede">Agents write a lot of code and call the task done, then you find what they missed. AI LABS walks through the review system the Claude Code team described and turns it into a workflow you can copy: evals written first, a separate reviewer, a bounded build-review loop, rules that stick, risk-based strictness, and a fast way to find and undo mistakes. The team reports more than twice as many changes shipped, with the share they had to undo down by over 40%. The running example is one feature moving through every step.</p>
+  <div class="ctl"><div class="seg" id="steps"></div><button type="button" class="play" id="play">▶ Play all</button></div>
+  <div class="x" id="stage"></div>
+  <div class="cap" id="cap" aria-live="polite"></div>
+
+  <h2>What this means for us</h2>
+  <div class="wrap"><table class="tk">
+    <tr><th>Pattern from the video</th><th>How to apply it</th></tr>
+    <tr><td>Evals written and approved before any build</td><td>For each feature, write the requirements and a strict eval file first, and have a human approve both. Add a hook that blocks "done" until the evals pass. This is the "Evals" tab of the console, with the Human inbox as the approval step.</td></tr>
+    <tr><td>The builder never grades its own work</td><td>Run build, verify and review as separate sub-agents with fresh context windows, with the main agent only orchestrating. Keep a <code>state.md</code> that records the round and what is still failing.</td></tr>
+    <tr><td><code>review.md</code>, linked from <code>CLAUDE.md</code></td><td>Put what counts as a failure, severity, what to ignore and how to report in one file. The video says Claude doesn't read it by default, so link it from <code>CLAUDE.md</code> so every session loads it.</td></tr>
+    <tr><td>A "rules learned" section with a human gate</td><td>When the same problem shows up in a later round, or review keeps flagging a non-problem, propose a one-line rule. Add it only after approval. This is how the factory stops repeating itself across sessions.</td></tr>
+    <tr><td>Risk tier decides strictness</td><td>Ask "what happens to a customer if this breaks?" Low = looks wrong, medium = feature stops but nobody loses anything, high = money, lockout or someone else's data. Pass the tier to the eval step, so high-risk features get the strictest evals.</td></tr>
+    <tr><td>Cap the rounds, stop on repeats</td><td>Their rule is a rethink after 3 rounds, re-reviewing only what the last fix changed, and tagging each problem by kind. AI LABS stops its own loop at 5 rounds (each does more) or when the same problem survives 2 rounds of fixes. Pick numbers by cost per round.</td></tr>
+    <tr><td>Fresh first-time-user agent, plus branch per feature</td><td>After the evals pass, send an agent with no access to the code to use the live app on a temporary database. Keep one git branch per feature and a commit for every working version, so a bad change can be found and rolled back quickly.</td></tr>
+  </table></div>
+
+  <h2>Sources</h2>
+  <ol class="src">
+    <li><a href="https://www.youtube.com/watch?v=S49gppZl8H0" target="_blank" rel="noopener">AI LABS: "Anthropic Just Released A New System For Using Claude Code"</a> (transcript; the figures above are the video's own: 2,500 to over 30,000 changes a day, 59% of reviewer findings repeated from round one, one loop that ran over 50 rounds).</li>
+    <li>The video builds on an Anthropic article about the Claude Code team's review process (not linked in the video, so not checked here). The skills and prompts are shown on screen but distributed in AI LABS' paid community, so the prompts here are summarised, not copied.</li>
+  </ol>
+</main>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const on = (el, sel) => el.querySelectorAll(sel).forEach(n => n.classList.add('on'));
+  const count = (node, from, to, ms, fmt = v => v) => { if (reduced) { node.textContent = fmt(to); return; } const t0 = performance.now(); const f = now => { const p = Math.min(1, (now - t0) / ms); node.textContent = fmt(Math.round(from + (to - from) * p)); if (p < 1) requestAnimationFrame(f); }; requestAnimationFrame(f); };
+  const win = url => `<div class="win-h"><i></i><i></i><i></i><span>${url}</span></div>`;
+
+  const SCENES = [
+    /* 1 */
+    { k:'Ask what could break',
+      cap:'<p><b>Review is the step you can\'t skip, so the team changed the question and the timing.</b> Not "did someone read the code?" but "what could go wrong, and how do we catch it?", and the checks run while Claude builds instead of at the end.</p><small>Changes to review across Anthropic went from about 2,500 to over 30,000 a day in four months. Rushing the check just moves the time later, and it costs about twice as much.</small>',
+      html:() => `<div class="s1">
+        <div class="s1-q"><span class="old" id="s1o">Did someone read the code?</span><span class="vi" data-s="1">What could <span class="co">go wrong</span>, and how do we catch it?</span></div>
+        <div class="s1-row">
+          <div class="vc s1-n vi" data-s="2"><span class="lbl">Changes to review per day</span><b id="s1n">2,500</b><div class="bar"><i id="s1b" style="background:var(--c)"></i></div></div>
+          <div class="vc s1-t vi" data-s="3"><span class="lbl">Time cost of a rushed check</span>
+            <div class="r"><span>Check properly</span><div class="bar"><i class="s1w" data-w="50" style="background:var(--gr)"></i></div></div>
+            <div class="r"><span>Rush it: check, then fix what slipped through</span><div class="bar"><i class="s1w" data-w="50" style="background:var(--gr)"></i><i class="s1w" data-w="50" style="background:var(--rd)"></i></div></div></div>
+        </div></div>`,
+      run:(t, el) => {
+        t(() => el.querySelector('#s1o').classList.add('cut'), 300);
+        t(() => on(el, '[data-s="1"]'), 800);
+        t(() => { on(el, '[data-s="2"]'); count(el.querySelector('#s1n'), 2500, 30000, 1600, v => v.toLocaleString('en-US')); el.querySelector('#s1b').style.width = '100%'; }, 1500);
+        t(() => { on(el, '[data-s="3"]'); el.querySelectorAll('.s1w').forEach(b => { b.style.width = b.dataset.w + '%'; }); }, 3300);
+        return 5000;
+      } },
+
+    /* 2 */
+    { k:'Write the evals first',
+      cap:'<p><b>Give the agent a way to prove the work, and make a human approve it before anything is built.</b> Each feature gets a requirements file and a strict eval file, plus a mockup if it has a design. A hook stops the agent from calling the task done until the evals pass.</p><small>An eval is a fixed test that tells you whether the work is done, strict enough that bad work fails it. Without your review of the evals, nothing gets built.</small>',
+      html:() => `<div class="s2">
+        <div class="vc s2-tree vi" data-s="0">${win('specs/&lt;feature&gt;/')}<div class="b">
+          <div class="f vi" data-s="1">📄 RD.md <span>requirements</span></div>
+          <div class="f vi" data-s="2">🧪 eval.md <span>how to check it</span></div>
+          <div class="f vi" data-s="3">🖼 mockup.html <span>design to match</span></div></div></div>
+        <div class="s2-flow">
+          <div class="s2-st vi" data-s="4"><span class="pill s2-a">draft</span><span class="mu">›</span><span class="pill s2-b">in review</span><span class="mu">›</span><span class="pill s2-c">reviewed, ready to build</span></div>
+          <div class="vc s2-gate vi" data-s="4" id="s2g"><span class="ic" id="s2i">🔒</span><span id="s2t">Hook: the task can't be marked done until the evals pass.</span></div></div></div>`,
+      run:(t, el) => {
+        const A = el.querySelector('.s2-a'), B = el.querySelector('.s2-b'), C = el.querySelector('.s2-c'), g = el.querySelector('#s2g');
+        t(() => on(el, '[data-s="0"]'), 100);
+        [1, 2, 3].forEach(i => t(() => on(el, `[data-s="${i}"]`), 500 + i * 500));
+        t(() => { on(el, '[data-s="4"]'); A.classList.add('on'); }, 2400);
+        t(() => { g.classList.add('bl'); el.querySelector('#s2t').textContent = 'Agent tries to finish early: blocked.'; }, 3000);
+        t(() => { A.classList.remove('on'); B.classList.add('on'); el.querySelector('#s2t').textContent = 'Human reviews the evals and the mockups, changes anything, approves.'; g.classList.remove('bl'); }, 4000);
+        t(() => { B.classList.remove('on'); C.classList.add('ok'); g.classList.add('go'); el.querySelector('#s2i').textContent = '🔓'; el.querySelector('#s2t').textContent = 'Approved: now it can be built.'; }, 5300);
+        return 6300;
+      } },
+
+    /* 3 */
+    { k:'Build, verify, review',
+      cap:'<p><b>The agent that built it shouldn\'t be the one that reviews it, so each role gets a fresh context window.</b> A builder builds from the requirements, a verifier marks every eval passed or failed, and a reviewer hunts for what the evals missed using <code>review.md</code>. The main agent only runs the loop.</p><small>The loop stops only when every eval passes and the review finds nothing new. A decision it can\'t make alone comes back to you as a progress report.</small>',
+      html:() => `<div class="s3">
+        <div class="pill vi" data-s="1">main agent: orchestrator</div>
+        <div class="s3-chain vi" data-s="1">
+          <div class="vc s3-n"><b>Builder</b>from RD.md<em>fresh context</em></div><span class="mu">›</span>
+          <div class="vc s3-n"><b>Verifier</b>runs the evals<em>fresh context</em></div><span class="mu">›</span>
+          <div class="vc s3-n"><b>Reviewer</b>uses review.md<em>fresh context</em></div><span class="mu">↺</span></div>
+        <div class="vc s3-st vi" data-s="2"><span class="mu">state.md</span><span class="big" id="s3r">round 1</span><span id="s3f">still failing: …</span></div></div>`,
+      run:(t, el) => {
+        const ns = [...el.querySelectorAll('.s3-n')], R = el.querySelector('#s3r'), F = el.querySelector('#s3f');
+        const fails = [['3 evals', 'builder wrote it'], ['1 eval + 1 review finding', 'fixes applied'], ['nothing', 'all evals pass, review finds nothing new']];
+        t(() => on(el, '[data-s="1"]'), 100); t(() => on(el, '[data-s="2"]'), 500);
+        fails.forEach((f, r) => {
+          const b = 900 + r * 1900;
+          t(() => { R.textContent = 'round ' + (r + 1); F.textContent = 'still failing: ' + f[0]; }, b);
+          ns.forEach((n, i) => { t(() => n.classList.add('run'), b + 200 + i * 450); t(() => n.classList.remove('run'), b + 600 + i * 450); });
+        });
+        t(() => { R.innerHTML = '<span class="gr">✓ loop done</span> · round 3'; F.textContent = 'still failing: nothing'; }, 900 + 3 * 1900 - 300);
+        return 6900;
+      } },
+
+    /* 4 */
+    { k:'Rules that stick',
+      cap:'<p><b>Claude doesn\'t remember mistakes between sessions, so fix the instructions, not just the code.</b> <code>review.md</code> ends with a "rules learned over time" section. When the same problem comes back in a later round, the loop matches it to the earlier one and proposes a one-line rule, added only if you approve.</p><small>The same section takes rules the other way too: when review keeps flagging something that turns out not to be a real problem. The rule shown is an example, not from the video.</small>',
+      html:() => `<div class="s4">
+        <div class="vc s4-doc vi" data-s="0">${win('review.md')}<div class="b">
+          <div class="h">What counts as a failure</div><div class="ln">severity levels · what to ignore · how to report</div>
+          <div class="h">Rules learned over time</div><div class="s4-rule" id="s4r">…</div></div></div>
+        <div class="s4-log">
+          <div class="vc s4-ev vi" data-s="1"><span class="t">round 2</span><span>Finding: empty list shows a blank screen</span></div>
+          <div class="vc s4-ev vi" data-s="2"><span class="t">round 4</span><span class="yl">Same finding again: matched to the earlier one</span></div>
+          <div class="vc s4-ev vi" data-s="3"><span class="t">proposal</span><span>One-line rule? <b class="gr">You approve</b></span></div>
+          <div class="vc s4-ev vi" data-s="4"><span class="t">next feature</span><span class="gr">✓ not made again</span></div></div></div>`,
+      run:(t, el) => {
+        t(() => on(el, '[data-s="0"]'), 100);
+        t(() => on(el, '[data-s="1"]'), 700); t(() => on(el, '[data-s="2"]'), 1700); t(() => on(el, '[data-s="3"]'), 2700);
+        t(() => { el.querySelector('#s4r').textContent = '+ Every list needs an empty state.'; }, 3700);
+        t(() => on(el, '[data-s="4"]'), 4500);
+        return 5400;
+      } },
+
+    /* 5 */
+    { k:'Rate the risk',
+      cap:'<p><b>Check harder where a mistake can do more damage, and ask one question to find out where.</b> "What happens to a customer if this feature breaks?" A skill rates each feature low, medium or high before you build, and that rating is passed to the eval step.</p><small>Low only looks wrong. Medium stops a feature but nobody loses anything, so it can be fixed later. High loses money, locks someone out or shows another person\'s data, and can\'t be taken back.</small>',
+      html:() => `<div class="s5">
+        <div class="s5-q vi" data-s="0">What happens to a <span class="co">customer</span> if it breaks?</div>
+        <div class="s5-tiers">
+          <div class="vc s5-t lo vi" data-s="1"><b class="gr">Low</b>It only looks wrong.</div>
+          <div class="vc s5-t md vi" data-s="1"><b class="yl">Medium</b>A feature stops working, but nobody loses anything. Fixable later.</div>
+          <div class="vc s5-t hi vi" data-s="1"><b class="rd">High</b>Lost money, locked out, or someone else\'s data. Can\'t be undone.</div></div>
+        <div class="vc s5-m vi" data-s="2"><span>Eval strictness</span><div class="segs"><i></i><i></i><i></i><i></i></div><span class="w" id="s5w">–</span></div></div>`,
+      run:(t, el) => {
+        const T = [...el.querySelectorAll('.s5-t')], S = [...el.querySelectorAll('.segs i')], W = el.querySelector('#s5w');
+        t(() => on(el, '[data-s="0"]'), 100); t(() => on(el, '[data-s="1"]'), 700); t(() => on(el, '[data-s="2"]'), 1300);
+        [[0, 1, 'light'], [1, 2, 'standard'], [2, 4, 'strict']].forEach(([i, n, w], k) => {
+          t(() => { T.forEach((x, j) => x.classList.toggle('sel', j === i)); S.forEach((s, j) => s.classList.toggle('on', j < n)); W.textContent = w; }, 1900 + k * 1300);
+        });
+        return 5800;
+      } },
+
+    /* 6 */
+    { k:'Stop the ping-pong',
+      cap:'<p><b>Builder and reviewer don\'t know when to stop, so the loop needs three limits.</b> One change went back and forth more than 50 times, and about 59% of what the reviewer reported had been there since round one. After three rounds the reviewer stops listing problems and tells the builder to rethink the approach. After round one it checks only what the last fix changed, and it names the kind of each problem so the builder fixes that kind everywhere.</p><small>The team\'s limit is 3 rounds. AI LABS stops at 5, because each of its rounds builds, checks every eval in the browser and reviews the code, and also stops early if the same problem survives 2 fixes.</small>',
+      html:() => `<div class="s6">
+        <div class="vc s6-court vi" data-s="0">
+          <div class="s6-pp"><div class="pad">Builder</div><div class="s6-ball" id="s6b"></div><div class="pad">Reviewer</div></div>
+          <div class="s6-meta"><span class="mu">Rounds on one change</span><b id="s6n">0</b></div>
+          <div class="s6-bar"><i class="o" id="s6o"></i><i class="n" id="s6w"></i></div>
+          <div class="s6-meta" style="font-size:12px"><span class="yl">■ re-reported from round 1</span><span class="co">■ new</span></div></div>
+        <div class="s6-rules">
+          <div class="vc s6-r vi" data-s="1"><span class="nn">RULE 1</span><b>Rethink after 3 rounds</b>More of the same fix won't get there.</div>
+          <div class="vc s6-r vi" data-s="2"><span class="nn">RULE 2</span><b>Only check what changed</b>No re-reporting what's already been reported.</div>
+          <div class="vc s6-r vi" data-s="3"><span class="nn">RULE 3</span><b>Name the kind of problem</b>Fix that kind everywhere it shows up.</div></div></div>`,
+      run:(t, el) => {
+        t(() => on(el, '[data-s="0"]'), 100);
+        t(() => { count(el.querySelector('#s6n'), 0, 52, 1800); }, 600);
+        t(() => { el.querySelector('#s6o').style.width = '59%'; el.querySelector('#s6w').style.width = '41%'; }, 1200);
+        t(() => { const b = el.querySelector('#s6b'); b.classList.add('stop'); el.querySelector('#s6n').innerHTML = '<span class="gr">stop at 3</span>'; }, 3000);
+        [1, 2, 3].forEach(i => t(() => on(el, `[data-s="${i}"]`), 3200 + i * 500));
+        return 5600;
+      } },
+
+    /* 7 */
+    { k:'Find it, undo it',
+      cap:'<p><b>Some mistakes still get through, so you need a way to find them and a way to undo them fast.</b> A fresh agent that never saw the app uses it like a first-time customer, and it is blocked from reading the code, including through terminal commands, and works on a temporary database. Git gives each feature its own branch and a saved version at every working step, so the change that broke something can be found and rolled back.</p><small>The Claude Code team can undo almost anything they release within minutes, and that is what lets them read less.</small>',
+      html:() => `<div class="s7">
+        <div class="vc s7-p vi" data-s="0">${win('live app · first-time user')}<div class="b">
+          <div class="s7-chips"><span class="pill blk" id="s7a">src/ code</span><span class="pill blk" id="s7b">cat · grep</span><span class="pill gr">temporary database</span></div>
+          <div class="s7-find"><div class="vi" data-s="1">Stuck: no hint what to do on the first screen</div><div class="vi" data-s="2">Stuck: error with no way back</div></div></div></div>
+        <div class="vc s7-p vi" data-s="3"><div class="b"><span class="lbl">git · one branch per feature</span>
+          <svg class="s7-git" viewBox="0 0 400 130" aria-label="git history with a bad change rolled back">
+            <path class="ln" d="M10 100 H390"/><path class="ln" d="M110 100 C130 100 130 40 160 40 H300"/>
+            <circle class="ok" cx="30" cy="100" r="6"/><circle class="ok" cx="90" cy="100" r="6"/>
+            <circle id="s7c1" cx="170" cy="40" r="6"/><circle id="s7c2" cx="230" cy="40" r="6"/><circle id="s7c3" cx="290" cy="40" r="6"/>
+            <path class="rb" id="s7rb" d="M290 40 C250 40 230 70 170 40"/>
+            <text x="14" y="124">main</text><text x="200" y="22">feature branch</text></svg>
+          <div class="vi mono" data-s="4" style="font-size:12px"><span class="rd">✗ 3rd version broke it</span> → <span class="gr">roll back to the 2nd</span></div></div></div></div>`,
+      run:(t, el) => {
+        t(() => on(el, '[data-s="0"]'), 100);
+        t(() => { el.querySelector('#s7a').classList.add('on'); }, 500);
+        t(() => on(el, '[data-s="1"]'), 1000); t(() => on(el, '[data-s="2"]'), 1700);
+        t(() => on(el, '[data-s="3"]'), 2500);
+        ['#s7c1', '#s7c2'].forEach((c, i) => t(() => el.querySelector(c).setAttribute('class', 'ok'), 3000 + i * 400));
+        t(() => el.querySelector('#s7c3').setAttribute('class', 'bad'), 3900);
+        t(() => { on(el, '[data-s="4"]'); el.querySelector('#s7rb').classList.add('on'); }, 4500);
+        return 6200;
+      } },
+  ];
+
+  const stage = $('stage'); let cur = 0, auto = false, timers = [];
+  const clear = () => { timers.forEach(clearTimeout); timers = []; };
+  $('steps').innerHTML = SCENES.map((s, i) => `<button type="button" data-i="${i}">${i + 1}. ${s.k}</button>`).join('');
+  function show(i) {
+    clear(); cur = i; const s = SCENES[i];
+    $('steps').querySelectorAll('button').forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
+    stage.innerHTML = s.html(); $('cap').innerHTML = s.cap;
+    const t = (fn, ms) => timers.push(setTimeout(fn, reduced ? 0 : ms));
+    const end = s.run(t, stage);
+    if (auto) t(() => i < SCENES.length - 1 ? show(i + 1) : stop(), end + 2000);
+  }
+  function stop() { auto = false; $('play').textContent = '▶ Play all'; }
+  $('steps').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { stop(); show(+b.dataset.i); } });
+  $('play').addEventListener('click', () => { if (auto) { stop(); clear(); return; } auto = true; $('play').textContent = '❚❚ Pause'; show(cur === SCENES.length - 1 ? 0 : cur); });
+  show(0);
+})();
+</script>
+</html>
