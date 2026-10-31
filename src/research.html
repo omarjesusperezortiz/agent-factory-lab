@@ -761,8 +761,19 @@ body { padding:0; }
 @media (max-width:620px) { .rs-brand b { display:none; } .rs-cta { padding:7px 11px; } .rs-cta span { display:none; } .rs-nav > a, .rs-dd > button { padding:7px 9px; } .rs-menu { left:auto; right:-90px; } }
 
 /* topic filter on the article list */
-.rs-filtered #rsFeatured, .rs-filtered .rs-hero { display:none; }
-#rsListTitle a { font:12.5px var(--mono); color:var(--muted); margin-left:10px; }
+.rs-find input { width:100%; max-width:520px; padding:11px 14px; border-radius:10px; border:1px solid var(--line); background:var(--panel); color:var(--fg); font:inherit; font-size:15px; }
+.rs-find input:focus { outline:2px solid var(--accent); outline-offset:1px; }
+.rs-find { margin-top:10px; }
+.rs-chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.rs-chips a { display:inline-flex; gap:7px; align-items:center; padding:6px 13px; border-radius:999px; border:1px solid var(--line); background:var(--panel); color:var(--fg); text-decoration:none; font-size:13.5px; }
+.rs-chips a:hover { border-color:var(--edge); }
+.rs-chips a[aria-current="true"] { background:var(--accent); border-color:var(--accent); color:#14151b; }
+.rs-chips a span { font:12px var(--mono); opacity:.7; }
+.rs-sec { margin-top:30px; }
+.rs-sec .rs-h { margin-top:0; }
+.rs-sec .rs-blurb { color:var(--muted); font-size:14px; margin:2px 0 14px; max-width:70ch; }
+.rs-none { color:var(--muted); padding:30px 0; }
+.rs-filtered .rs-hero { display:none; }
 
 
 .rs-main .view > section[id] { scroll-margin-top:84px; }
@@ -987,6 +998,583 @@ body.rs-wide { --page-w:1472px; }
   .dz .dz-sub { width:62px; margin:-22px 0 0 -31px; font-size:10px; }
 }
 @media (prefers-reduced-motion: reduce) { .dz *, .dz *::before { animation:none !important; transition:none !important; } }
+
+/* Orchestration explainer (.ow): one batch of 6 tickets, ENG-418's worker crashes, in every scene; every class prefixed ow- */
+.ow, .ow * { box-sizing:border-box; }
+.ow-play { font:inherit; font-size:13px; font-weight:600; background:var(--accent); color:var(--bg); border:0; border-radius:8px; padding:7px 13px; cursor:pointer; }
+.ow-cap { border-left:3px solid var(--accent); padding:4px 0 4px 14px; max-width:80ch; } .ow-cap p { margin:0 0 4px; } .ow-cap small { color:var(--muted); }
+.ow { --c:#3ec7b4; --card:#1a1d1e; --card2:#22272a; --ln:#2d3436; --tx:#ececec; --mu:#8d9693; --gr:#7bd88f; --yl:#e8c468; --rd:#f0716a; --vi:#a99cf5;
+  background:#0d1112; color:var(--tx); border:1px solid #1f2628; border-radius:14px; min-height:470px; padding:24px; position:relative; overflow:hidden; display:grid; align-content:center; gap:18px; font-family:var(--sans); }
+.ow .ow-vc { background:var(--card); border:1px solid var(--ln); border-radius:12px; box-shadow:0 12px 30px rgba(0,0,0,.4); }
+.ow .ow-vi { opacity:0; transform:translateY(10px); transition:opacity .5s, transform .5s; } .ow .ow-vi.on { opacity:1; transform:none; }
+.ow .ow-row { display:flex; gap:20px; align-items:center; justify-content:center; flex-wrap:wrap; }
+.ow .ow-mu { color:var(--mu); } .ow .ow-mono { font-family:var(--mono); }
+.ow .ow-pl { display:inline-flex; align-items:center; gap:7px; background:var(--card2); border:1px solid var(--ln); border-radius:99px; padding:4px 11px; font-size:12.5px; white-space:nowrap; }
+/* the shared scorecard */
+.ow .ow-score { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; opacity:0; transition:opacity .5s; } .ow .ow-score.on { opacity:1; }
+.ow .ow-score .ow-pl b { font-family:var(--mono); }
+.ow .ow-score .good { border-color:#2f5a3a; color:var(--gr); } .ow .ow-score .meh { border-color:#5a4a1c; color:var(--yl); } .ow .ow-score .bad { border-color:#5a2a2a; color:var(--rd); }
+/* status pill used by several scenes */
+.ow .ow-st { justify-self:start; display:inline-block; font:600 10.5px var(--mono); border-radius:99px; padding:1px 8px; background:#2a3033; color:var(--mu); transition:background .3s, color .3s; white-space:nowrap; }
+.ow .ow-st.is-q { background:#2a3033; color:var(--mu); } .ow .ow-st.is-w { background:#16343a; color:var(--c); } .ow .ow-st.is-d { background:#1d3524; color:var(--gr); }
+.ow .ow-st.is-x { background:#3a1c1c; color:var(--rd); } .ow .ow-st.is-b { background:#3a321a; color:var(--yl); }
+
+/* 1 panes + spotlight */
+.ow .ow-panes { display:grid; grid-template-columns:repeat(3, minmax(0, 170px)); gap:12px; position:relative; }
+.ow .ow-pane { padding:0; overflow:hidden; font:11.5px var(--mono); transition:border-color .3s, opacity .3s; }
+.ow .ow-pane .ow-ph { display:flex; justify-content:space-between; align-items:center; padding:7px 9px; border-bottom:1px solid var(--ln); }
+.ow .ow-pane .ow-pb { padding:8px 9px; color:var(--mu); min-height:46px; display:grid; gap:4px; }
+.ow .ow-pane.lit { border-color:var(--c); box-shadow:0 0 0 3px rgba(62,199,180,.15), 0 12px 30px rgba(0,0,0,.4); }
+.ow .ow-pane.dim { opacity:.55; }
+.ow .ow-you { display:flex; gap:8px; align-items:center; font-size:12.5px; }
+.ow .ow-eye { width:26px; height:26px; border-radius:50%; background:var(--c); color:#0d1112; display:grid; place-items:center; font-weight:700; font-size:12px; }
+
+/* 2 tree vs mesh */
+.ow .ow-two { display:grid; grid-template-columns:repeat(2, minmax(0, 340px)); gap:16px; justify-content:center; }
+.ow .ow-pan { padding:12px; display:grid; gap:10px; }
+.ow .ow-pan h4 { margin:0; font-size:13px; display:flex; justify-content:space-between; align-items:center; gap:8px; }
+.ow .ow-pan svg { width:100%; height:150px; display:block; }
+.ow .ow-pan svg line { stroke:#3a4446; stroke-width:1.5; }
+.ow .ow-pan svg circle { fill:#22272a; stroke:#4a5658; stroke-width:1.5; transition:fill .3s, stroke .3s; }
+.ow .ow-pan svg circle.on { stroke:var(--c); } .ow .ow-pan svg circle.bad { stroke:var(--rd); fill:#3a1c1c; }
+.ow .ow-pan svg text { fill:var(--mu); font:10px var(--mono); text-anchor:middle; }
+.ow .ow-pan svg .ow-msg { fill:var(--vi); stroke:none; opacity:0; }
+.ow .ow-ctx { height:8px; border-radius:99px; background:#262c2e; overflow:hidden; } .ow .ow-ctx i { display:block; height:100%; width:0; background:var(--yl); transition:width 1.6s ease; }
+.ow .ow-task { display:flex; justify-content:space-between; font:11px var(--mono); color:var(--mu); }
+
+/* 3 ledger */
+.ow .ow-ledger { width:min(420px, 100%); padding:0; overflow:hidden; }
+.ow .ow-ledger .ow-lh, .ow .ow-ledger .ow-lr { display:grid; grid-template-columns:78px minmax(0,1fr) 92px 34px; gap:8px; align-items:center; padding:7px 12px; font-size:12px; }
+.ow .ow-ledger .ow-lh { font:10.5px var(--mono); text-transform:uppercase; letter-spacing:.06em; color:var(--mu); border-bottom:1px solid var(--ln); }
+.ow .ow-ledger .ow-lr { border-bottom:1px solid #22292b; transition:background .4s; } .ow .ow-ledger .ow-lr:last-child { border-bottom:0; }
+.ow .ow-ledger .ow-lr.flash { background:rgba(232,196,104,.08); }
+.ow .ow-ledger .ow-lr b { font:600 12px var(--mono); }
+.ow .ow-side { display:grid; gap:10px; width:200px; }
+.ow .ow-tick { padding:10px 12px; display:flex; gap:10px; align-items:center; font-size:12.5px; transition:border-color .3s; }
+.ow .ow-tick.on { border-color:var(--yl); }
+.ow .ow-clock { width:26px; height:26px; border-radius:50%; border:2px solid var(--mu); position:relative; flex:none; }
+.ow .ow-clock::after { content:""; position:absolute; left:50%; top:3px; width:2px; height:9px; background:var(--mu); transform-origin:50% 100%; margin-left:-1px; }
+.ow .ow-tick.on .ow-clock { border-color:var(--yl); } .ow .ow-tick.on .ow-clock::after { background:var(--yl); animation:owSweep 1s linear; }
+@keyframes owSweep { to { transform:rotate(360deg); } }
+
+/* 4 mayor */
+.ow .ow-mayor { padding:10px 14px; display:flex; gap:10px; align-items:center; font-size:13px; }
+.ow .ow-swarm { position:relative; width:min(360px, 100%); height:120px; }
+.ow .ow-pc { position:absolute; width:58px; padding:5px 4px; text-align:center; font:10px var(--mono); color:var(--mu); border-radius:9px; background:var(--card); border:1px solid var(--ln);
+  opacity:0; transform:scale(.5); transition:opacity .35s, transform .35s, border-color .3s; }
+.ow .ow-pc.on { opacity:1; transform:none; } .ow .ow-pc.bad { border-color:var(--rd); color:var(--rd); } .ow .ow-pc.gone { opacity:.22; transform:scale(.92); } /* merged: the worker is thrown away */
+.ow .ow-queue { width:300px; max-width:100%; padding:10px 12px; display:grid; gap:8px; font-size:12px; }
+.ow .ow-belt { display:flex; flex-wrap:wrap; gap:6px; min-height:24px; align-items:center; }
+.ow .ow-pr { font:600 10.5px var(--mono); background:#1d3524; color:var(--gr); border-radius:6px; padding:3px 7px; opacity:0; transform:translateX(-10px); transition:opacity .35s, transform .35s; } .ow .ow-pr.on { opacity:1; transform:none; }
+
+/* 5 checkpoints */
+.ow .ow-tl { width:min(600px, 100%); padding:14px 16px; display:grid; gap:14px; }
+.ow .ow-steps { display:grid; grid-template-columns:repeat(6, minmax(0, 1fr)); gap:6px; }
+.ow .ow-s { display:grid; gap:6px; justify-items:center; font:10.5px var(--mono); color:var(--mu); text-align:center; }
+.ow .ow-s i { display:block; width:100%; height:10px; border-radius:99px; background:#262c2e; transition:background .3s; }
+.ow .ow-s.on i { background:var(--c); } .ow .ow-s.bad i { background:var(--rd); } .ow .ow-s.wait i { background:var(--vi); }
+.ow .ow-s .ow-flag { font-size:12px; color:var(--gr); opacity:0; transition:opacity .3s; } .ow .ow-s.cp .ow-flag { opacity:1; }
+.ow .ow-cmp { display:grid; gap:7px; font-size:12px; }
+.ow .ow-cmp div { display:grid; grid-template-columns:150px minmax(0,1fr) 58px; gap:10px; align-items:center; }
+.ow .ow-cmp span.ow-bar { height:9px; border-radius:99px; background:#262c2e; overflow:hidden; } .ow .ow-cmp span.ow-bar i { display:block; height:100%; width:0; transition:width .9s ease; }
+
+/* 6 cloud sandboxes */
+.ow .ow-cloud { width:min(470px, 100%); padding:14px; border-radius:22px; border-style:dashed; display:grid; gap:10px; }
+.ow .ow-boxes { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px; }
+.ow .ow-box { padding:8px; border-radius:9px; background:#14191a; border:1px solid var(--ln); font:11px var(--mono); display:grid; gap:5px; opacity:.25; transition:opacity .4s, border-color .3s; }
+.ow .ow-box.on { opacity:1; } .ow .ow-box.bad { border-color:var(--rd); }
+.ow .ow-loop { padding:10px 12px; font-size:12.5px; display:grid; gap:4px; width:180px; }
+
+/* 7 staircase */
+.ow .ow-stairs { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:10px; align-items:end; width:min(680px, 100%); }
+.ow .ow-step { display:grid; gap:8px; align-content:end; }
+.ow .ow-step .ow-blk { padding:10px; font-size:12px; display:grid; gap:4px; border-radius:10px 10px 4px 4px; opacity:.3; transition:opacity .4s, border-color .3s; }
+.ow .ow-step .ow-blk b { font-size:13px; }
+.ow .ow-step .ow-pain { font-size:11.5px; color:var(--yl); opacity:0; transition:opacity .4s; min-height:30px; }
+.ow .ow-step.on .ow-blk { opacity:1; } .ow .ow-step.on .ow-pain { opacity:1; }
+.ow .ow-step.here .ow-blk { border-color:var(--c); box-shadow:0 0 0 3px rgba(62,199,180,.15); }
+.ow .ow-step.next .ow-blk { border-style:dashed; border-color:var(--mu); }
+.ow .ow-cost { height:6px; border-radius:99px; background:linear-gradient(90deg, #2f5a3a, var(--yl), var(--rd)); width:0; transition:width 1.6s ease; }
+
+@media (max-width:760px) {
+  .ow { padding:16px 12px; min-height:0; }
+  .ow .ow-panes { grid-template-columns:repeat(2, minmax(0,1fr)); }
+  .ow .ow-two { grid-template-columns:minmax(0,1fr); }
+  .ow .ow-ledger .ow-lh, .ow .ow-ledger .ow-lr { grid-template-columns:64px minmax(0,1fr) 80px 26px; padding:6px 8px; font-size:11px; }
+  .ow .ow-side { width:100%; grid-template-columns:repeat(2, minmax(0,1fr)); }
+  .ow .ow-cmp div { grid-template-columns:110px minmax(0,1fr) 46px; }
+  .ow .ow-stairs { grid-template-columns:repeat(2, minmax(0,1fr)); }
+}
+@media (prefers-reduced-motion: reduce) { .ow *, .ow *::before, .ow *::after { animation:none !important; transition:none !important; } }
+
+/* stable widths for text that changes while a scene plays (no layout shift) */
+.ow .ow-st { min-width:9.5ch; text-align:center; }
+.ow #owLook { display:inline-block; min-width:7ch; }
+.ow #owEv { min-width:min(320px, 100%); justify-content:center; }
+.ow #owWit { display:inline-block; min-width:22ch; }
+.ow #owTok, .ow #owCtxN, .ow #owSent, .dz #dzScore, .dz #dzSec, #v2n { font-variant-numeric:tabular-nums; display:inline-block; text-align:right; }
+.ow #owTok { min-width:9ch; text-align:left; } .ow #owCtxN { min-width:4ch; } .ow #owSent { min-width:7ch; text-align:left; }
+.ow .ow-tick { min-height:82px; } /* one-line and two-line states keep the same height */
+.ow .ow-score .ow-pl { justify-content:center; }
+.dz #dzScore { min-width:2.2ch; } .dz #dzSec { min-width:3.5ch; }
+.dz #dzFix { display:inline-block; min-width:33ch; }
+.dz #dzRound { min-width:8ch; justify-content:center; }
+.dz .dz-term .dz-b > div:last-child { min-height:2.9em; } /* the output line wraps to two lines later on */
+#v2n { min-width:2.2ch; }
+.sp-card .st { min-width:1.2em; text-align:center; line-height:1; height:1em; }
+@media (max-width:760px) { .sp-cards { grid-template-rows:repeat(4, auto); align-content:start; } } /* on phones the cards size to content instead of sharing the stage's height */
+/* Claude mods post (.mo): stage drawn like the video's Claude Code terminal, coral accent; every class prefixed mo- */
+.mo, .mo * { box-sizing:border-box; }
+.mo-play { font:inherit; font-size:13px; font-weight:600; background:#d97757; color:#0e0e0e; border:0; border-radius:8px; padding:7px 13px; cursor:pointer; }
+.mo-cap { border-left:3px solid #d97757; padding:4px 0 4px 14px; max-width:80ch; } .mo-cap p { margin:0 0 4px; } .mo-cap small { color:var(--muted); }
+.mo { --c:#d97757; --card:#1b1b1b; --card2:#242424; --ln:#2e2e2e; --tx:#ececec; --mu:#8d8d8d; --gr:#7bd88f; --yl:#e8c468; --rd:#f0716a; --bl:#7aa7ff;
+  background:#0e0e0e; color:var(--tx); border:1px solid #222; border-radius:14px; min-height:460px; padding:26px; position:relative; overflow:hidden; display:grid; align-content:center; justify-items:center; font-family:var(--sans); }
+.mo .mo-vc { background:var(--card); border:1px solid var(--ln); border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,.45); }
+.mo .mo-vi { opacity:0; transform:translateY(10px); transition:opacity .5s, transform .5s; } .mo .mo-vi.on { opacity:1; transform:none; }
+.mo .mo-row { display:flex; gap:22px; align-items:center; justify-content:center; flex-wrap:wrap; }
+.mo .mo-mu { color:var(--mu); } .mo .mo-co { color:var(--c); } .mo .mo-gr { color:var(--gr); } .mo .mo-rd { color:var(--rd); } .mo .mo-yl { color:var(--yl); }
+.mo .mo-mono { font-family:var(--mono); font-variant-numeric:tabular-nums; }
+.mo .mo-pl { display:inline-flex; align-items:center; gap:7px; background:var(--card2); border:1px solid var(--ln); border-radius:99px; padding:4px 11px; font-weight:600; font-size:12px; white-space:nowrap; }
+.mo .mo-crab { width:30px; height:22px; display:inline-block; vertical-align:middle; flex:none; }
+/* the Claude Code terminal */
+.mo .mo-cc { width:min(640px, 100%); font:12px/1.45 var(--mono); display:grid; }
+.mo .mo-cch { display:flex; gap:10px; align-items:center; padding:10px 13px; border-bottom:1px solid var(--ln); }
+.mo .mo-cch b { font-weight:600; } .mo .mo-cch small { display:block; color:var(--mu); font-size:10.5px; }
+.mo .mo-tx { padding:10px 13px; display:grid; gap:4px; align-content:start; height:150px; overflow:hidden; }
+.mo .mo-tx div { opacity:0; transition:opacity .3s; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .mo .mo-tx div.on { opacity:1; }
+.mo .mo-tx .mo-tool::before { content:"● "; color:var(--gr); } .mo .mo-tx .mo-sub { color:var(--mu); padding-left:14px; }
+.mo .mo-tx .mo-log::before { content:"● "; color:var(--c); }
+.mo .mo-strip { margin:0 10px; padding:6px 10px; border:1px solid var(--ln); border-radius:7px; display:flex; gap:10px; align-items:center; height:34px; white-space:nowrap; overflow:hidden; transition:border-color .3s, background .3s; }
+.mo .mo-strip.on { border-color:var(--c); background:#22180f; }
+.mo .mo-strip .mo-tag { background:#3a2a52; color:#e3d4ff; padding:1px 7px; border-radius:4px; font-size:11px; }
+.mo .mo-strip .mo-bt { padding:1px 8px; border:1px solid #444; border-radius:4px; transition:background .25s, color .25s, border-color .25s; }
+.mo .mo-strip .mo-bt.on { background:var(--c); color:#111; border-color:var(--c); }
+.mo .mo-pb { margin:8px 10px 0; padding:8px 10px; border-top:1px solid var(--ln); border-bottom:1px solid var(--ln); height:118px; overflow:hidden; display:grid; align-content:start; gap:3px; }
+.mo .mo-pb .mo-in::before { content:"› "; color:var(--mu); }
+.mo .mo-pb .mo-in::after { content:""; display:inline-block; width:7px; height:13px; background:var(--tx); vertical-align:-2px; margin-left:2px; animation:moBlink 1s steps(1) infinite; }
+@keyframes moBlink { 50% { opacity:0; } }
+.mo .mo-pb .mo-ln { opacity:0; transform:translateY(4px); transition:opacity .3s, transform .3s; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .mo .mo-pb .mo-ln.on { opacity:1; transform:none; }
+.mo .mo-pb .mo-hl { background:#2b3a55; color:#cfe0ff; padding:0 4px; border-radius:3px; }
+.mo .mo-ft { padding:7px 13px 9px; color:var(--mu); font-size:10.5px; display:flex; justify-content:space-between; gap:10px; white-space:nowrap; }
+.mo .mo-ft .mo-ftl::before { content:"▸▸ "; color:var(--c); }
+/* scene 1: add vs change */
+.mo .mo-cmp { display:grid; grid-template-columns:repeat(2, minmax(0, 300px)); gap:22px; justify-content:center; width:100%; }
+.mo .mo-side { padding:14px; display:grid; gap:12px; align-content:start; height:300px; }
+.mo .mo-side h4 { margin:0; font-size:14px; display:flex; justify-content:space-between; align-items:center; gap:8px; }
+.mo .mo-tray { border:1px dashed #444; border-radius:10px; padding:10px; display:flex; flex-wrap:wrap; gap:7px; align-content:start; height:96px; }
+.mo .mo-chip { font:11.5px var(--mono); padding:4px 9px; border-radius:6px; background:var(--card2); border:1px solid var(--ln); opacity:0; transform:translateY(-14px); transition:opacity .4s, transform .4s cubic-bezier(.3,1.5,.5,1); }
+.mo .mo-chip.on { opacity:1; transform:none; }
+.mo .mo-note { font-size:12px; color:var(--mu); line-height:1.4; }
+.mo .mo-ev { display:grid; gap:5px; }
+.mo .mo-ev div { display:grid; grid-template-columns:118px 1fr; gap:8px; align-items:center; font:11.5px var(--mono); color:var(--mu); }
+.mo .mo-ev i { height:8px; border-radius:4px; background:#262626; position:relative; overflow:hidden; }
+.mo .mo-ev i::after { content:""; position:absolute; inset:0; background:var(--c); transform:scaleX(0); transform-origin:left; transition:transform .35s; }
+.mo .mo-ev div.on { color:var(--tx); } .mo .mo-ev div.on i::after { transform:none; }
+.mo .mo-mini { border:1px solid var(--ln); border-radius:8px; padding:7px; display:grid; gap:5px; }
+.mo .mo-mini i { display:block; height:7px; border-radius:4px; background:#2a2a2a; }
+.mo .mo-mini .mo-drawn { height:16px; background:#22180f; border:1px solid var(--c); opacity:0; transition:opacity .4s; } .mo .mo-mini .mo-drawn.on { opacity:1; }
+/* scene 3: picker */
+.mo .mo-ask { width:min(620px, 100%); padding:14px; display:grid; gap:12px; }
+.mo .mo-ask h4 { margin:0; font:600 13px var(--mono); }
+.mo .mo-opts { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:12px; }
+.mo .mo-opt { border:1px solid var(--ln); border-radius:10px; padding:9px; display:grid; gap:8px; font-size:12px; transition:border-color .3s, transform .3s; height:190px; align-content:start; }
+.mo .mo-opt.sel { border-color:var(--c); transform:translateY(-4px); }
+.mo .mo-opt .mo-words { color:var(--mu); line-height:1.35; height:48px; overflow:hidden; }
+.mo .mo-opt .mo-shot { height:104px; border-radius:7px; overflow:hidden; opacity:0; transform:scale(.92); transition:opacity .45s, transform .45s; display:grid; gap:5px; padding:8px; align-content:start; }
+.mo .mo-opt .mo-shot.on { opacity:1; transform:none; }
+.mo .mo-opt .mo-shot i { display:block; height:7px; border-radius:3px; }
+.mo .mo-opt .mo-shot .mo-big { height:16px; width:70%; }
+.mo .mo-opt .mo-shot .mo-cards { display:grid; grid-template-columns:repeat(3, 1fr); gap:4px; } .mo .mo-opt .mo-shot .mo-cards i { height:30px; }
+.mo .mo-opt b { display:flex; justify-content:space-between; gap:6px; }
+/* scene 4: assumptions */
+.mo .mo-alist { width:min(560px, 100%); padding:12px; display:grid; gap:6px; font:12px var(--mono); }
+.mo .mo-alist h4 { margin:0 0 4px; font:600 12px var(--mono); color:var(--c); }
+.mo .mo-ai { display:grid; grid-template-columns:24px minmax(0, 1fr) 156px; gap:8px; align-items:center; padding:5px 7px; border-radius:6px; border:1px solid transparent; transition:border-color .25s, background .25s; }
+.mo .mo-ai.cur { border-color:#555; background:#202020; }
+.mo .mo-ai span:nth-child(2) { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mo .mo-ai .mo-rw { display:flex; gap:5px; justify-content:flex-end; }
+.mo .mo-ai .mo-rw em { font-style:normal; white-space:nowrap; padding:0 6px; border:1px solid #444; border-radius:4px; color:var(--mu); transition:background .25s, color .25s, border-color .25s; }
+.mo .mo-ai.ok .mo-rw em:first-child { background:var(--gr); color:#111; border-color:var(--gr); }
+.mo .mo-ai.bad .mo-rw em:last-child { background:var(--rd); color:#111; border-color:var(--rd); }
+.mo .mo-ai.bad span:nth-child(2) { color:var(--rd); }
+.mo .mo-fix { padding:8px 10px; border-radius:7px; border:1px solid var(--c); background:#22180f; font:12px/1.4 var(--mono); height:52px; overflow:hidden; }
+/* scene 5: idea shelf */
+.mo .mo-task { width:min(300px, 100%); padding:14px; display:grid; gap:10px; font-size:12.5px; }
+.mo .mo-bar { height:10px; border-radius:99px; background:#262626; overflow:hidden; } .mo .mo-bar i { display:block; height:100%; width:0; background:var(--gr); transition:width .4s linear; }
+.mo .mo-shelf { width:min(280px, 100%); padding:14px; display:grid; gap:8px; align-content:start; height:250px; }
+.mo .mo-shelf h4 { margin:0; font:600 12.5px var(--mono); display:flex; justify-content:space-between; }
+.mo .mo-idea { display:grid; grid-template-columns:1fr auto auto; gap:6px; align-items:center; font:12px var(--mono); padding:7px 9px; border-radius:7px; background:var(--card2); border:1px solid var(--ln); opacity:0; transform:translateX(30px); transition:opacity .4s, transform .4s, border-color .3s; }
+.mo .mo-idea.on { opacity:1; transform:none; } .mo .mo-idea.sent { border-color:var(--c); }
+.mo .mo-idea em { font-style:normal; font-size:10.5px; padding:0 6px; border:1px solid #444; border-radius:4px; color:var(--mu); }
+.mo .mo-idea.sent em:first-of-type { background:var(--c); color:#111; border-color:var(--c); }
+.mo .mo-shelf .mo-plank { height:6px; border-radius:3px; background:#3a2d22; margin-top:auto; }
+/* scene 6: sessions */
+.mo .mo-board { width:min(640px, 100%); display:grid; gap:12px; }
+.mo .mo-bh { display:flex; gap:8px; justify-content:center; flex-wrap:wrap; font:12px var(--mono); }
+.mo .mo-ses { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:10px; }
+.mo .mo-s { padding:10px; display:grid; grid-template-columns:minmax(0, 1fr); gap:6px; font:11px var(--mono); height:150px; align-content:start; transition:border-color .3s; position:relative; }
+.mo .mo-s b { font-size:11.5px; display:flex; gap:6px; align-items:center; white-space:nowrap; }
+.mo .mo-s .mo-st { justify-self:start; min-width:9ch; text-align:center; padding:1px 6px; border-radius:4px; background:#262626; color:var(--mu); }
+.mo .mo-s.mo-sw { border-color:#3c4f7a; } .mo .mo-s.mo-sw .mo-st { background:#1f2a40; color:var(--bl); }
+.mo .mo-s.mo-sd .mo-st { background:#1f3324; color:var(--gr); }
+.mo .mo-s.mo-sn { border-color:var(--yl); } .mo .mo-s.mo-sn .mo-st { background:#3a321a; color:var(--yl); animation:moPulse 1.2s ease-in-out infinite; }
+@keyframes moPulse { 50% { opacity:.55; } }
+.mo .mo-s .mo-also { font-size:10.5px; color:#e3d4ff; background:#2a2140; border-radius:5px; padding:3px 6px; opacity:0; transition:opacity .4s; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .mo .mo-s .mo-also.on { opacity:1; }
+.mo .mo-s .mo-dir { color:var(--mu); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mo .mo-s .mo-what { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mo .mo-link { height:20px; display:grid; place-items:center; font:11px var(--mono); color:#c9b5ff; opacity:0; transition:opacity .4s; } .mo .mo-link.on { opacity:1; }
+/* scene 7: plain answers */
+.mo .mo-ans { width:min(290px, 100%); padding:12px; display:grid; gap:6px; align-content:start; font:11.5px/1.45 var(--mono); height:270px; transition:opacity .5s; }
+.mo .mo-ans h4 { margin:0 0 2px; font:600 12px var(--sans); display:flex; justify-content:space-between; }
+.mo .mo-ans .mo-j { background:#3a2020; color:#ffb3ad; padding:0 3px; border-radius:3px; }
+.mo .mo-ans .mo-tl { color:var(--mu); } .mo .mo-ans .mo-tl::before { content:"● "; color:var(--gr); }
+.mo .mo-ans.dim { opacity:.35; }
+.mo .mo-ans p { margin:0; opacity:0; transition:opacity .35s; } .mo .mo-ans p.on { opacity:1; }
+.mo .mo-chk { display:grid; gap:8px; justify-items:center; width:120px; text-align:center; font-size:11.5px; }
+.mo .mo-chk .mo-pl { min-width:15ch; justify-content:center; }
+@media (max-width:760px) {
+  .mo { padding:14px; }
+  .mo .mo-cmp { grid-template-columns:minmax(0, 1fr); }
+  .mo .mo-side { height:auto; }
+  .mo .mo-opts { grid-template-columns:minmax(0, 1fr); } .mo .mo-opt { height:auto; grid-template-columns:96px 1fr; align-items:start; } .mo .mo-opt b { grid-column:1 / -1; }
+  .mo .mo-opt .mo-shot { height:72px; } .mo .mo-opt .mo-words { height:auto; }
+  .mo .mo-ses { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+  .mo .mo-ai { grid-template-columns:20px minmax(0, 1fr) 128px; font-size:10.5px; } .mo .mo-ai .mo-rw em { padding:0 4px; }
+  .mo .mo-tx { height:132px; } .mo .mo-pb { font-size:11px; }
+  .mo .mo-fix { height:72px; font-size:11px; }
+  .mo .mo-chk { width:100%; }
+  .mo .mo-ans { height:auto; min-height:200px; }
+}
+@media (prefers-reduced-motion: reduce) { .mo *, .mo *::before, .mo *::after { animation:none !important; transition:none !important; } }
+/* REA post (.rv): stage in the video's look, dark cards, mint accent; every class prefixed rv- */
+.rv, .rv * { box-sizing:border-box; }
+.rv-play { font:inherit; font-size:13px; font-weight:600; background:#5fd4a8; color:#0e0e0e; border:0; border-radius:8px; padding:7px 13px; cursor:pointer; }
+.rv-cap { border-left:3px solid #5fd4a8; padding:4px 0 4px 14px; max-width:80ch; } .rv-cap p { margin:0 0 4px; } .rv-cap small { color:var(--muted); }
+.rv { --c:#5fd4a8; --card:#1b1b1b; --card2:#242424; --ln:#2e2e2e; --tx:#ececec; --mu:#8d8d8d; --gr:#7bd88f; --yl:#e8c468; --rd:#f0716a; --bl:#7aa7ff; --vi:#b9a2ff;
+  background:#0e0e0e; color:var(--tx); border:1px solid #222; border-radius:14px; min-height:460px; padding:26px; position:relative; overflow:hidden; display:grid; align-content:center; justify-items:center; font-family:var(--sans); }
+.rv .rv-vc { background:var(--card); border:1px solid var(--ln); border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,.45); }
+.rv .rv-vi { opacity:0; transform:translateY(10px); transition:opacity .5s, transform .5s; } .rv .rv-vi.on { opacity:1; transform:none; }
+.rv .rv-row { display:flex; gap:20px; align-items:center; justify-content:center; flex-wrap:wrap; width:100%; }
+.rv .rv-mu { color:var(--mu); } .rv .rv-co { color:var(--c); } .rv .rv-gr { color:var(--gr); } .rv .rv-rd { color:var(--rd); } .rv .rv-yl { color:var(--yl); }
+.rv .rv-mono { font-family:var(--mono); font-variant-numeric:tabular-nums; }
+.rv .rv-wh { display:flex; align-items:center; gap:6px; padding:8px 11px; border-bottom:1px solid var(--ln); }
+.rv .rv-wh i { width:8px; height:8px; border-radius:50%; background:#ff5f57; } .rv .rv-wh i:nth-child(2) { background:#febc2e; } .rv .rv-wh i:nth-child(3) { background:#28c840; }
+.rv .rv-wh span { margin:0 auto; font:10.5px var(--mono); color:var(--mu); white-space:nowrap; }
+.rv .rv-pl { display:inline-flex; align-items:center; gap:7px; background:var(--card2); border:1px solid var(--ln); border-radius:99px; padding:4px 11px; font-weight:600; font-size:12px; white-space:nowrap; }
+/* evidence labels: the README's epistemic states */
+.rv .rv-lb { display:inline-block; min-width:9ch; text-align:center; font:600 10.5px var(--mono); padding:1px 6px; border-radius:4px; background:#262626; color:var(--mu); white-space:nowrap; transition:background .3s, color .3s; }
+.rv .rv-lb.rv-obs { background:#173a2d; color:var(--c); } .rv .rv-lb.rv-inf { background:#3a321a; color:var(--yl); } .rv .rv-lb.rv-unk { background:#3a2020; color:var(--rd); }
+/* scene 1: screenshot vs wire */
+.rv .rv-app { width:min(250px, 100%); }
+.rv .rv-app .rv-b { padding:12px; display:grid; gap:7px; font-size:12px; }
+.rv .rv-li { display:flex; justify-content:space-between; gap:8px; color:var(--mu); }
+.rv .rv-li b { color:var(--tx); font-weight:600; }
+.rv .rv-btn { justify-self:start; margin-top:4px; padding:5px 12px; border-radius:6px; background:var(--c); color:#0e0e0e; font-weight:700; font-size:12px; transition:transform .15s; }
+.rv .rv-btn.on { transform:scale(.93); }
+.rv .rv-lanes { width:min(300px, 100%); display:grid; gap:10px; }
+.rv .rv-lane { padding:10px 12px; display:grid; gap:7px; font:11.5px var(--mono); height:122px; align-content:start; }
+.rv .rv-lane h4 { margin:0; font:600 12.5px var(--sans); display:flex; justify-content:space-between; align-items:center; }
+.rv .rv-wire { position:relative; height:10px; border-radius:5px; background:#232323; overflow:hidden; }
+.rv .rv-wire i { position:absolute; top:1px; width:26px; height:8px; border-radius:4px; background:var(--c); left:-30px; }
+.rv .rv-wire i.on { animation:rvFly 1s linear forwards; } .rv .rv-wire i.rv-back { background:var(--bl); } .rv .rv-wire i.rv-back.on { animation:rvBack 1s linear forwards; }
+@keyframes rvFly { to { left:calc(100% + 4px); } } @keyframes rvBack { from { left:calc(100% + 4px); } to { left:-30px; } }
+.rv .rv-ln { opacity:0; transition:opacity .3s; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .rv .rv-ln.on { opacity:1; }
+.rv .rv-evcol { width:min(190px, 100%); padding:10px; display:grid; gap:6px; align-content:start; height:250px; font:11.5px var(--mono); }
+.rv .rv-evcol h4 { margin:0 0 2px; font:600 12px var(--sans); color:var(--c); }
+.rv .rv-ev { display:flex; gap:7px; align-items:center; padding:5px 7px; border-radius:6px; background:var(--card2); border:1px solid var(--ln); opacity:0; transform:translateX(20px); transition:opacity .35s, transform .35s; white-space:nowrap; }
+.rv .rv-ev.on { opacity:1; transform:none; } .rv .rv-ev span { color:var(--mu); overflow:hidden; text-overflow:ellipsis; min-width:0; }
+/* scene 2: findings get stamped */
+.rv .rv-find { width:min(600px, 100%); padding:14px; display:grid; gap:8px; }
+.rv .rv-find h4 { margin:0 0 4px; font:600 13px var(--sans); display:flex; justify-content:space-between; }
+.rv .rv-f { display:grid; grid-template-columns:minmax(0, 1fr) 96px 104px; gap:10px; align-items:center; font-size:12.5px; padding:7px 9px; border-radius:7px; border:1px solid var(--ln); opacity:0; transition:opacity .35s, border-color .3s; }
+.rv .rv-f.on { opacity:1; } .rv .rv-f.rv-hot { border-color:#555; }
+.rv .rv-f > span:first-child { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.rv .rv-f .rv-cite { font:11px var(--mono); color:var(--mu); text-align:right; white-space:nowrap; }
+/* scene 3: graph behaviour */
+.rv .rv-graph { width:min(260px, 100%); height:240px; position:relative; }
+.rv .rv-graph svg { position:absolute; inset:34px 0 0; width:100%; height:calc(100% - 34px); }
+.rv .rv-graph line { stroke:#4a4a4a; stroke-width:1.4; transition:stroke .3s, opacity .4s; } .rv .rv-graph line.on { stroke:var(--vi); }
+.rv .rv-graph circle { fill:#2b2b2b; stroke:var(--vi); stroke-width:1.5; transition:cx .8s, cy .8s, opacity .4s, fill .3s; }
+.rv .rv-graph circle.rv-drag { fill:var(--vi); } .rv .rv-graph .rv-gone { opacity:0; }
+.rv .rv-beh { width:min(330px, 100%); font:11.5px var(--mono); }
+.rv .rv-beh .rv-b { padding:10px 12px; display:grid; gap:6px; height:196px; align-content:start; }
+.rv .rv-bl { display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:8px; align-items:center; opacity:0; transform:translateY(5px); transition:opacity .3s, transform .3s; }
+.rv .rv-bl.on { opacity:1; transform:none; } .rv .rv-bl > span:first-child { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.rv .rv-note { font:11.5px var(--mono); color:var(--vi); height:18px; text-align:center; }
+/* scene 4: the billing trace */
+.rv .rv-bill { width:min(300px, 100%); }
+.rv .rv-bill .rv-b { padding:12px; display:grid; gap:6px; font-size:12.5px; }
+.rv .rv-step { display:grid; grid-template-columns:18px minmax(0, 1fr) 70px; gap:8px; align-items:center; padding:4px 6px; border-radius:6px; border:1px solid transparent; transition:border-color .3s, background .3s; }
+.rv .rv-step i { width:16px; height:16px; border-radius:50%; border:1px solid #555; display:grid; place-items:center; font:700 10px var(--sans); font-style:normal; color:#0e0e0e; transition:background .3s, border-color .3s; }
+.rv .rv-step.rv-ok i { background:var(--gr); border-color:var(--gr); } .rv .rv-step.rv-no { border-color:var(--rd); background:#2a1717; } .rv .rv-step.rv-no i { background:var(--rd); border-color:var(--rd); }
+.rv .rv-step b { text-align:right; font-family:var(--mono); font-variant-numeric:tabular-nums; font-weight:600; }
+.rv .rv-split { width:min(300px, 100%); padding:12px; display:grid; gap:8px; font-size:12.5px; }
+.rv .rv-split .rv-cmp { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:8px; }
+.rv .rv-split .rv-cmp div { border:1px solid var(--ln); border-radius:8px; padding:8px; display:grid; gap:2px; text-align:center; }
+.rv .rv-split .rv-cmp b { font:700 18px var(--mono); font-variant-numeric:tabular-nums; }
+.rv .rv-side { display:grid; gap:5px; font-size:12px; }
+.rv .rv-side div { display:flex; gap:7px; align-items:center; opacity:0; transition:opacity .35s; white-space:nowrap; } .rv .rv-side div.on { opacity:1; }
+/* scene 5: competitors, surface vs depth */
+.rv .rv-comp { display:grid; grid-template-columns:repeat(5, minmax(0, 120px)); gap:10px; justify-content:center; width:100%; }
+.rv .rv-cc { padding:10px; display:grid; gap:6px; font-size:11.5px; height:236px; align-content:start; }
+.rv .rv-cc b { font-size:12.5px; }
+.rv .rv-surf, .rv .rv-deep { display:grid; gap:4px; }
+.rv .rv-surf span, .rv .rv-deep span { padding:3px 6px; border-radius:5px; background:var(--card2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; opacity:0; transition:opacity .35s; }
+.rv .rv-deep span { background:#173a2d; color:#bff3df; }
+.rv .rv-surf span.on, .rv .rv-deep span.on { opacity:1; }
+.rv .rv-depth { height:2px; background:linear-gradient(90deg, transparent, #3d6b5a, transparent); margin:2px 0; }
+.rv .rv-legend { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:14px; font-size:12px; }
+/* scene 6: the sweep report */
+.rv .rv-rep { width:min(600px, 100%); padding:14px; display:grid; gap:7px; }
+.rv .rv-rep h4 { margin:0 0 4px; font:600 13px var(--sans); display:flex; justify-content:space-between; }
+.rv .rv-r { display:grid; grid-template-columns:74px minmax(0, 1fr) 70px; gap:10px; align-items:center; font-size:12.5px; padding:7px 9px; border-radius:7px; background:var(--card2); border:1px solid var(--ln); opacity:0; transform:translateY(6px); transition:opacity .35s, transform .35s, order 0s; }
+.rv .rv-r.on { opacity:1; transform:none; } .rv .rv-r > span:nth-child(2) { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.rv .rv-sev { font:700 10.5px var(--mono); text-align:center; padding:2px 0; border-radius:4px; }
+.rv .rv-s1 { background:#4a1c1c; color:#ffb3ad; } .rv .rv-s2 { background:#3a2a17; color:#ffcf8a; } .rv .rv-s3 { background:#262626; color:var(--mu); }
+.rv .rv-r .rv-cite { font:11px var(--mono); color:var(--mu); text-align:right; }
+.rv .rv-scan { height:4px; border-radius:2px; background:#232323; overflow:hidden; } .rv .rv-scan i { display:block; height:100%; width:0; background:var(--c); transition:width 2.2s linear; }
+/* scene 7: the gate */
+.rv .rv-gate { display:grid; grid-template-columns:150px 170px minmax(0, 320px); gap:18px; align-items:center; justify-content:center; width:100%; }
+.rv .rv-box { padding:12px; display:grid; gap:6px; font-size:12px; text-align:center; justify-items:center; height:132px; align-content:center; }
+.rv .rv-box b { font-size:13px; } .rv .rv-box small { color:var(--mu); }
+.rv .rv-box.rv-busy { border-color:var(--c); }
+.rv .rv-bins { display:grid; gap:8px; }
+.rv .rv-bin { padding:9px 11px; display:grid; grid-template-columns:minmax(0, 1fr) auto; gap:8px; align-items:center; font-size:12px; height:44px; }
+.rv .rv-bin span:first-child { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.rv .rv-bin .rv-n { font:700 14px var(--mono); font-variant-numeric:tabular-nums; min-width:2ch; text-align:right; }
+.rv .rv-bin.rv-hit { border-color:var(--c); }
+@media (max-width:760px) {
+  .rv { padding:14px; }
+  .rv .rv-lane { height:auto; min-height:112px; }
+  .rv .rv-evcol { height:auto; width:100%; grid-template-columns:repeat(2, minmax(0, 1fr)); } .rv .rv-evcol h4 { grid-column:1 / -1; }
+  .rv .rv-f { grid-template-columns:minmax(0, 1fr) 84px; } .rv .rv-f .rv-cite { display:none; }
+  .rv .rv-comp { grid-template-columns:repeat(2, minmax(0, 1fr)); } .rv .rv-cc { height:auto; } .rv .rv-cc:nth-child(5) { grid-column:1 / -1; }
+  .rv .rv-r { grid-template-columns:64px minmax(0, 1fr); } .rv .rv-r .rv-cite { display:none; }
+  .rv .rv-gate { grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); } .rv .rv-bins { grid-column:1 / -1; }
+  .rv .rv-box { height:auto; min-height:110px; }
+  .rv .rv-beh .rv-b { height:auto; }
+}
+@media (prefers-reduced-motion: reduce) { .rv *, .rv *::before { animation:none !important; transition:none !important; } }
+/* Review-system post (.rq): dark stage, Claude coral accent; every class prefixed rq- */
+.rq, .rq * { box-sizing:border-box; }
+.rq-cap { border-left:3px solid #d97757; padding:4px 0 4px 14px; max-width:80ch; margin-top:12px; } .rq-cap p { margin:0 0 4px; } .rq-cap small { color:var(--muted); }
+
+.rq { --c:#d97757; --card:#1c1c1c; --card2:#232323; --ln:#2e2e2e; --tx:#ececec; --mu:#8d8d8d; --gr:#7bd88f; --yl:#e8c468; --rd:#f0716a;
+  background:#0e0e0e; color:var(--tx); border:1px solid #222; border-radius:14px; min-height:440px; padding:26px; position:relative; overflow:hidden;
+  display:grid; align-content:center; }
+.rq .rq-vc { background:var(--card); border:1px solid var(--ln); border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,.45); }
+.rq .rq-vi { opacity:0; transform:translateY(10px); transition:opacity .5s, transform .5s; } .rq .rq-vi.on { opacity:1; transform:none; }
+.rq .rq-row { display:flex; gap:22px; align-items:center; justify-content:center; flex-wrap:wrap; }
+.rq .rq-mu { color:var(--mu); } .rq .rq-co { color:var(--c); } .rq .rq-gr { color:var(--gr); } .rq .rq-yl { color:var(--yl); } .rq .rq-rd { color:var(--rd); } .rq .rq-mono { font-family:var(--mono); }
+.rq .rq-pill { display:inline-flex; align-items:center; gap:8px; background:var(--card2); border:1px solid var(--ln); border-radius:99px; padding:6px 14px; font-weight:600; font-size:14px; }
+.rq .rq-win-h { display:flex; align-items:center; gap:6px; padding:9px 12px; border-bottom:1px solid var(--ln); }
+.rq .rq-win-h i { width:9px; height:9px; border-radius:50%; background:#ff5f57; } .rq .rq-win-h i:nth-child(2) { background:#febc2e; } .rq .rq-win-h i:nth-child(3) { background:#28c840; }
+.rq .rq-win-h span { margin:0 auto; font:11px var(--mono); color:var(--mu); }
+.rq .rq-lbl { font:600 11px var(--mono); letter-spacing:.08em; text-transform:uppercase; color:var(--mu); }
+
+/* scene 1: reframe + volume */
+.rq .rq-s1 { display:grid; gap:20px; justify-items:center; }
+.rq .rq-s1-q { display:grid; gap:6px; text-align:center; font-size:22px; font-weight:700; min-height:68px; }
+.rq .rq-s1-q .rq-old { color:var(--mu); transition:opacity .5s; text-decoration:line-through; text-decoration-color:transparent; }
+.rq .rq-s1-q .rq-old.rq-cut { text-decoration-color:var(--rd); opacity:.5; }
+.rq .rq-s1-row { display:flex; gap:18px; flex-wrap:wrap; justify-content:center; align-items:stretch; }
+.rq .rq-s1-n { width:min(300px,100%); padding:14px 18px; display:grid; gap:8px; }
+.rq .rq-s1-n b { font:700 30px var(--mono); }
+.rq .rq-s1-n .rq-bar, .rq .rq-s1-t .rq-bar { height:10px; background:#262626; border-radius:99px; overflow:hidden; display:flex; }
+.rq .rq-s1-n .rq-bar i, .rq .rq-s1-t .rq-bar i { display:block; height:100%; width:0; transition:width 1.4s ease; }
+.rq .rq-s1-t { width:min(360px,100%); padding:14px 18px; display:grid; gap:10px; font-size:13px; }
+.rq .rq-s1-t .rq-r { display:grid; gap:4px; }
+
+/* scene 2: evals first */
+.rq .rq-s2 { display:flex; gap:22px; flex-wrap:wrap; justify-content:center; align-items:center; }
+.rq .rq-s2-tree { width:min(300px,100%); font:12.5px var(--mono); } .rq .rq-s2-tree .rq-b { padding:12px 16px; display:grid; gap:8px; min-height:150px; align-content:start; }
+.rq .rq-s2-tree .rq-f { display:flex; gap:8px; align-items:center; } .rq .rq-s2-tree .rq-f span { color:var(--mu); font-size:11px; margin-left:auto; }
+.rq .rq-s2-flow { display:grid; gap:12px; justify-items:start; }
+.rq .rq-s2-st { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.rq .rq-s2-st .rq-pill { color:var(--mu); transition:color .3s, border-color .3s, background .3s; } .rq .rq-s2-st .rq-pill.on { color:var(--tx); border-color:var(--c); background:#2a1f1a; } .rq .rq-s2-st .rq-pill.rq-ok { color:#0e0e0e; background:var(--gr); border-color:var(--gr); }
+.rq .rq-s2-gate { padding:12px 16px; display:flex; gap:12px; align-items:center; font-size:13px; max-width:340px; transition:border-color .4s; }
+.rq .rq-s2-gate .rq-ic { font-size:22px; } .rq .rq-s2-gate.rq-bl { border-color:var(--rd); } .rq .rq-s2-gate.rq-go { border-color:var(--gr); }
+
+/* scene 3: build-verify-review loop */
+.rq .rq-s3 { display:grid; gap:18px; justify-items:center; }
+.rq .rq-s3-chain { display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center; }
+.rq .rq-s3-n { width:118px; padding:12px 8px; display:grid; gap:4px; text-align:center; font-size:12px; color:var(--mu); border-color:var(--ln); transition:border-color .3s, transform .3s; position:relative; }
+.rq .rq-s3-n b { color:var(--tx); font-size:14px; } .rq .rq-s3-n em { font-style:normal; font-size:10.5px; color:var(--c); }
+.rq .rq-s3-n.rq-run { border-color:var(--c); transform:translateY(-4px); }
+.rq .rq-s3-st { width:min(430px,100%); padding:12px 16px; font:12.5px var(--mono); display:grid; gap:4px; }
+.rq .rq-s3-st .rq-big { font-size:13px; }
+
+/* scene 4: rules learned */
+.rq .rq-s4 { display:flex; gap:24px; flex-wrap:wrap; justify-content:center; align-items:center; }
+.rq .rq-s4-doc { width:min(340px,100%); font-size:12.5px; } .rq .rq-s4-doc .rq-b { padding:12px 16px; display:grid; gap:8px; }
+.rq .rq-s4-doc .rq-h { font:600 11px var(--mono); color:var(--c); letter-spacing:.06em; text-transform:uppercase; }
+.rq .rq-s4-doc .rq-ln { color:var(--mu); } .rq .rq-s4-rule { color:var(--gr); font-family:var(--mono); min-height:20px; }
+.rq .rq-s4-log { width:min(320px,100%); display:grid; gap:8px; align-content:start; min-height:210px; }
+.rq .rq-s4-ev { padding:9px 12px; font-size:12.5px; display:flex; gap:8px; align-items:center; }
+.rq .rq-s4-ev .rq-t { font:600 10.5px var(--mono); color:var(--mu); width:68px; flex:none; }
+
+/* scene 5: risk tiers */
+.rq .rq-s5 { display:grid; gap:18px; justify-items:center; }
+.rq .rq-s5-q { font-size:20px; font-weight:700; text-align:center; }
+.rq .rq-s5-tiers { display:flex; gap:14px; flex-wrap:wrap; justify-content:center; }
+.rq .rq-s5-t { width:210px; padding:14px; display:grid; gap:6px; font-size:12.5px; color:var(--mu); border-color:var(--ln); transition:border-color .3s, transform .3s; }
+.rq .rq-s5-t b { font-size:15px; color:var(--tx); } .rq .rq-s5-t.rq-sel { transform:translateY(-5px); }
+.rq .rq-s5-t.rq-lo.rq-sel { border-color:var(--gr); } .rq .rq-s5-t.rq-md.rq-sel { border-color:var(--yl); } .rq .rq-s5-t.rq-hi.rq-sel { border-color:var(--rd); }
+.rq .rq-s5-m { width:min(460px,100%); padding:12px 16px; display:flex; gap:14px; align-items:center; font-size:13px; }
+.rq .rq-s5-m .rq-segs { flex:1; display:grid; grid-auto-flow:column; gap:5px; } .rq .rq-s5-m .rq-segs i { height:8px; border-radius:99px; background:#2a2a2a; transition:background .3s; } .rq .rq-s5-m .rq-segs i.on { background:var(--c); }
+.rq .rq-s5-m .rq-w { width:84px; text-align:right; font:600 12px var(--mono); }
+
+/* scene 6: stop the ping-pong */
+.rq .rq-s6 { display:grid; gap:18px; justify-items:center; }
+.rq .rq-s6-court { width:min(560px,100%); padding:14px 18px; display:grid; gap:10px; }
+.rq .rq-s6-pp { position:relative; height:44px; display:flex; justify-content:space-between; align-items:center; }
+.rq .rq-s6-pp .rq-pad { width:94px; text-align:center; font-size:12px; padding:6px; border-radius:8px; background:var(--card2); border:1px solid var(--ln); }
+.rq .rq-s6-ball { position:absolute; top:15px; left:94px; width:14px; height:14px; border-radius:50%; background:var(--c); animation:rq-s6b .5s linear infinite alternate; }
+.rq .rq-s6-ball.rq-stop { animation:none; left:calc(50% - 7px); background:var(--gr); transition:left .3s; }
+@keyframes rq-s6b { to { left:calc(100% - 108px); } }
+.rq .rq-s6-meta { display:flex; justify-content:space-between; font-size:13px; align-items:baseline; } .rq .rq-s6-meta b { font:700 26px var(--mono); }
+.rq .rq-s6-bar { height:12px; border-radius:99px; background:#262626; overflow:hidden; display:flex; }
+.rq .rq-s6-bar i { display:block; height:100%; width:0; transition:width 1s ease; } .rq .rq-s6-bar i.rq-o { background:var(--yl); } .rq .rq-s6-bar i.rq-n { background:var(--c); }
+.rq .rq-s6-rules { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+.rq .rq-s6-r { width:200px; padding:12px; display:grid; gap:4px; font-size:12.5px; color:var(--mu); } .rq .rq-s6-r b { color:var(--tx); font-size:13.5px; } .rq .rq-s6-r .rq-nn { font:700 11px var(--mono); color:var(--c); }
+
+/* scene 7: find + undo */
+.rq .rq-s7 { display:flex; gap:22px; flex-wrap:wrap; justify-content:center; align-items:stretch; }
+.rq .rq-s7-p { width:min(420px,100%); padding-bottom:12px; display:grid; align-content:start; }
+.rq .rq-s7-p .rq-b { padding:12px 16px; display:grid; gap:10px; font-size:12.5px; }
+.rq .rq-s7-chips { display:flex; gap:8px; flex-wrap:wrap; } .rq .rq-s7-chips .rq-pill { font-size:12px; padding:4px 10px; }
+.rq .rq-s7-chips .rq-pill.rq-blk { color:var(--rd); border-color:#5a2b28; text-decoration:line-through; }
+.rq .rq-s7-find { display:grid; gap:6px; } .rq .rq-s7-find div { padding:6px 10px; background:var(--card2); border-radius:8px; }
+.rq .rq-s7-git { width:100%; height:130px; }
+.rq .rq-s7-git .rq-ln { stroke:#444; stroke-width:2; fill:none; } .rq .rq-s7-git circle { fill:#444; transition:fill .4s; } .rq .rq-s7-git circle.rq-ok { fill:var(--gr); } .rq .rq-s7-git circle.rq-bad { fill:var(--rd); }
+.rq .rq-s7-git .rq-rb { stroke:var(--c); stroke-width:2; fill:none; stroke-dasharray:6 5; opacity:0; transition:opacity .5s; } .rq .rq-s7-git .rq-rb.on { opacity:1; }
+.rq .rq-s7-git text { fill:var(--mu); font:11px var(--mono); }
+@media (max-width:760px) {
+  .rq { padding:18px 12px; min-height:0; }
+  .rq .rq-s1-q, .rq .rq-s5-q { font-size:17px; }
+  .rq .rq-s3-n { width:92px; font-size:11px; } .rq .rq-s3-n b { font-size:12.5px; }
+  .rq .rq-s5-t { width:100%; }
+  .rq .rq-s6-r { width:100%; }
+  .rq .rq-s6-pp .rq-pad { width:80px; font-size:11px; }
+  .rq .rq-s2-st .rq-pill { font-size:12px; padding:5px 10px; white-space:nowrap; }
+  .rq .rq-s4-ev .rq-t { width:58px; }
+}
+@media (prefers-reduced-motion: reduce) { .rq .rq-s6-ball { animation:none; } }
+/* Vercel tips post (.vl): black stage, white cards edge, Vercel blue accent; every class prefixed vl- */
+.vl, .vl * { box-sizing:border-box; }
+.vl-play { font:inherit; font-size:13px; font-weight:600; background:#ededed; color:#0a0a0a; border:0; border-radius:8px; padding:7px 13px; cursor:pointer; }
+.vl-cap { border-left:3px solid #3291ff; padding:4px 0 4px 14px; max-width:80ch; } .vl-cap p { margin:0 0 4px; } .vl-cap small { color:var(--muted); }
+.vl { --c:#3291ff; --card:#161616; --card2:#202020; --ln:#2c2c2c; --tx:#ededed; --mu:#8f8f8f; --gr:#45d483; --yl:#f5b544; --rd:#ff5b5b;
+  background:#0a0a0a; color:var(--tx); border:1px solid #222; border-radius:14px; min-height:460px; padding:26px; position:relative; overflow:hidden; display:grid; align-content:center; justify-items:center; font-family:var(--sans); }
+.vl .vl-vc { background:var(--card); border:1px solid var(--ln); border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,.5); }
+.vl .vl-vi { opacity:0; transform:translateY(10px); transition:opacity .5s, transform .5s; } .vl .vl-vi.on { opacity:1; transform:none; }
+.vl .vl-row { display:flex; gap:20px; align-items:center; justify-content:center; flex-wrap:wrap; width:100%; }
+.vl .vl-mu { color:var(--mu); } .vl .vl-co { color:var(--c); } .vl .vl-gr { color:var(--gr); } .vl .vl-rd { color:var(--rd); } .vl .vl-yl { color:var(--yl); }
+.vl .vl-mono { font-family:var(--mono); font-variant-numeric:tabular-nums; }
+.vl .vl-pl { display:inline-flex; align-items:center; gap:7px; background:var(--card2); border:1px solid var(--ln); border-radius:99px; padding:4px 11px; font-weight:600; font-size:12px; white-space:nowrap; }
+.vl .vl-h { margin:0; font:600 13px var(--sans); display:flex; justify-content:space-between; align-items:center; gap:8px; white-space:nowrap; }
+/* scene 1: a wrong early decision under a full build */
+.vl .vl-two { display:grid; grid-template-columns:repeat(2, minmax(0, 290px)); gap:24px; justify-content:center; width:100%; }
+.vl .vl-path { padding:14px; display:grid; gap:10px; height:300px; align-content:start; }
+.vl .vl-stack { display:flex; flex-direction:column-reverse; gap:4px; height:170px; justify-content:flex-start; }
+.vl .vl-blk { height:24px; border-radius:5px; background:var(--card2); border:1px solid var(--ln); font:11px var(--mono); color:var(--mu); display:flex; align-items:center; padding:0 8px; white-space:nowrap; overflow:hidden;
+  opacity:0; transform:translateY(-12px); transition:opacity .3s, transform .3s, border-color .3s, background .3s; }
+.vl .vl-blk.on { opacity:1; transform:none; } .vl .vl-blk.vl-bad { border-color:var(--rd); background:#2a1515; color:#ffb3b3; }
+.vl .vl-stack.vl-shake .vl-blk.on { animation:vlShake .45s 2; } @keyframes vlShake { 25% { translate:-3px 0; } 75% { translate:3px 0; } }
+.vl .vl-out { font:12px var(--mono); height:34px; display:flex; align-items:center; }
+/* scene 2: heading vs plan */
+.vl .vl-map { width:min(330px, 100%); height:300px; padding:12px; display:grid; grid-template-rows:auto 1fr auto; gap:8px; }
+.vl .vl-map svg { width:100%; height:100%; display:block; }
+.vl .vl-map .vl-plan { stroke:#555; stroke-width:1.6; stroke-dasharray:4 4; fill:none; }
+.vl .vl-map .vl-real { stroke:var(--c); stroke-width:2.2; fill:none; stroke-dasharray:300; stroke-dashoffset:300; transition:stroke-dashoffset 2.6s linear, stroke .4s; }
+.vl .vl-map .vl-real.on { stroke-dashoffset:0; } .vl .vl-map .vl-real.vl-off { stroke:var(--rd); }
+.vl .vl-map text { fill:var(--mu); font:9px var(--mono); }
+.vl .vl-stats { display:flex; gap:8px; justify-content:space-between; font:12px var(--mono); }
+.vl .vl-rep { width:min(300px, 100%); padding:12px; display:grid; gap:8px; height:300px; align-content:start; font-size:12px; }
+.vl .vl-frs { display:grid; grid-template-columns:repeat(5, 1fr); gap:5px; }
+.vl .vl-fr { font:10px var(--mono); text-align:center; padding:4px 0; border-radius:5px; background:var(--card2); border:1px solid var(--ln); color:var(--mu); transition:background .3s, color .3s, border-color .3s; }
+.vl .vl-fr.vl-run { border-color:var(--c); color:var(--tx); } .vl .vl-fr.vl-ok { background:#12301f; color:var(--gr); border-color:#1e4a31; } .vl .vl-fr.vl-x { background:#2a1515; color:var(--rd); border-color:#5a2525; }
+.vl .vl-verdict { font:700 13px var(--mono); height:20px; } .vl .vl-why { color:var(--mu); line-height:1.4; height:68px; overflow:hidden; }
+.vl .vl-opts { display:flex; gap:6px; flex-wrap:wrap; }
+/* scene 3: debt grows with code; gates by risk */
+.vl .vl-debt { width:min(300px, 100%); padding:14px; display:grid; gap:10px; height:290px; align-content:start; }
+.vl .vl-bars { display:flex; align-items:flex-end; gap:12px; height:150px; border-bottom:1px solid #333; padding:0 6px; }
+.vl .vl-bars div { flex:1; display:flex; flex-direction:column-reverse; gap:2px; height:100%; }
+.vl .vl-bars i { display:block; border-radius:3px; height:0; transition:height .5s ease; }
+.vl .vl-bars i.vl-code { background:#3a3a3a; } .vl .vl-bars i.vl-sec { background:var(--rd); } .vl .vl-bars i.vl-slop { background:var(--yl); }
+.vl .vl-lg { display:flex; gap:10px; font-size:11.5px; color:var(--mu); flex-wrap:wrap; }
+.vl .vl-lg span::before { content:""; display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:5px; background:var(--k); }
+.vl .vl-areas { width:min(350px, 100%); padding:14px; display:grid; gap:8px; height:290px; align-content:start; }
+.vl .vl-area { display:grid; grid-template-columns:minmax(0, 1fr) 60px 124px; gap:8px; align-items:center; font-size:12.5px; padding:6px 8px; border-radius:7px; background:var(--card2); border:1px solid var(--ln); opacity:0; transition:opacity .35s; }
+.vl .vl-area.on { opacity:1; } .vl .vl-area > span:first-child { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.vl .vl-risk { font:700 10.5px var(--mono); text-align:center; padding:2px 0; border-radius:4px; }
+.vl .vl-r1 { background:#262626; color:var(--mu); } .vl .vl-r2 { background:#3a2c12; color:var(--yl); } .vl .vl-r3 { background:#3a1515; color:#ffb3b3; }
+.vl .vl-gate { font:10.5px var(--mono); color:var(--mu); text-align:right; white-space:nowrap; }
+.vl .vl-scan { font:12px var(--mono); height:20px; }
+/* scene 4: rules that come with tests */
+.vl .vl-md { width:min(520px, 100%); }
+.vl .vl-md .vl-wh { display:flex; gap:8px; align-items:center; padding:9px 12px; border-bottom:1px solid var(--ln); font:11.5px var(--mono); color:var(--mu); }
+.vl .vl-md .vl-b { padding:12px; display:grid; gap:8px; }
+.vl .vl-rule { display:grid; grid-template-columns:20px minmax(0, 1fr) 160px; gap:10px; align-items:center; font-size:12.5px; opacity:0; transition:opacity .35s; }
+.vl .vl-rule.on { opacity:1; } .vl .vl-rule > span:nth-child(2) { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.vl .vl-t { justify-self:end; font:11px var(--mono); padding:2px 8px; border-radius:99px; border:1px solid var(--ln); color:var(--mu); white-space:nowrap; transition:background .3s, color .3s, border-color .3s; }
+.vl .vl-t.vl-ok { background:#12301f; color:var(--gr); border-color:#1e4a31; } .vl .vl-t.vl-x { background:#2a1515; color:var(--rd); border-color:#5a2525; }
+.vl .vl-trade { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:10px; margin-top:6px; }
+.vl .vl-sl { font-size:11.5px; display:grid; gap:5px; color:var(--mu); }
+.vl .vl-sl div { height:6px; border-radius:3px; background:#2a2a2a; position:relative; }
+.vl .vl-sl i { position:absolute; top:-4px; width:14px; height:14px; border-radius:50%; background:var(--tx); left:calc(var(--v) - 7px); transition:left .8s; }
+.vl .vl-sl.vl-lock i { background:var(--c); } .vl .vl-sl b { color:var(--tx); font-weight:600; }
+/* scene 5: the breaker swarm */
+.vl .vl-site { width:min(300px, 100%); position:relative; }
+.vl .vl-site .vl-wh { display:flex; gap:6px; align-items:center; padding:8px 11px; border-bottom:1px solid var(--ln); }
+.vl .vl-site .vl-wh i { width:8px; height:8px; border-radius:50%; background:#444; } .vl .vl-site .vl-wh span { margin-left:auto; font:10.5px var(--mono); color:var(--mu); }
+.vl .vl-site .vl-pg { padding:12px; display:grid; gap:8px; height:190px; position:relative; }
+.vl .vl-site .vl-pg > i { display:block; height:10px; border-radius:5px; background:#2a2a2a; }
+.vl .vl-site .vl-cards { display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; } .vl .vl-site .vl-cards i { height:56px; border-radius:6px; background:#222; display:block; }
+.vl .vl-pin { position:absolute; width:18px; height:18px; border-radius:50%; background:var(--rd); color:#fff; font:700 10px/18px var(--sans); text-align:center; transform:scale(0); transition:transform .3s cubic-bezier(.3,1.6,.5,1); }
+.vl .vl-pin.on { transform:scale(1); }
+.vl .vl-swarm { display:grid; grid-template-columns:repeat(4, 30px); gap:8px; }
+.vl .vl-bot { width:30px; height:30px; border-radius:50%; background:var(--card2); border:1px solid var(--ln); display:grid; place-items:center; font-size:13px; transition:border-color .2s, background .2s; }
+.vl .vl-bot.on { border-color:var(--rd); background:#2a1515; }
+.vl .vl-side { width:min(240px, 100%); padding:12px; display:grid; gap:7px; font-size:12px; height:250px; align-content:start; }
+.vl .vl-side div { display:flex; gap:7px; opacity:0; transition:opacity .35s; } .vl .vl-side div.on { opacity:1; }
+.vl .vl-copy { font:11.5px var(--mono); padding:6px 8px; border-radius:6px; background:#12213a; color:#b5d3ff; }
+/* scene 6: blind first-timer */
+.vl .vl-term { width:min(330px, 100%); font:11.5px/1.5 var(--mono); }
+.vl .vl-term .vl-b { padding:10px 12px; display:grid; gap:4px; height:200px; align-content:start; }
+.vl .vl-term .vl-b div { opacity:0; transition:opacity .3s; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .vl .vl-term .vl-b div.on { opacity:1; }
+.vl .vl-blocked { color:var(--rd); } .vl .vl-allowed { color:var(--gr); }
+.vl .vl-gauge { width:min(220px, 100%); padding:14px; display:grid; gap:10px; justify-items:center; height:250px; align-content:center; }
+.vl .vl-ring { width:130px; height:130px; position:relative; }
+.vl .vl-ring svg { width:100%; height:100%; transform:rotate(-90deg); display:block; }
+.vl .vl-ring circle { fill:none; stroke-width:10; } .vl .vl-ring .vl-bg { stroke:#262626; } .vl .vl-ring .vl-fg { stroke:var(--gr); stroke-dasharray:327; stroke-dashoffset:327; transition:stroke-dashoffset 1.6s ease; stroke-linecap:round; }
+.vl .vl-ring b { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font:700 26px var(--mono); font-variant-numeric:tabular-nums; }
+.vl .vl-stuck { display:grid; gap:5px; font-size:12px; width:100%; }
+.vl .vl-stuck span { opacity:0; transition:opacity .35s; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .vl .vl-stuck span.on { opacity:1; }
+/* scene 7: feedback triage */
+.vl .vl-tri { display:grid; grid-template-columns:200px 130px 240px; gap:16px; align-items:center; justify-content:center; width:100%; }
+.vl .vl-in { padding:12px; display:grid; gap:6px; height:282px; align-content:start; }
+.vl .vl-msg { font-size:12px; padding:6px 8px; border-radius:7px; background:var(--card2); border:1px solid var(--ln); display:grid; gap:1px; opacity:0; transform:translateY(-8px); transition:opacity .3s, transform .3s, border-color .3s; }
+.vl .vl-msg.on { opacity:1; transform:none; } .vl .vl-msg.vl-gone { opacity:.25; }
+.vl .vl-msg small { color:var(--mu); font:10.5px var(--mono); }
+.vl .vl-msg span { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.vl .vl-sorter { padding:12px; display:grid; gap:6px; justify-items:center; text-align:center; font-size:12px; height:120px; align-content:center; }
+.vl .vl-sorter.vl-busy { border-color:var(--c); }
+.vl .vl-bins { display:grid; gap:10px; }
+.vl .vl-bin { padding:10px 12px; display:grid; gap:4px; font-size:12px; height:110px; align-content:start; }
+.vl .vl-bin ul { margin:0; padding:0; list-style:none; display:grid; gap:3px; font:11px var(--mono); color:var(--mu); }
+.vl .vl-bin li { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.vl .vl-clock { font:12px var(--mono); }
+@media (max-width:760px) {
+  .vl { padding:14px; }
+  .vl .vl-two { grid-template-columns:minmax(0, 1fr); } .vl .vl-path { height:auto; }
+  .vl .vl-map, .vl .vl-rep, .vl .vl-debt, .vl .vl-areas, .vl .vl-side, .vl .vl-gauge { height:auto; }
+  .vl .vl-map { height:260px; }
+  .vl .vl-rule { grid-template-columns:18px minmax(0, 1fr); row-gap:4px; font-size:12px; } .vl .vl-rule .vl-t { grid-column:2; justify-self:start; }
+  .vl .vl-tri { grid-template-columns:minmax(0, 1fr); } .vl .vl-in { height:auto; } .vl .vl-sorter { height:auto; }
+  .vl .vl-area { grid-template-columns:minmax(0, 1fr) 60px; } .vl .vl-gate { display:none; }
+}
+@media (prefers-reduced-motion: reduce) { .vl *, .vl *::before { animation:none !important; transition:none !important; } }
 </style>
 
 <header class="rs-top">
@@ -1011,11 +1599,9 @@ body.rs-wide { --page-w:1472px; }
       <h1>Notes from building a software factory</h1>
       <p class="lede">Each post answers one question we hit while designing the <a href="../console/">console</a>: how tickets move, how agents remember, how specs stop guesses, how to orchestrate it all. Most sources are vendor posts, so each claim is labelled with how strong its evidence is.</p>
     </div>
-    <div class="rs-featured" id="rsFeatured"></div>
-    <div class="rs-h"><h2 id="rsListTitle">All articles</h2><span id="rsPostCount"></span></div>
-    <div class="rs-list" id="rsPosts"></div>
-    <div class="rs-h"><h2>From the video feed</h2><a href="#videos">All videos →</a></div>
-    <div class="rs-grid" id="rsVids"><div class="vd-empty">Loading…</div></div>
+    <div class="rs-find"><input id="rsQ" type="search" placeholder="Search articles and videos…" aria-label="Search articles and videos" autocomplete="off"></div>
+    <div class="rs-chips" id="rsChips" aria-label="Topics"></div>
+    <div id="rsTopics"></div>
   </section>
 
   <!-- ============ VIDEOS ============ -->
@@ -2065,8 +2651,16 @@ exit 2   # blocks the call; stderr goes to Claude</pre>
       <div class="eyebrow">Research round 6 · orchestration options · Oct 2026</div>
       <h1>Ways to orchestrate a software factory</h1>
       <p class="lede">From "you watch panes in herdr" to "a durable workflow engine runs the agents". Nine ways, the jobs a factory needs done, and which of those jobs each one actually covers. Click a row, then run a ticket through it and see what happens when the worker crashes: the "missed ticket" problem.</p>
-      <nav class="toc" aria-label="Sections"><a href="#or-matrix">Compare</a><a href="#or-ladder">When to move up</a><a href="#or-ours">Our stack</a><a href="#or-src">Sources</a></nav>
+      <nav class="toc" aria-label="Sections"><a href="#ow-scenes">Watch them</a><a href="#or-matrix">Compare</a><a href="#or-ladder">When to move up</a><a href="#or-ours">Our stack</a><a href="#or-src">Sources</a></nav>
     </div>
+
+    <section id="ow-scenes">
+      <h2>Watch them run the same batch</h2>
+      <p class="claim">Six tickets, and the worker on <b>ENG-418</b> crashes. Press play, or pick a way. Each scene ends with the same scorecard, so they compare like for like.</p>
+      <div class="sp-ctl"><div class="seg" id="owSteps"></div><button type="button" class="ow-play" id="owPlay">▶ Play all</button></div>
+      <div class="ow" id="owStage"></div>
+      <div class="ow-cap" id="owCap" aria-live="polite"></div>
+    </section>
 
     <section id="or-matrix">
       <h2>Nine ways, six jobs</h2>
@@ -2341,6 +2935,214 @@ exit 2   # blocks the call; stderr goes to Claude</pre>
     </section>
   </section>
 
+  <section class="view doc" id="v-mods" hidden>
+    <div>
+      <div class="eyebrow">Research round 10 · Claude Code mods · Oct 2026</div>
+      <h1>Mods: changing Claude Code, not adding to it</h1>
+      <p class="lede">Skills and plugins give Claude more to use. A mod changes the tool itself: it runs on every session event and can draw on the screen. <a href="https://www.youtube.com/watch?v=ERNqRK6sMJY" target="_blank" rel="noopener">AI Labs built six mods</a> they now use every day. Below, each one runs on the same session building a finance app, then we map them onto our factory.</p>
+      <nav class="toc" aria-label="Sections"><a href="#mo-scenes">The mods</a><a href="#mo-fit">In factory terms</a><a href="#mo-first">Our first step</a><a href="#mo-src">Sources</a></nav>
+    </div>
+
+    <section id="mo-scenes">
+      <h2>One session, six mods</h2>
+      <p class="claim">Press play, or pick a mod. Every scene is the same session, <b>~/finance-app</b>, so you can see what each mod changes on one screen.</p>
+      <div class="sp-ctl"><div class="seg" id="moSteps"></div><button type="button" class="mo-play" id="moPlay">▶ Play all</button></div>
+      <div class="mo" id="moStage"></div>
+      <div class="mo-cap" id="moCap" aria-live="polite"></div>
+    </section>
+
+    <section id="mo-fit">
+      <h2>What each mod is in factory terms</h2>
+      <p class="claim">Mods live in an interactive session, and our factory runs headless <code>claude -p</code> with no screen to draw on. So <b>the useful part is the behaviour, not the panel</b>: most of these already have a place in the pipeline as a file, a ledger row or a hook.</p>
+      <div class="tcard"><table>
+        <thead><tr><th>Mod</th><th>What it fixes</th><th>Factory equivalent</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr><td><b>Assumption review</b></td><td>Small guesses Claude never mentions</td><td>The worker writes <code>assumptions.md</code> into the PR; you mark each line in the review, and a wrong one becomes the retry prompt</td><td><span class="yes">adopt</span></td></tr>
+          <tr><td><b>Same-folder tracker</b></td><td>Two sessions doing the same job</td><td>Ledger rows claim a ticket and each run gets its own worktree, so this is already solved for agents. The mod is still handy for people running two sessions in one checkout</td><td><span class="lim">people only</span></td></tr>
+          <tr><td><b>Session board</b></td><td>Sessions stuck waiting on you</td><td>The console's <a href="../console/#inbox">Human inbox</a>: every gate that waits on a person, in one list</td><td><span class="yes">have it</span></td></tr>
+          <tr><td><b>Prompt enhancer</b></td><td>Rough prompts that miss the intent</td><td>The scout and the spec stage do this for tickets: skills to use, questions first, what done looks like</td><td><span class="yes">have it</span></td></tr>
+          <tr><td><b>Plain answers</b></td><td>Jargon and summaries lost between tool calls</td><td>The handoff file and the PR description, written for someone arriving cold. A small-model check on them is cheap</td><td><span class="lim">try the check</span></td></tr>
+          <tr><td><b>Idea shelf</b></td><td>Ideas that derail the current task</td><td>A ticket in the tracker. A mod is quicker while you are in a session</td><td><span class="lim">optional</span></td></tr>
+          <tr><td><b>Design picker</b></td><td>Styles described only in words</td><td>For UI tickets, put mockups in the spec instead of adjectives (see <a href="#design">the design-tools post</a>)</td><td><span class="lim">for UI tickets</span></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="mo-first">
+      <h2>Our first step</h2>
+      <ol class="order">
+        <li><div><b>Make the worker list its assumptions</b><span>Add one line to the implement-task skill: before finishing, write every choice the ticket did not decide into <code>assumptions.md</code>, one per line. The reviewer and the person merging read that file first, and "wrong" on a line becomes the next attempt's prompt, the same loop as the mod.</span></div></li>
+        <li><div><b>Keep mods small, with an off switch</b><span>A mod runs on every event of every session, so its bugs do too. A guard mod we ran blocked every push to <code>main</code> because it read a <code>pkill -f</code> command as a force-push. One job per mod, and know how to turn each one off.</span></div></li>
+        <li><div><b>Try a same-folder warning for the Mac mini</b><span>The daily video job and a person can work in the repo at once. The job already uses its own clone; a tracker mod would warn when two interactive sessions share the main checkout.</span></div></li>
+      </ol>
+    </section>
+
+    <section id="mo-src">
+      <h2>Sources</h2>
+      <ul class="or-src">
+        <li><a href="https://www.youtube.com/watch?v=ERNqRK6sMJY" target="_blank" rel="noopener">AI Labs: Claude mods are insane</a> (sponsored by Runway; the refined mods are in the channel's paid community)</li>
+        <li><a href="https://code.claude.com/docs/en/plugins" target="_blank" rel="noopener">Claude Code docs: plugins</a>. In current Claude Code versions, the built-in <code>plugin-authoring</code> skill writes mods for you; allow hot reload to see a change as soon as the turn ends, then ask Claude to install the mod so other sessions get it</li>
+      </ul>
+      <p class="sp-small">Event names in scene 1 are the hooks shown on screen in the video. The finance app, the assumption wording and the session names inside the scenes are illustrative unless the caption says they come from the video.</p>
+    </section>
+  </section>
+
+  <section class="view doc" id="v-rea" hidden>
+    <div>
+      <div class="eyebrow">Research round 11 · Evidence-backed testing · Oct 2026</div>
+      <h1>Testing an app from the outside, with receipts</h1>
+      <p class="lede"><a href="https://github.com/morluto/rea" target="_blank" rel="noopener">REA</a>, the top trending repo on GitHub, gives an agent around 170 tools to take apart any app or site from what reaches the browser. <a href="https://www.youtube.com/watch?v=rw0fqnrZgNM" target="_blank" rel="noopener">AI Labs tried five uses</a>. The one we want is not cloning features: it is a tester that never reads the code and must cite a capture for every claim.</p>
+      <nav class="toc" aria-label="Sections"><a href="#rv-scenes">The five uses</a><a href="#rv-fit">Where it plugs in</a><a href="#rv-first">Our first step</a><a href="#rv-src">Sources</a></nav>
+    </div>
+
+    <section id="rv-scenes">
+      <h2>From a click to a report</h2>
+      <p class="claim">Press play, or pick a scene. Most scenes run on the video's demo app, <b>my-app</b> on localhost:3000, and its billing page.</p>
+      <div class="sp-ctl"><div class="seg" id="rvSteps"></div><button type="button" class="rv-play" id="rvPlay">▶ Play all</button></div>
+      <div class="rv" id="rvStage"></div>
+      <div class="rv-cap" id="rvCap" aria-live="polite"></div>
+    </section>
+
+    <section id="rv-fit">
+      <h2>Where it plugs into our pipeline</h2>
+      <p class="claim">Two ideas travel even without REA: <b>a tester that cannot see the code it checks</b>, and <b>a label on every finding</b> saying what backs it.</p>
+      <div class="tcard"><table>
+        <thead><tr><th>Use</th><th>Stage</th><th>What it gives us</th><th>Watch out</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr><td><b>Black-box test</b></td><td>Tester</td><td>Runs the preview build against the spec's rules with no repo access; caught a shown-vs-charged bug the code review missed</td><td>Slow next to unit tests; keep it to tickets that touch money, auth or data</td><td><span class="yes">adopt</span></td></tr>
+          <tr><td><b>Evidence labels</b></td><td>Reviewer · tester</td><td>Observed, inferred, unknown on every finding; only observed findings fail a ticket</td><td>The label is only as good as the capture; spot-check the evidence IDs</td><td><span class="yes">adopt</span></td></tr>
+          <tr><td><b>Security sweep</b></td><td>Before release</td><td>Secrets in shipped JavaScript, public source maps, access holes, sorted by danger with fixes</td><td>Only sees what reaches the browser; server-side flaws stay hidden</td><td><span class="lim">before each release</span></td></tr>
+          <tr><td><b>Performance checkup</b></td><td>Tester</td><td>Speed, broken links, layout on phones across the whole site</td><td>Overlaps our 1470px / 400px check</td><td><span class="lim">optional</span></td></tr>
+          <tr><td><b>Behaviour list from another app</b></td><td>Scout · spec</td><td>A written list of how a feature behaves, split into what was seen and what was not pinned down</td><td>Check the target's terms of use; copy behaviour you need, not someone's product</td><td><span class="lim">case by case</span></td></tr>
+          <tr><td><b>Competitor research</b></td><td>Planning</td><td>Features found in the code a sign-in page loads</td><td>Not a factory stage; a person decides what it is for</td><td><span class="no">not for the factory</span></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="rv-first">
+      <h2>Our first step</h2>
+      <ol class="order">
+        <li><div><b>Add labels to the reviewer's rubric now</b><span>Every finding the reviewer writes gets <code>observed</code>, <code>inferred</code> or <code>unknown</code>, with a pointer to what backs it (a test run, a log line, a file and line). Only observed findings send the ticket back; inferred ones go to the Human inbox. This needs no new tool.</span></div></li>
+        <li><div><b>Pilot a black-box tester on one billing ticket</b><span>Give a tester run only the preview URL and the spec, no repo checkout, with REA installed. It writes scenarios, runs them and reports with evidence IDs. Compare what it finds with the normal tester on the same PR.</span></div></li>
+        <li><div><b>Run the security sweep before a release</b><span>Planted-bug results in a demo are not proof. Run it on this site first, where the answer should be "nothing found", then on a staging app.</span></div></li>
+      </ol>
+    </section>
+
+    <section id="rv-src">
+      <h2>Sources</h2>
+      <ul class="or-src">
+        <li><a href="https://www.youtube.com/watch?v=rw0fqnrZgNM" target="_blank" rel="noopener">AI Labs: GitHub's #1 trending skill, 5 use cases</a> (sponsored by Firecrawl)</li>
+        <li><a href="https://github.com/morluto/rea" target="_blank" rel="noopener">morluto/rea</a>: MIT, set up with <code>npx rea-agents setup</code>; "results include the evidence and limitations behind each conclusion"</li>
+        <li><a href="https://github.com/morluto/rea/blob/main/docs/javascript-application-graph.md" target="_blank" rel="noopener">REA docs: JavaScript application graph</a>: the states <code>observed</code>, <code>inferred</code>, <code>unknown</code>, <code>unavailable</code></li>
+        <li><a href="https://rea.tools/" target="_blank" rel="noopener">rea.tools</a>: guides and showcases</li>
+      </ul>
+      <p class="sp-small">Star count read from GitHub on 23 Oct 2026: about 372k. The billing figures and findings in scenes 4 and 6 are from the video. File names, evidence IDs, the findings in scene 2 and the competitors in scene 5 are illustrative.</p>
+    </section>
+  </section>
+
+  <section class="view doc" id="v-vercel" hidden>
+    <div>
+      <div class="eyebrow">Research round 12 · Steering agents · Oct 2026</div>
+      <h1>Building is cheap. Direction is the job</h1>
+      <p class="lede">Vercel's CEO, Guillermo Rauch, said in an interview that most people measure AI work by a number that matters less than they think: how much gets built. <a href="https://www.youtube.com/watch?v=y2ifUC9_zuU" target="_blank" rel="noopener">AI Labs turned his advice into seven tips</a>, each with a command or an agent. Below, all seven run on one app, then we check which ones our factory already has.</p>
+      <nav class="toc" aria-label="Sections"><a href="#vl-scenes">The seven tips</a><a href="#vl-fit">What we have, what we lack</a><a href="#vl-first">Our first step</a><a href="#vl-src">Sources</a></nav>
+    </div>
+
+    <section id="vl-scenes">
+      <h2>Seven tips, one app</h2>
+      <p class="claim">Press play, or pick a tip. Every scene is the video's demo app, <b>Sitfirst</b>: booking showroom visits at local furniture stores, planned in a specs folder with a PRD and ten feature docs.</p>
+      <div class="sp-ctl"><div class="seg" id="vlSteps"></div><button type="button" class="vl-play" id="vlPlay">▶ Play all</button></div>
+      <div class="vl" id="vlStage"></div>
+      <div class="vl-cap" id="vlCap" aria-live="polite"></div>
+    </section>
+
+    <section id="vl-fit">
+      <h2>What we have, what we lack</h2>
+      <p class="claim">Most tips are checks that run <b>against the spec</b>, by an agent that did not build the thing. That is our pipeline's shape already; the gap is a check across the whole app, not per ticket.</p>
+      <div class="tcard"><table>
+        <thead><tr><th>Tip</th><th>In our factory</th><th>Gap</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr><td><b>Direction check</b></td><td>The reviewer reads each diff against its ticket's spec</td><td>Nothing reads the whole product against the PRD. Ten tickets can each pass and still add up to the wrong app</td><td><span class="yes">adopt</span></td></tr>
+          <tr><td><b>Must-not-trade-off rules with tests</b></td><td>Hooks and CI enforce some rules (no edits outside the app, tests must pass)</td><td>No written list of non-negotiables; each should point at the check that enforces it</td><td><span class="yes">adopt</span></td></tr>
+          <tr><td><b>Breaker agent</b></td><td>The tester runs the planned checks</td><td>Nobody attacks: concurrency, skipped steps, hostile input, on a copy of the data</td><td><span class="lim">try on one ticket</span></td></tr>
+          <tr><td><b>First-timer agent</b></td><td>The black-box tester idea from <a href="#rea">the REA post</a></td><td>Same principle: a hook removes code access, so it cannot pass by reading the code</td><td><span class="lim">pair with REA</span></td></tr>
+          <tr><td><b>Security scans, per-area care</b></td><td>The cross-vendor reviewer</td><td>No dedicated scanner, and no risk level per area deciding which gates a ticket gets</td><td><span class="lim">try DeepSec</span></td></tr>
+          <tr><td><b>Try it first</b></td><td>Spikes and design notes</td><td>Fine as it is</td><td><span class="yes">have it</span></td></tr>
+          <tr><td><b>Fast feedback loop</b></td><td>Tickets come in from the tracker</td><td>We have no customers yet; the console's inbox is where vague reports would wait for a person</td><td><span class="no">later</span></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="vl-first">
+      <h2>Our first step</h2>
+      <ol class="order">
+        <li><div><b>A weekly direction run</b><span>A scheduled job reads <code>openspec/</code> and the merged PRs of the week, one subagent per spec, and writes a scorecard: on course, drifting, or off course, with each drift tagged "update the spec" or "remove it". It goes to the Human inbox, never straight to a ticket.</span></div></li>
+        <li><div><b>A must-not-trade-off section with a check per line</b><span>Add it to <code>AGENTS.md</code>. A line without a check is a wish: either write the test, the hook or the CI step, or mark it "unchecked" so the reviewer knows to look.</span></div></li>
+        <li><div><b>Give risky tickets a breaker</b><span>Tickets that touch bookings, payments or personal data get one extra stage after the tester: a breaker on a copy of the data, reporting with the evidence labels from <a href="#rea">the REA post</a>.</span></div></li>
+      </ol>
+    </section>
+
+    <section id="vl-src">
+      <h2>Sources</h2>
+      <ul class="or-src">
+        <li><a href="https://www.youtube.com/watch?v=y2ifUC9_zuU" target="_blank" rel="noopener">AI Labs: Vercel's CEO just unveiled the greatest AI coding workflow ever</a> (sponsored by Victor). The video does not name the interview it draws on</li>
+        <li><a href="https://github.com/vercel-labs/deepsec" target="_blank" rel="noopener">vercel-labs/deepsec</a>: "a security harness for finding vulnerabilities in your codebase powered by coding agents"</li>
+      </ul>
+      <p class="sp-small">From the video: Sitfirst, its ten feature docs, the OFF COURSE verdict and its reasons, the 1,785 contribution count, the data copy before breaking, the hook on the first-timer, and the 96% error-free figure. Which feature docs fail, the breaker's findings, the first-timer's notes, the rules list and the inbox messages are illustrative.</p>
+    </section>
+  </section>
+
+  <section class="view doc" id="v-review" hidden>
+    <div>
+      <div class="eyebrow">Research round 13 · Reviewing agent work · Oct 2026</div>
+      <h1>Who checks what the agent built?</h1>
+      <p class="lede">Agents write a lot of code and then call the task done; the missing parts show up when you use it. <a href="https://www.youtube.com/watch?v=S49gppZl8H0" target="_blank" rel="noopener">AI Labs walks through the review system the Claude Code team described</a> and turns it into a workflow. The team reports more than twice as many changes shipped, with the share they had to undo down by over 40%. Below, one feature goes through all seven steps, then we check which ones our factory already has.</p>
+      <nav class="toc" aria-label="Sections"><a href="#rq-scenes">The seven steps</a><a href="#rq-fit">What we have, what we lack</a><a href="#rq-first">Our first step</a><a href="#rq-src">Sources</a></nav>
+    </div>
+
+    <section id="rq-scenes">
+      <h2>Seven steps, one feature</h2>
+      <p class="claim">Press play, or pick a step. Each scene shows one idea from the video. <b>The order matters</b>: the evals exist before the build, the reviewer is not the builder, and the loop has limits.</p>
+      <div class="sp-ctl"><div class="seg" id="rqSteps"></div><button type="button" class="sp-play" id="rqPlay">▶ Play all</button></div>
+      <div class="rq" id="rqStage"></div>
+      <div class="rq-cap" id="rqCap" aria-live="polite"></div>
+    </section>
+
+    <section id="rq-fit">
+      <h2>What we have, what we lack</h2>
+      <p class="claim">The factory already has the shape: a reviewer that did not build the change, hooks and CI, a worktree per ticket. What it lacks is <b>the human-approved eval before the build</b> and the limits that keep the review loop from running forever.</p>
+      <div class="tcard"><table>
+        <thead><tr><th>Step</th><th>In our factory</th><th>Gap</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr><td><b>Evals approved before building</b></td><td>Scenarios in the OpenSpec <code>proposal.md</code>, and the console's Evals tab</td><td>The scenarios are not a strict eval file a person approves first, and nothing blocks "done" until they pass</td><td><span class="yes">adopt</span></td></tr>
+          <tr><td><b>Reviewer is not the builder</b></td><td>A separate reviewer stage, including the cross-vendor one</td><td>Fine as it is</td><td><span class="yes">have it</span></td></tr>
+          <tr><td><b><code>review.md</code> linked from the rules file</b></td><td>Review criteria live in stage prompts</td><td>No single file of what counts as a failure, severity, and what to ignore; link it from <code>AGENTS.md</code> so every session loads it</td><td><span class="yes">adopt</span></td></tr>
+          <tr><td><b>Learned rules, approved by a person</b></td><td>The Human inbox in the console mock</td><td>Nothing notices that a problem came back and proposes the one-line rule</td><td><span class="lim">try on one repo</span></td></tr>
+          <tr><td><b>Risk tier sets strictness</b></td><td>Every ticket gets the same gates</td><td>No "what happens to a customer if this breaks?" rating (the Vercel post found the same gap)</td><td><span class="yes">adopt</span></td></tr>
+          <tr><td><b>Round cap and stop on repeats</b></td><td>Worker and reviewer can go another round</td><td>No limit recorded in our notes. The video's numbers (3, or 5 for heavier rounds; stop if a problem survives 2 fixes) are a starting point</td><td><span class="yes">adopt</span></td></tr>
+          <tr><td><b>First-timer agent, branch per feature</b></td><td>The black-box tester from <a href="#rea">the REA post</a>, and a worktree and branch per ticket</td><td>Rolling back a bad merge by finding the commit is not a written skill</td><td><span class="lim">pair with REA</span></td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="rq-first">
+      <h2>Our first step</h2>
+      <ol class="order">
+        <li><div><b>Write <code>review.md</code> and link it from <code>AGENTS.md</code></b><span>Failure definitions, severity, what to ignore, how to report, and an empty "rules learned" section at the bottom. Without the link the reviewer does not read it.</span></div></li>
+        <li><div><b>Cap the review loop and say why it stopped</b><span>Round 3 ends with "rethink the approach", later rounds review only the last fix, and each finding names its kind. Log the round count in the ticket so the console can show loops that hit the cap.</span></div></li>
+        <li><div><b>Add a risk tier to ticket intake</b><span>One field, set by asking the customer question. High-risk tickets get a stricter eval and a breaker or first-timer stage; low-risk tickets skip both.</span></div></li>
+      </ol>
+    </section>
+
+    <section id="rq-src">
+      <h2>Sources</h2>
+      <ul class="or-src">
+        <li><a href="https://www.youtube.com/watch?v=S49gppZl8H0" target="_blank" rel="noopener">AI Labs: Anthropic just released a new system for using Claude Code</a> (sponsored by Unstoppable). The video builds on an Anthropic article about the Claude Code team's review process; it does not link it, so it was not checked here</li>
+      </ul>
+      <p class="sp-small">From the video: 2,500 to over 30,000 changes a day in four months, the 50-round loop, 59% of reviewer findings repeating from round one, the three limits, the low, medium and high definitions, and the 5-round and 2-fix stops in AI Labs' own loop. The skill prompts are in AI Labs' paid community, so the scenes summarise them. The feature, its findings, the "empty state" rule and the git history are illustrative.</p>
+    </section>
+  </section>
+
   <nav class="rs-next" id="rsNext" aria-label="Next post"></nav>
   </article>
   <aside class="rs-rail" id="rsRail" aria-label="About this post"></aside>
@@ -2350,6 +3152,30 @@ exit 2   # blocks the call; stderr goes to Claude</pre>
 
 <script>
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Explainer stages: reserve the tallest scene's height (and the tallest caption's), so switching scenes never
+// resizes the stage or pushes the page around. Re-measured whenever the stage's width changes (first shown, resize).
+function reserveSceneSpace(stage, cap, measure, redraw) {
+  let w = 0;
+  // border-box, so min-height and the measured height mean the same thing (otherwise padding feeds back and it grows forever)
+  stage.style.boxSizing = 'border-box'; if (cap) cap.style.boxSizing = 'border-box';
+  // grow-only: content a scene adds while it plays can make it taller than measured; keep that height from then on.
+  // Only ever raises the floor to the natural height, so setting it cannot trigger another raise.
+  const keep = el => { if (!el) return; const floor = parseFloat(el.style.minHeight) || 0, h = el.getBoundingClientRect().height; if (h > floor + 1) el.style.minHeight = Math.ceil(h) + 'px'; };
+  if (cap) new ResizeObserver(() => keep(cap)).observe(cap);
+  const fit = force => {
+    const nw = Math.round(stage.clientWidth); if (!nw) return;
+    if (nw === w && !force) { keep(stage); return; }
+    w = nw;
+    stage.style.minHeight = ''; if (cap) cap.style.minHeight = '';
+    let h = 0, c = 0;
+    measure(() => { h = Math.max(h, stage.offsetHeight); if (cap) c = Math.max(c, cap.offsetHeight); });
+    stage.style.minHeight = h + 'px'; if (cap) cap.style.minHeight = c + 'px';
+    redraw();
+  };
+  new ResizeObserver(() => fit()).observe(stage);
+  // web fonts change line wraps after the first measure, so measure again once they have loaded
+  document.fonts?.ready.then(() => { if (w) fit(true); });
+}
 // ---- iceberg explorer: data comes from the full table, so there is one source of truth
 (() => {
   const board = document.getElementById('iceBoard'), card = document.getElementById('iceCard');
@@ -2481,19 +3307,22 @@ const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   $('spSteps').innerHTML = STEPS.map((s, i) => `<button type="button" data-i="${i}" aria-pressed="false">${i + 1} ${s.label}</button>`).join('');
   let timers = [], auto = false, cur = 0;
   const clear = () => { timers.forEach(clearTimeout); timers = []; };
-  function show(i) {
+  function show(i, instant) {
     clear(); cur = i; const s = STEPS[i];
     $('spSteps').querySelectorAll('button').forEach((b, k) => b.setAttribute('aria-pressed', String(k === i)));
     $('spLeftH').textContent = s.head; $('spLeft').innerHTML = s.left; $('spVerb').textContent = s.verb; $('spNote').textContent = s.note;
     stage.classList.toggle('busy', !!s.busy);
     s.cards.forEach((c, k) => setCard(k, c));
     $('spCap').innerHTML = `<p><code>${s.cmd}</code></p><p>${s.what}</p><p class="sp-small"><b>For us:</b> ${s.ours}</p>`;
-    const t = (fn, ms) => timers.push(setTimeout(fn, reduced ? 0 : ms));
+    // instant: run the whole step synchronously, so it can be measured in its finished state
+    const t = instant ? fn => fn() : (fn, ms) => timers.push(setTimeout(fn, reduced ? 0 : ms));
     const len = s.play(t);
+    if (instant) return;
     if (auto) t(() => i < STEPS.length - 1 ? show(i + 1) : stop(), len + 600);
   }
   function stop() { auto = false; $('spPlay').textContent = '▶ Play all'; $('spPlay').setAttribute('aria-pressed', 'false'); }
   $('spSteps').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { stop(); show(+b.dataset.i); } });
+  reserveSceneSpace(stage, $('spCap'), done => { STEPS.forEach((_, i) => { show(i, true); done(); }); }, () => show(cur));
   $('spPlay').addEventListener('click', () => { if (auto) { stop(); clear(); return; } auto = true; $('spPlay').textContent = '❚❚ Pause'; $('spPlay').setAttribute('aria-pressed', 'true'); show(cur === STEPS.length - 1 ? 0 : cur); });
   show(0);
 
@@ -2749,6 +3578,7 @@ The system SHALL keep a session for 30 days when the user ticks "Remember me".
   }
   function stop() { auto = false; $('amPlay').textContent = '▶ Play all'; $('amPlay').setAttribute('aria-pressed', 'false'); }
   $('amSteps').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { stop(); show(+b.dataset.i); } });
+  reserveSceneSpace(stage, $('amCap'), done => { for (const sc of SCENES) { stage.innerHTML = sc.html(); $('amCap').innerHTML = sc.cap; done(); } }, () => show(cur));
   $('amPlay').addEventListener('click', () => { if (auto) { stop(); clear(); return; } auto = true; $('amPlay').textContent = '❚❚ Pause'; $('amPlay').setAttribute('aria-pressed', 'true'); show(cur === SCENES.length - 1 ? 0 : cur); });
   show(0);
 })();
@@ -2973,7 +3803,180 @@ Branch per start-task, draft PR, a person merges. Report the branch and PR URL.`
   }
   function stop() { auto = false; $('dzPlay').textContent = '▶ Play all'; }
   $('dzSteps').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { stop(); show(+b.dataset.i); } });
+  reserveSceneSpace(stage, $('dzCap'), done => { for (const sc of SCENES) { stage.innerHTML = sc.html(); $('dzCap').innerHTML = sc.cap; done(); } }, () => show(cur));
   $('dzPlay').addEventListener('click', () => { if (auto) { stop(); clear(); return; } auto = true; $('dzPlay').textContent = '❚❚ Pause'; show(cur === SCENES.length - 1 ? 0 : cur); });
+  show(0);
+})();
+
+// Orchestration explainer: the same batch of 6 tickets in every scene; ENG-418's worker crashes
+(() => {
+  const stage = document.getElementById('owStage'); if (!stage) return;
+  const $ = id => document.getElementById(id);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const on = (el, sel) => el.querySelectorAll(sel).forEach(n => n.classList.add('on'));
+  const T = ['ENG-412', 'ENG-421', 'ENG-418', 'ENG-430', 'ENG-433', 'ENG-440'];
+  const st = (el, cls, text) => { el.className = 'ow-st ' + cls; el.textContent = text; };
+  // the shared scorecard closing every scene
+  const score = (acc, crash, cost, tone) => `<div class="ow-score" data-score><span class="ow-pl ${tone[0]}">tickets accounted for <b>${acc}</b></span>
+    <span class="ow-pl ${tone[1]}">on a crash: <b>${crash}</b></span><span class="ow-pl">setup: <b>${cost}</b></span></div>`;
+  const count = (node, to, ms, suf = '') => { if (reduced) { node.textContent = to.toLocaleString() + suf; return; } const t0 = performance.now();
+    const f = now => { const p = Math.min(1, (now - t0) / ms); node.textContent = Math.round(to * p).toLocaleString() + suf; if (p < 1) requestAnimationFrame(f); }; requestAnimationFrame(f); };
+
+  const SCENES = [
+    { k:'Panes', cap:'<p><b>Level 1: you are the orchestrator.</b> herdr, Claude Squad or tmux show one pane per agent, each in its own worktree, and tell you which is working, blocked or done. Your attention is the dispatch loop, so a pane you stop looking at is a ticket nobody picks up.</p><small>Setup takes minutes and it is how most people start. It stops scaling at 2–5 agents.</small>',
+      html:() => `<div class="ow-row" style="gap:28px">
+        <div class="ow-you ow-vi" data-s="1"><span class="ow-eye">you</span><span class="ow-mu">watching</span> <b class="ow-mono" id="owLook">—</b></div>
+        <div class="ow-panes">${T.map(t => `<div class="ow-vc ow-pane" data-t="${t}"><div class="ow-ph"><b>${t}</b><span class="ow-st is-q">idle</span></div><div class="ow-pb"><span>› claude</span><span class="ow-line"></span></div></div>`).join('')}</div></div>
+        ${score('5 / 6', 'you notice, or not', 'minutes', ['meh', 'bad'])}`,
+      run:(t, el) => {
+        const panes = [...el.querySelectorAll('.ow-pane')], look = i => { panes.forEach((p, j) => { p.classList.toggle('lit', j === i); p.classList.toggle('dim', j !== i && i >= 0); }); $('owLook').textContent = i >= 0 ? T[i] : '—'; };
+        t(() => on(el, '[data-s="1"]'), 100);
+        panes.forEach((p, i) => t(() => { st(p.querySelector('.ow-st'), 'is-w', 'working'); p.querySelector('.ow-line').textContent = 'implementing…'; }, 300 + i * 120));
+        [0, 1, 3, 4, 5, 0].forEach((i, k) => t(() => look(i), 1000 + k * 520));
+        t(() => { const p = panes[2]; st(p.querySelector('.ow-st'), 'is-b', 'blocked'); p.querySelector('.ow-line').textContent = 'needs input: which plan id?'; }, 1300);
+        [0, 1, 3, 4, 5].forEach((i, k) => t(() => { st(panes[i].querySelector('.ow-st'), 'is-d', 'done'); }, 1700 + k * 520));
+        t(() => { look(-1); panes[2].classList.add('lit'); }, 4300);
+        t(() => on(el, '[data-score]'), 4500);
+        return 5200;
+      } },
+
+    { k:'Subagents vs teams', cap:'<p><b>Inside one Claude Code session, the list still lives in a context window.</b> Subagents take one task each and report back to the main session, which keeps track. Agent teams add a shared task list and direct messages between teammates, but task status can lag behind reality.</p><small>Neither resumes a crashed teammate or subagent: the work in flight is lost. Teams are an experimental flag.</small>',
+      html:() => `<div class="ow-two">
+        <div class="ow-vc ow-pan"><h4>Subagents <span class="ow-pl ow-mono" style="padding:2px 8px">one-way</span></h4>
+          <svg viewBox="0 0 300 150" aria-hidden="true"><line x1="150" y1="30" x2="60" y2="115"/><line x1="150" y1="30" x2="150" y2="115"/><line x1="150" y1="30" x2="240" y2="115"/>
+            <circle cx="150" cy="30" r="17"/><text x="150" y="34">main</text>${[60, 150, 240].map((x, i) => `<circle cx="${x}" cy="115" r="15" data-n="${i}"/><text x="${x}" y="143">${T[i + 1]}</text>`).join('')}</svg>
+          <div class="ow-task"><span>main session context</span><span id="owCtxN">0%</span></div><div class="ow-ctx"><i id="owCtx"></i></div></div>
+        <div class="ow-vc ow-pan"><h4>Agent team <span class="ow-pl ow-mono" style="padding:2px 8px">peers talk</span></h4>
+          <svg viewBox="0 0 300 150" aria-hidden="true"><line x1="150" y1="25" x2="60" y2="110"/><line x1="150" y1="25" x2="240" y2="110"/><line x1="60" y1="110" x2="240" y2="110"/><line x1="150" y1="25" x2="150" y2="110"/><line x1="60" y1="110" x2="150" y2="110"/>
+            <circle cx="150" cy="25" r="16"/><text x="150" y="29">lead</text>${[60, 150, 240].map((x, i) => `<circle cx="${x}" cy="110" r="14" data-m="${i}"/><text x="${x}" y="140">mate ${i + 1}</text>`).join('')}
+            <circle class="ow-msg" r="4" cx="60" cy="110" id="owMsg"/></svg>
+          <div class="ow-task"><span>tasks.json · ENG-418</span><span class="ow-st is-w" id="owTask">in progress</span></div></div></div>
+        ${score('main session only', 'work in flight is lost', 'minutes', ['meh', 'bad'])}`,
+      run:(t, el) => {
+        el.querySelectorAll('[data-n]').forEach((c, i) => t(() => c.classList.add('on'), 300 + i * 250));
+        t(() => { $('owCtx').style.width = '84%'; count($('owCtxN'), 84, 1500, '%'); }, 600);
+        el.querySelectorAll('[data-m]').forEach((c, i) => t(() => c.classList.add('on'), 400 + i * 250));
+        const msg = $('owMsg'), hops = [[60, 110], [150, 110], [240, 110], [150, 25]];
+        hops.forEach(([x, y], i) => t(() => { msg.style.opacity = 1; msg.setAttribute('cx', x); msg.setAttribute('cy', y); }, 1200 + i * 450));
+        t(() => { el.querySelector('[data-n="1"]').classList.add('bad'); el.querySelector('[data-m="1"]').classList.add('bad'); msg.style.opacity = 0; }, 3100);
+        t(() => on(el, '[data-score]'), 3700);
+        return 4600;
+      } },
+
+    { k:'Ledger + headless', cap:'<p><b>Code owns the list: a row per ticket, one headless run per row.</b> A small loop reads the ledger and starts <code>claude -p</code> in a worktree per ticket. When ENG-418\'s worker crashes, its row sits in "working"; the sweeper notices it went stale and re-queues it, and attempt 2 finishes.</p><small>OpenAI Symphony and Baton are the same pattern with the tracker itself as the ledger. You own the loop, which takes days to build.</small>',
+      html:() => `<div class="ow-row" style="gap:18px;align-items:start">
+        <div class="ow-vc ow-ledger"><div class="ow-lh"><span>ticket</span><span>run</span><span>status</span><span>try</span></div>
+          ${T.map(x => `<div class="ow-lr" data-t="${x}"><b>${x}</b><span class="ow-mu ow-mono" data-run>—</span><span class="ow-st is-q">queued</span><span class="ow-mono ow-mu" data-try>0</span></div>`).join('')}</div>
+        <div class="ow-side"><div class="ow-vc ow-tick" id="owLoop"><span class="ow-clock"></span><span><b>dispatch loop</b><br><span class="ow-mu">every 2 min</span></span></div>
+          <div class="ow-vc ow-tick" id="owSweep"><span class="ow-clock"></span><span><b>sweeper</b><br><span class="ow-mu" id="owSweepT">every 10 min</span></span></div>
+          <div class="ow-vc ow-tick" id="owRec"><span class="ow-clock"></span><span><b>reconcile</b><br><span class="ow-mu" id="owRecT">assigned = done?</span></span></div></div></div>
+        ${score('6 / 6', 're-queued', 'days (ours)', ['good', 'good'])}`,
+      run:(t, el) => {
+        const rows = Object.fromEntries([...el.querySelectorAll('.ow-lr')].map(r => [r.dataset.t, r]));
+        const set = (x, cls, txt, run, tr) => { const r = rows[x]; st(r.querySelector('.ow-st'), cls, txt); if (run) r.querySelector('[data-run]').textContent = run; if (tr) r.querySelector('[data-try]').textContent = tr; };
+        t(() => $('owLoop').classList.add('on'), 200);
+        T.forEach((x, i) => t(() => set(x, 'is-w', 'working', 'claude -p', '1'), 400 + i * 160));
+        T.filter(x => x !== 'ENG-418').forEach((x, i) => t(() => set(x, 'is-d', 'done'), 1500 + i * 220));
+        t(() => { set('ENG-418', 'is-x', 'stale 31m'); rows['ENG-418'].classList.add('flash'); }, 2300);
+        t(() => { $('owSweep').classList.add('on'); $('owSweepT').textContent = 'ENG-418 stuck → re-queue'; set('ENG-418', 'is-q', 'queued'); }, 2900);
+        t(() => set('ENG-418', 'is-w', 'working', 'claude -p', '2'), 3500);
+        t(() => { set('ENG-418', 'is-d', 'done'); rows['ENG-418'].classList.remove('flash'); }, 4100);
+        t(() => { $('owRec').classList.add('on'); $('owRecT').textContent = '6 assigned = 6 done'; on(el, '[data-score]'); }, 4500);
+        return 5200;
+      } },
+
+    { k:'Mayor + workers', cap:'<p><b>One supervisor agent, many disposable workers, and a merge queue.</b> Gas Town\'s "Mayor" hands tickets to short-lived workers ("polecats"), a "witness" watches their health and replaces a crashed one, and a "refinery" merges PRs in order so they don\'t collide.</p><small>Worth borrowing as ideas: a merge queue and a health watcher. The toolkit itself is alpha and burns tokens fast: at its largest, about 100 agents and 50 PRs a day on roughly a billion tokens a day.</small>',
+      html:() => `<div class="ow-row" style="gap:22px;align-items:start">
+        <div style="display:grid;gap:12px;justify-items:center">
+          <div class="ow-vc ow-mayor"><span class="ow-eye" style="background:var(--vi)">M</span><b>Mayor</b><span class="ow-mu">assigns tickets</span></div>
+          <div class="ow-swarm">${T.map((x, i) => `<div class="ow-pc" data-t="${x}" style="left:${(i % 3) * 34 + 8}%;top:${Math.floor(i / 3) * 52 + 6}px">${x}<br><span>polecat</span></div>`).join('')}</div>
+          <div class="ow-pl ow-vi" data-s="w">👁 witness · <span id="owWit">all healthy</span></div></div>
+        <div style="display:grid;gap:12px">
+          <div class="ow-vc ow-queue"><b>Refinery · merge queue</b><div class="ow-belt" id="owBelt"></div></div>
+          <div class="ow-vc ow-queue"><span class="ow-mu">tokens this batch</span><b class="ow-mono" style="font-size:20px" id="owTok">0</b></div></div></div>
+        ${score('6 / 6', 'worker replaced', 'a day · alpha', ['good', 'good'])}`,
+      run:(t, el) => {
+        const pcs = Object.fromEntries([...el.querySelectorAll('.ow-pc')].map(p => [p.dataset.t, p]));
+        T.forEach((x, i) => t(() => pcs[x].classList.add('on'), 300 + i * 150));
+        t(() => { on(el, '[data-s="w"]'); count($('owTok'), 1840000, 3800); }, 900);
+        const belt = $('owBelt'), merge = x => { pcs[x].classList.add('gone'); belt.insertAdjacentHTML('beforeend', `<span class="ow-pr">#${x.slice(4)}</span>`); const pr = belt.lastChild; requestAnimationFrame(() => pr.classList.add('on')); };
+        t(() => { pcs['ENG-418'].classList.add('bad'); $('owWit').textContent = 'ENG-418 polecat crashed'; }, 1500);
+        ['ENG-412', 'ENG-421', 'ENG-430'].forEach((x, i) => t(() => merge(x), 1800 + i * 450));
+        t(() => { pcs['ENG-418'].classList.remove('bad', 'on'); setTimeout(() => pcs['ENG-418']?.classList.add('on'), reduced ? 0 : 250); $('owWit').textContent = 'replaced ENG-418 worker'; }, 2600);
+        ['ENG-433', 'ENG-440', 'ENG-418'].forEach((x, i) => t(() => merge(x), 3300 + i * 450));
+        t(() => on(el, '[data-score]'), 4800);
+        return 5500;
+      } },
+
+    { k:'Durable engine', cap:'<p><b>A workflow engine saves a checkpoint after every step, so a crash resumes instead of restarting.</b> In Temporal each stage is an activity; in LangGraph each is a node with a checkpointer. When ENG-418 crashes at step 4, it picks up from checkpoint 3. A human gate becomes a signal or <code>interrupt()</code>: waiting three days costs nothing.</p><small>Strongest recovery of the nine, but it is another service to run and a programming model to learn. Use one when long runs dying mid-way really hurts.</small>',
+      html:() => `<div class="ow-vc ow-tl">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><b>ENG-418 · workflow run</b><span class="ow-pl" id="owEv">starting</span></div>
+        <div class="ow-steps">${['scout', 'spec', 'approve', 'worker', 'tester', 'review'].map((n, i) => `<div class="ow-s" data-i="${i}"><span class="ow-flag">⚑</span><i></i><span>${n}</span></div>`).join('')}</div>
+        <div class="ow-cmp ow-vi" data-s="c">
+          <div><span>restart from zero</span><span class="ow-bar"><i id="owB1" style="background:var(--rd)"></i></span><span class="ow-mono">100%</span></div>
+          <div><span>resume from checkpoint 3</span><span class="ow-bar"><i id="owB2" style="background:var(--gr)"></i></span><span class="ow-mono">50%</span></div></div></div>
+        ${score('6 / 6', 'resumes at step 4', 'infra to run', ['good', 'good'])}`,
+      run:(t, el) => {
+        const s = [...el.querySelectorAll('.ow-s')], ev = $('owEv');
+        const done = (i, at) => t(() => { s[i].classList.remove('bad', 'wait'); s[i].classList.add('on', 'cp'); }, at);
+        done(0, 300); done(1, 700);
+        t(() => { s[2].classList.add('wait'); ev.textContent = 'waiting for your approval · 3 days · $0'; }, 1100);
+        done(2, 2000); t(() => { ev.textContent = 'approved (signal)'; }, 2000);
+        t(() => { s[3].classList.add('bad'); ev.textContent = 'worker crashed (OOM)'; }, 2500);
+        t(() => { s[3].classList.remove('bad'); ev.textContent = 'resume from checkpoint 3'; s.forEach((x, i) => { if (i < 3) x.classList.add('cp'); }); }, 3100);
+        done(3, 3500); done(4, 3900); done(5, 4300);
+        t(() => { on(el, '[data-s="c"]'); $('owB1').style.width = '100%'; $('owB2').style.width = '50%'; ev.textContent = 'completed'; }, 4400);
+        t(() => on(el, '[data-score]'), 4900);
+        return 5600;
+      } },
+
+    { k:'Managed cloud', cap:'<p><b>Each session gets its own sandbox in the cloud; the dispatch loop stays yours.</b> Claude Managed Agents runs every ticket isolated, so a crash cannot touch the others and nothing runs on your laptop. You still decide what to start and when, and you check the result.</p><small>Isolation and visibility come built in. The ledger and the loop do not, so this sits on top of level 2, not instead of it. Beta API.</small>',
+      html:() => `<div class="ow-row" style="gap:20px">
+        <div class="ow-vc ow-loop ow-vi" data-s="1"><b>our loop</b><span class="ow-mu">ledger rows → sessions</span><span class="ow-mono" id="owSent">0 sent</span></div>
+        <div class="ow-vc ow-cloud"><b>☁ managed sessions</b><div class="ow-boxes">${T.map(x => `<div class="ow-box" data-t="${x}"><b>${x}</b><span class="ow-st is-q">queued</span></div>`).join('')}</div></div></div>
+        ${score('6 / 6 (your ledger)', 'only that box', 'API · beta', ['good', 'meh'])}`,
+      run:(t, el) => {
+        const boxes = Object.fromEntries([...el.querySelectorAll('.ow-box')].map(b => [b.dataset.t, b]));
+        t(() => on(el, '[data-s="1"]'), 200);
+        T.forEach((x, i) => t(() => { boxes[x].classList.add('on'); st(boxes[x].querySelector('.ow-st'), 'is-w', 'running'); $('owSent').textContent = (i + 1) + ' sent'; }, 500 + i * 260));
+        T.filter(x => x !== 'ENG-418').forEach((x, i) => t(() => st(boxes[x].querySelector('.ow-st'), 'is-d', 'done'), 2400 + i * 200));
+        t(() => { boxes['ENG-418'].classList.add('bad'); st(boxes['ENG-418'].querySelector('.ow-st'), 'is-x', 'crashed'); }, 2600);
+        t(() => { boxes['ENG-418'].classList.remove('bad'); st(boxes['ENG-418'].querySelector('.ow-st'), 'is-w', 'retry'); }, 3600);
+        t(() => st(boxes['ENG-418'].querySelector('.ow-st'), 'is-d', 'done'), 4200);
+        t(() => on(el, '[data-score]'), 4500);
+        return 5200;
+      } },
+
+    { k:'Climb when it hurts', cap:'<p><b>Move up a level only when you feel the pain that level fixes.</b> Each step adds setup and cost. We are at level 2, a ledger in code with headless runs; a durable engine is the next step, once long runs dying mid-way becomes expensive.</p><small>The table below has all nine ways; agent teams and plain subagents never make the list for ticket batches because neither keeps a ledger.</small>',
+      html:() => `<div style="display:grid;gap:14px;justify-items:center">
+        <div class="ow-stairs">${[['1', 'Panes', 'herdr · Claude Squad', 'you forget a pane'], ['2', 'Ledger + headless', 'claude -p · Symphony · Baton', 'long runs die mid-way'], ['3', 'Durable engine', 'Temporal · LangGraph', 'one machine is the bottleneck'], ['4', 'Cloud sandboxes', 'Managed Agents', '']]
+          .map(([n, name, ex, pain], i) => `<div class="ow-step" data-i="${i}"><span class="ow-pain">${pain ? 'pain → ' + pain : ''}</span><div class="ow-vc ow-blk" style="min-height:${70 + i * 34}px"><span class="ow-mu ow-mono">level ${n}</span><b>${name}</b><span class="ow-mu">${ex}</span></div></div>`).join('')}</div>
+        <div style="width:min(680px,100%);display:grid;gap:6px"><div class="ow-cost" id="owCost"></div><div style="display:flex;justify-content:space-between;font-size:11.5px" class="ow-mu"><span>setup and cost →</span><span id="owHere"></span></div></div></div>`,
+      run:(t, el) => {
+        const steps = [...el.querySelectorAll('.ow-step')];
+        steps.forEach((s, i) => t(() => s.classList.add('on'), 300 + i * 600));
+        t(() => { $('owCost').style.width = '100%'; }, 400);
+        t(() => { steps[1].classList.add('here'); $('owHere').textContent = 'we are here: level 2'; }, 3000);
+        t(() => { steps[2].classList.add('next'); $('owHere').textContent = 'we are here: level 2 · next: durable engine, when crashes hurt'; }, 3700);
+        return 4600;
+      } },
+  ];
+
+  let cur = 0, auto = false, timers = [];
+  const clear = () => { timers.forEach(clearTimeout); timers = []; };
+  $('owSteps').innerHTML = SCENES.map((s, i) => `<button type="button" data-i="${i}">${i + 1}. ${s.k}</button>`).join('');
+  function show(i) {
+    clear(); cur = i; const s = SCENES[i];
+    $('owSteps').querySelectorAll('button').forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
+    stage.innerHTML = s.html(); $('owCap').innerHTML = s.cap;
+    const t = (fn, ms) => timers.push(setTimeout(fn, reduced ? 0 : ms));
+    const end = s.run(t, stage);
+    if (auto) t(() => i < SCENES.length - 1 ? show(i + 1) : stop(), end + 2200);
+  }
+  function stop() { auto = false; $('owPlay').textContent = '▶ Play all'; }
+  $('owSteps').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { stop(); show(+b.dataset.i); } });
+  reserveSceneSpace(stage, $('owCap'), done => { for (const sc of SCENES) { stage.innerHTML = sc.html(); $('owCap').innerHTML = sc.cap; done(); } }, () => show(cur));
+  $('owPlay').addEventListener('click', () => { if (auto) { stop(); clear(); return; } auto = true; $('owPlay').textContent = '❚❚ Pause'; show(cur === SCENES.length - 1 ? 0 : cur); });
   show(0);
 })();
 
@@ -2983,7 +3986,642 @@ const SITE = 'https://omarjesusperezortiz.github.io/agent-factory-lab/';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c]);
 const strip = h => (h || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
 // newest first; the first entry is the pinned "start here" post
-const POSTS = [['design', 'Design'], ['amb', 'Workflow'], ['know', 'Context & memory'], ['orch', 'Orchestration'], ['spec', 'Workflow'],
+// Claude mods post: seven scenes, one running example (the finance app from the video)
+(() => {
+  const stage = document.getElementById('moStage'); if (!stage) return;
+  const $ = id => document.getElementById(id);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const on = (el, sel) => el.querySelectorAll(sel).forEach(n => n.classList.add('on'));
+  const C = '<svg class="mo-crab" viewBox="0 0 11 8" aria-hidden="true"><path fill="#d97757" d="M2 0h7v1h1v1h1v2h-1v1H9v1H2V5H1V4H0V2h1V1h1zm1 2v2h1V2zm4 0v2h1V2zM2 6h1v2H2zm2 0h1v2H4zm2 0h1v2H6zm2 0h1v2H8z"/></svg>';
+  // the Claude Code screen the mods draw on: transcript, mod strip, prompt bar, footer
+  const cc = (mod, tx, strip, pb) => `<div class="mo-vc mo-cc"><div class="mo-cch">${C}<div><b>Claude Code</b><small>~/finance-app · ${mod}</small></div></div>
+    <div class="mo-tx">${tx}</div><div class="mo-strip" id="moStrip">${strip}</div><div class="mo-pb" id="moPb">${pb}</div>
+    <div class="mo-ft"><span class="mo-ftl">auto mode on</span><span>? for shortcuts</span></div></div>`;
+  const type = (t, node, s, at, ms = 26) => [...s].forEach((_, i) => t(() => { node.textContent = s.slice(0, i + 1); }, at + i * ms));
+
+  const SCENES = [
+    { k:'Add vs change', cap:'<p><b>Skills and plugins add things Claude can use; a mod changes Claude Code itself.</b> A mod hooks into every session event, so it runs every time like a built-in feature, and it can draw on the screen: a panel beside the chat, a strip above the prompt box, or a redrawn row.</p><small>Two ship built in: <code>/diff</code>, the first one Anthropic announced, and "you should know", a side agent that notes details you might miss (off by default).</small>',
+      html:() => `<div class="mo-cmp">
+        <div class="mo-vc mo-side"><h4>Skill · plugin <span class="mo-pl mo-mu">adds</span></h4>
+          <div class="mo-tray">${['skill: frontend-design', 'mcp: tracker', '/command', 'subagent'].map(c => `<span class="mo-chip">${c}</span>`).join('')}</div>
+          <p class="mo-note">Capabilities sit in the toolbox. They run <b>when Claude decides</b> to load them, and they cannot touch the screen.</p></div>
+        <div class="mo-vc mo-side"><h4>Mod <span class="mo-pl mo-co">changes</span></h4>
+          <div class="mo-ev">${['session.start', 'prompt.compose', 'tool.call', 'turn.complete', 'ui.render'].map(e => `<div><span>${e}</span><i></i></div>`).join('')}</div>
+          <div class="mo-mini"><i style="width:70%"></i><i style="width:50%"></i><i class="mo-drawn"></i><i style="width:90%"></i></div>
+          <p class="mo-note">Runs on <b>every</b> event of every session, and can redraw Claude Code's own screen.</p></div></div>`,
+      run:(t, el) => {
+        el.querySelectorAll('.mo-chip').forEach((c, i) => t(() => c.classList.add('on'), 300 + i * 300));
+        const ev = [...el.querySelectorAll('.mo-ev div')];
+        ev.forEach((e, i) => t(() => e.classList.add('on'), 1700 + i * 420));
+        t(() => on(el, '.mo-drawn'), 1700 + 4 * 420 + 200);
+        return 4300;
+      } },
+
+    { k:'Better prompts', cap:'<p><b>The mod rewrites a rough prompt in place, and you still press send.</b> It names the installed skills that fit, lists the big decisions Claude should ask you about first, and says what done looks like. In a real project it also adds details about the repo.</p><small>Keys in the video: Ctrl+X then Tab selects Enhance. The rewritten prompt below is condensed from the one on screen.</small>',
+      html:() => cc('prompt-enhancer', `<div class="mo-tool">Claude Code v2.1 · Opus · ~/finance-app</div><div class="mo-sub">prompt-enhancer: reloaded (hooks: prompt.compose, ui.render)</div>`,
+        `<span class="mo-tag">Prompt enhancer</span><span class="mo-bt" data-b="e">Enhance</span><span class="mo-bt" data-b="s">Send</span><span class="mo-mu" id="moHint"></span>`,
+        `<div class="mo-in" id="moIn"></div>${['Use <span class="mo-hl">/frontend-design</span> as the main guide and <span class="mo-hl">/tastemaker</span> for the look.',
+          'Before writing code, ask me: who uses it, bank import or manual entry, which currency.',
+          'Done when: budgets per category, a monthly chart, works on phone and desktop.',
+          'Then: summarise the files you created and how to run it.'].map(l => `<div class="mo-ln">${l}</div>`).join('')}`),
+      run:(t, el) => {
+        const inp = $('moIn'), lines = [...el.querySelectorAll('.mo-pb .mo-ln')];
+        on(el, '.mo-tx div');
+        type(t, inp, 'build an app for finance management', 300);
+        t(() => { $('moStrip').classList.add('on'); el.querySelector('[data-b="e"]').classList.add('on'); $('moHint').textContent = 'ctrl+x tab'; }, 1500);
+        t(() => { inp.textContent = 'Build a finance-management app.'; $('moHint').textContent = 'rewriting…'; }, 2200);
+        lines.forEach((l, i) => t(() => l.classList.add('on'), 2500 + i * 380));
+        t(() => { el.querySelector('[data-b="e"]').classList.remove('on'); el.querySelector('[data-b="s"]').classList.add('on'); $('moHint').textContent = 'review, edit, then Send'; }, 4200);
+        return 5000;
+      } },
+
+    { k:'Pick by seeing', cap:'<p><b>Design choices are shown as pictures, not adjectives.</b> When Claude asks which style you want, the mod opens a picker with a mockup of each option, so you choose what you can see. Words that sound good often build badly.</p><small>On desktop and in VS Code the mockups show in the pane; in a terminal the mod opens them in your browser, numbered to match.</small>',
+      html:() => `<div class="mo-vc mo-ask"><h4>? Which design direction for the finance app?</h4><div class="mo-opts">${[
+          ['Calm ledger', 'Quiet serif headings, lots of white space, muted green accents', '#f4f1ea', '#2f4a3a', '#d9d3c4'],
+          ['Night trader', 'Dark surfaces, neon data, dense cards and live numbers', '#121826', '#5ef0c0', '#26304a'],
+          ['Paper budget', 'Warm paper tones, hand-drawn icons, friendly round type', '#fbeee0', '#d97757', '#f1d7bf']]
+        .map(([n, w, bg, ac, cd], i) => `<div class="mo-opt" data-i="${i}"><b>${i + 1}. ${n}<span class="mo-mu" data-ck></span></b><div class="mo-words">${w}</div>
+          <div class="mo-shot" style="background:${bg}"><i class="mo-big" style="background:${ac}"></i><i style="width:55%;background:${cd}"></i><div class="mo-cards"><i style="background:${cd}"></i><i style="background:${ac};opacity:.6"></i><i style="background:${cd}"></i></div></div></div>`).join('')}</div>
+        <div class="mo-row" style="justify-content:space-between"><span class="mo-mu mo-mono" id="moPick" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1">words only</span><span class="mo-pl mo-vi" data-s="go">${C} building option 2</span></div></div>`,
+      run:(t, el) => {
+        const shots = [...el.querySelectorAll('.mo-shot')];
+        t(() => { $('moPick').textContent = 'mod: drawing a mockup per option'; }, 900);
+        shots.forEach((s, i) => t(() => s.classList.add('on'), 1300 + i * 400));
+        t(() => { const o = el.querySelector('[data-i="1"]'); o.classList.add('sel'); o.querySelector('[data-ck]').textContent = '✓'; $('moPick').textContent = 'picked by clicking, or key 2'; }, 3000);
+        t(() => on(el, '[data-s="go"]'), 3600);
+        return 4600;
+      } },
+
+    { k:'Silent assumptions', cap:'<p><b>Every small guess Claude makes gets logged, and you mark each one right or wrong.</b> Claude asks about big decisions but quietly assumes the small ones. The mod collects them as Claude works; marking one wrong sends Claude a correction prompt on its own, and the right ones stay.</p><small>The idea worth keeping. In the video six assumptions came back for one task; #6, a fixed category list, was the wrong one. Press 0 on an empty prompt to open the list.</small>',
+      html:() => `<div class="mo-row" style="gap:16px">${cc('assumption-tracker',
+        ['Read AGENTS.md, package.json', 'Write app/budgets/page.tsx', 'assumption-tracker · log_assumption', 'Write lib/categories.ts', 'assumption-tracker · log_assumption', 'Bash npm run build']
+          .map(l => `<div class="${l.includes('log_') ? 'mo-log' : 'mo-tool'}">${l}</div>`).join(''),
+        `<span class="mo-co">◆</span><span><b class="mo-mono" id="moN">0</b> assumptions to review</span><span class="mo-mu">· press 0 to open</span>`,
+        `<div class="mo-in"></div>`)}</div>`,
+      after:() => `<div class="mo-vc mo-alist"><h4>Assumptions · 6 to review</h4>${[
+          'Next.js app router, the existing scaffold', 'Amounts stored in cents', 'One currency: EUR', 'Monthly budget period', 'Local storage, no accounts yet',
+          'Fixed category list, no custom categories']
+        .map((a, i) => `<div class="mo-ai" data-i="${i}"><span class="mo-mu">#${i + 1}</span><span>${a}</span><span class="mo-rw"><em>✓ Right</em><em>✗ Wrong</em></span></div>`).join('')}
+        <div class="mo-fix mo-vi" data-s="fix"><span class="mo-co">→ sent:</span> Assumption #6 was wrong: users need their own categories. Fix that and keep #1–#5.</div></div>`,
+      run:(t, el) => {
+        const tx = [...el.querySelectorAll('.mo-tx div')];
+        let n = 0;
+        tx.forEach((l, i) => t(() => { l.classList.add('on'); if (l.classList.contains('mo-log')) { n += 3; $('moN').textContent = n; $('moStrip').classList.add('on'); } }, 300 + i * 330));
+        t(() => { stage.querySelector('.mo-row').innerHTML = SCENES[3].after(); }, 2600);
+        for (let i = 0; i < 6; i++) t(() => {
+          el.querySelectorAll('.mo-ai').forEach(a => a.classList.remove('cur'));
+          const a = el.querySelector(`.mo-ai[data-i="${i}"]`); a.classList.add('cur', i === 5 ? 'bad' : 'ok');
+        }, 2900 + i * 330);
+        t(() => on(el, '[data-s="fix"]'), 5000);
+        return 5900;
+      } },
+
+    { k:'Idea shelf', cap:'<p><b>Park ideas without pulling Claude off the task.</b> <code>/idea</code> puts a thought on the project\'s shelf while Claude keeps working; later, Send turns one into the next prompt, or you throw it away. Each project has its own shelf, and it survives closing Claude Code.</p><small>Before the mod, the channel kept ideas in a notes app and forgot them.</small>',
+      html:() => `<div class="mo-row" style="gap:26px">
+        <div class="mo-vc mo-task"><b>${C} Building the budgets page</b><div class="mo-bar"><i id="moBar"></i></div><span class="mo-mu mo-mono" id="moPct">0% · never paused</span></div>
+        <div class="mo-vc mo-shelf"><h4>Idea shelf <span class="mo-mu">~/finance-app</span></h4>
+          ${['dark mode as well', 'CSV export for the accountant', 'recurring bills reminder'].map(s => `<div class="mo-idea"><span>${s}</span><em>send</em><em>×</em></div>`).join('')}
+          <span class="mo-plank"></span></div></div>`,
+      run:(t, el) => {
+        const ideas = [...el.querySelectorAll('.mo-idea')];
+        for (let p = 1; p <= 10; p++) t(() => { $('moBar').style.width = p * 10 + '%'; $('moPct').textContent = (p * 10) + '% · ' + (p < 10 ? 'never paused' : 'done'); }, p * 380);
+        ideas.forEach((d, i) => t(() => d.classList.add('on'), 700 + i * 900));
+        t(() => { ideas[0].classList.add('sent'); $('moPct').textContent = 'next prompt: dark mode as well'; }, 4400);
+        return 5200;
+      } },
+
+    { k:'Many sessions', cap:'<p><b>See which sessions need you, and stop two sessions doing the same job.</b> A board strip counts sessions waiting on you, working and done, and updates on its own. A second mod tracks sessions in the same folder: open another one there and both show what the other is working on.</p><small>Same-folder sessions share one checkout; nothing stops them editing the same files, so the tracker is only a warning.</small>',
+      html:() => `<div class="mo-board">
+        <div class="mo-bh"><span class="mo-pl">[ Sessions ]</span><span class="mo-pl mo-yl"><span class="mo-mono" id="moNeed">0</span> needs you</span><span class="mo-pl" style="color:var(--bl)"><span class="mo-mono" id="moWork">2</span> working</span><span class="mo-pl mo-gr"><span class="mo-mono" id="moDone">1</span> done</span></div>
+        <div class="mo-ses">${[['~/finance-app', 'budgets page', 'sw'], ['~/finance-app', '—', ''], ['~/landing', 'hero section', 'sw'], ['~/api', 'auth tests', 'sd']]
+          .map(([d, w, s], i) => `<div class="mo-vc mo-s${s ? ' mo-' + s : ''}" data-i="${i}"><b>${C}#${i + 1}</b><span class="mo-dir">${d}</span><span class="mo-what">${w}</span>
+            <span class="mo-st">${s === 'sw' ? 'working' : s === 'sd' ? 'done' : 'new'}</span><span class="mo-also">also here: #${i === 0 ? 2 : 1} ${i === 0 ? 'landing page' : 'budgets page'}</span></div>`).join('')}</div>
+        <div class="mo-link" id="moLink">#1 and #2 share ~/finance-app: each sees what the other is doing</div></div>`,
+      run:(t, el) => {
+        const s = i => el.querySelector(`.mo-s[data-i="${i}"]`), st = (i, c, txt) => { const n = s(i); n.classList.remove('mo-sw', 'mo-sd', 'mo-sn'); if (c) n.classList.add('mo-s' + c); n.querySelector('.mo-st').textContent = txt; };
+        t(() => { st(1, 'w', 'working'); s(1).querySelector('.mo-what').textContent = 'landing page'; $('moWork').textContent = 3; }, 700);
+        t(() => { st(2, 'n', 'needs you'); $('moNeed').textContent = 1; $('moWork').textContent = 2; }, 1500);
+        t(() => { s(1).querySelector('.mo-also').classList.add('on'); s(0).querySelector('.mo-also').classList.add('on'); $('moLink').classList.add('on'); }, 2600);
+        t(() => { st(0, 'd', 'done'); $('moWork').textContent = 1; $('moDone').textContent = 2; }, 3700);
+        return 4700;
+      } },
+
+    { k:'Plain answers', cap:'<p><b>One complete answer at the end, in plain words, checked by a small model.</b> The mod removes the short summaries between tool calls, then has Claude rewrite its answer so someone arriving from another session understands it, with next steps. A Haiku check sends it back when a rule is broken.</p><small>In the video the check caught words like <code>lint</code>, <code>CLAUDE.md</code> and <code>localhost</code> used without explanation.</small>',
+      html:() => `<div class="mo-row" style="gap:16px">
+        <div class="mo-vc mo-ans" id="moA"><h4>Before <span class="mo-mu">scroll to follow</span></h4>
+          <span class="mo-tl">Edit app/budgets/page.tsx</span><span>Fixed the <span class="mo-j">hydration</span> issue.</span><span class="mo-tl">Bash npm run lint</span>
+          <span><span class="mo-j">Lint</span> passes; <span class="mo-j">CLAUDE.md</span> rules respected.</span><span class="mo-tl">Bash npm run dev</span><span>Running on <span class="mo-j">localhost:3000</span>, see the <span class="mo-j">rewind</span> note above.</span></div>
+        <div class="mo-chk"><span class="mo-pl" id="moChk">plain-talk</span><span class="mo-mu" id="moChkN">waiting for the turn to end</span></div>
+        <div class="mo-vc mo-ans"><h4>After <span class="mo-gr">one message</span></h4>
+          <p><b>What changed:</b> the budgets page now loads without an error and shows each category's spending.</p>
+          <p><b>Checked:</b> the code passes the project's style check and the app runs on your computer.</p>
+          <p><b>Next:</b> open the app in your browser at the address in the terminal, add a budget, and tell me what feels off.</p></div></div>`,
+      run:(t, el) => {
+        t(() => { $('moChk').classList.add('mo-rd'); $('moChk').textContent = '✗ rules broken'; $('moChkN').textContent = 'Haiku: unexplained terms'; }, 900);
+        t(() => { $('moA').classList.add('dim'); $('moChkN').textContent = 'rewrite as one final message'; }, 2000);
+        el.querySelectorAll('.mo-ans p').forEach((p, i) => t(() => p.classList.add('on'), 2500 + i * 550));
+        t(() => { $('moChk').classList.remove('mo-rd'); $('moChk').classList.add('mo-gr'); $('moChk').textContent = '✓ rules followed'; $('moChkN').textContent = 'answer shown'; }, 4300);
+        return 5100;
+      } },
+  ];
+
+  let cur = 0, auto = false, timers = [];
+  const clear = () => { timers.forEach(clearTimeout); timers = []; };
+  $('moSteps').innerHTML = SCENES.map((s, i) => `<button type="button" data-i="${i}">${i + 1}. ${s.k}</button>`).join('');
+  function show(i) {
+    clear(); cur = i; const s = SCENES[i];
+    $('moSteps').querySelectorAll('button').forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
+    stage.innerHTML = s.html(); $('moCap').innerHTML = s.cap;
+    const t = (fn, ms) => timers.push(setTimeout(fn, reduced ? 0 : ms));
+    const end = s.run(t, stage);
+    if (auto) t(() => i < SCENES.length - 1 ? show(i + 1) : stop(), end + 2200);
+  }
+  function stop() { auto = false; $('moPlay').textContent = '▶ Play all'; }
+  $('moSteps').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { stop(); show(+b.dataset.i); } });
+  // reserve the tallest state, including the assumption list that replaces the terminal in scene 4
+  reserveSceneSpace(stage, $('moCap'), done => { for (const sc of SCENES) { stage.innerHTML = sc.html(); $('moCap').innerHTML = sc.cap; done(); if (sc.after) { stage.querySelector('.mo-row').innerHTML = sc.after(); done(); } } }, () => show(cur));
+  $('moPlay').addEventListener('click', () => { if (auto) { stop(); clear(); return; } auto = true; $('moPlay').textContent = '❚❚ Pause'; show(cur === SCENES.length - 1 ? 0 : cur); });
+  show(0);
+})();
+
+// REA post: seven scenes; most run on one app (my-app at localhost:3000, its billing page), as in the video
+(() => {
+  const stage = document.getElementById('rvStage'); if (!stage) return;
+  const $ = id => document.getElementById(id);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const on = (el, sel) => el.querySelectorAll(sel).forEach(n => n.classList.add('on'));
+  const win = url => `<div class="rv-wh"><i></i><i></i><i></i><span>${url}</span></div>`;
+  const LB = { obs:['rv-obs', 'observed'], inf:['rv-inf', 'inferred'], unk:['rv-unk', 'unknown'] };
+  const stamp = (node, k) => { node.className = 'rv-lb ' + LB[k][0]; node.textContent = LB[k][1]; };
+
+  const SCENES = [
+    { k:'Past the screenshot', cap:'<p><b>A browser tool sees what the page shows; REA follows the click to what it sends.</b> It traces the click back to the code that sends the request, saves what went out and what came back at every step, and gives each capture its own evidence ID.</p><small>That is why clones built from screenshots look right but behave wrong. Anything that happens only on the company\'s servers stays out of reach.</small>',
+      html:() => `<div class="rv-row" style="gap:18px">
+        <div class="rv-vc rv-app">${win('localhost:3000/billing')}<div class="rv-b"><div class="rv-li"><span>Team plan · 2 seats</span><b>…</b></div><div class="rv-li"><span>Discount WELCOME10</span><b>…</b></div><div class="rv-li"><span>Tax</span><b>…</b></div>
+          <div class="rv-li"><span>Total</span><b class="rv-mono">$21.72</b></div><span class="rv-btn" id="rvBtn">Price invoice</span></div></div>
+        <div class="rv-lanes">
+          <div class="rv-vc rv-lane"><h4>Browser tool <span class="rv-lb" id="rvL1">waiting</span></h4><div class="rv-ln" data-a="1">screenshot · the total looks right</div><div class="rv-ln" data-a="2" style="color:var(--mu)">cannot see the request behind it</div></div>
+          <div class="rv-vc rv-lane"><h4>REA <span class="rv-lb" id="rvL2">waiting</span></h4><div class="rv-wire"><i id="rvOut"></i><i class="rv-back" id="rvIn"></i></div>
+            <div class="rv-ln" data-b="1">billing.js:214 · priceInvoice()</div><div class="rv-ln" data-b="2">POST /api/invoice/preview → 200</div><div class="rv-ln" data-b="3">response: line items, discount, tax</div></div></div>
+        <div class="rv-vc rv-evcol"><h4>Evidence</h4>${[['ev_3f9a', 'click handler'], ['ev_81c2', 'request body'], ['ev_d047', 'response'], ['ev_5be1', 'total calc']].map(([id, s]) => `<div class="rv-ev"><b>${id}</b><span>${s}</span></div>`).join('')}</div></div>`,
+      run:(t, el) => {
+        const ev = [...el.querySelectorAll('.rv-ev')];
+        t(() => $('rvBtn').classList.add('on'), 400); t(() => $('rvBtn').classList.remove('on'), 600);
+        t(() => { on(el, '[data-a="1"]'); $('rvL1').textContent = 'done'; }, 900);
+        t(() => on(el, '[data-a="2"]'), 1500);
+        t(() => { $('rvL2').textContent = 'tracing'; $('rvL2').classList.add('rv-obs'); on(el, '[data-b="1"]'); ev[0].classList.add('on'); }, 1000);
+        t(() => { $('rvOut').classList.add('on'); on(el, '[data-b="2"]'); ev[1].classList.add('on'); }, 1700);
+        t(() => { $('rvIn').classList.add('on'); }, 2600);
+        t(() => { on(el, '[data-b="3"]'); ev[2].classList.add('on'); }, 3500);
+        t(() => { ev[3].classList.add('on'); $('rvL2').textContent = '4 saved'; }, 4000);
+        return 4800;
+      } },
+
+    { k:'Every claim cites proof', cap:'<p><b>Each finding carries a label, so a guess cannot pass as a fact.</b> Backed by a capture: observed. Worked out from other clues: inferred. Nothing behind it: unknown. The skill makes the agent tie every finding to a saved evidence ID.</p><small>The video says "seen, guessed, unknown"; REA\'s docs name the states <code>observed</code>, <code>inferred</code>, <code>unknown</code> and <code>unavailable</code>.</small>',
+      html:() => `<div class="rv-vc rv-find"><h4>Findings · my-app billing <span class="rv-mu rv-mono" id="rvTally">0 labelled</span></h4>${[
+          ['Preview total is computed in the browser', 'obs', 'ev_5be1'], ['Discount is applied before tax', 'obs', 'ev_d047'], ['A settings list in the page causes the wrong totals', 'inf', 'ev_5be1 + clues'],
+          ['The server re-prices every invoice', 'obs', 'ev_81c2'], ['Refunds use the same pricing path', 'unk', 'no capture']]
+        .map(([s, k, c]) => `<div class="rv-f" data-k="${k}"><span>${s}</span><span class="rv-lb">…</span><span class="rv-cite">${c}</span></div>`).join('')}</div>`,
+      run:(t, el) => {
+        const f = [...el.querySelectorAll('.rv-f')];
+        f.forEach((r, i) => {
+          t(() => { r.classList.add('on', 'rv-hot'); }, 300 + i * 750);
+          t(() => { stamp(r.querySelector('.rv-lb'), r.dataset.k); r.classList.remove('rv-hot'); $('rvTally').textContent = (i + 1) + ' labelled'; }, 750 + i * 750);
+        });
+        return 4600;
+      } },
+
+    { k:'Copy the behaviour', cap:'<p><b>Clone how a feature behaves, not how it looks.</b> Pointed at Obsidian\'s graph view, REA read the app\'s own code and wrote a behaviour list: where nodes go, how links pull, what dragging does. The list keeps what it saw apart from what it could not pin down.</p><small>Then the team changed one rule on purpose: in their app, deleting a page turns its links back into plain text instead of leaving broken links. None of this shows in a screenshot.</small>',
+      html:() => {
+        const P = [[50, 46], [22, 26], [80, 22], [18, 72], [78, 74], [50, 88]], E = [[0, 1], [0, 2], [0, 3], [0, 4], [4, 5], [1, 3]];
+        return `<div class="rv-row" style="gap:22px">
+          <div class="rv-vc rv-graph">${win('Obsidian · graph view')}<svg viewBox="0 0 100 100" aria-hidden="true">
+            ${E.map(([a, b], i) => `<line data-e="${i}" x1="${P[a][0]}" y1="${P[a][1]}" x2="${P[b][0]}" y2="${P[b][1]}"/>`).join('')}
+            ${P.map(([x, y], i) => `<circle data-n="${i}" cx="${x}" cy="${y}" r="${i ? 4.5 : 6.5}"/>`).join('')}</svg></div>
+          <div style="display:grid;gap:8px;width:min(330px, 100%)"><div class="rv-vc rv-beh">${win('docs/behavior-list.md')}<div class="rv-b">${[
+            ['Linked pages pull together, unlinked push apart', 'obs'], ['Node size grows with its link count', 'obs'], ['Dragging pins a node until released', 'obs'],
+            ['Exact spring constants', 'unk'], ['Our app: delete → links become plain text', 'inf']]
+            .map(([s, k]) => `<div class="rv-bl"><span>${s}</span><span class="rv-lb ${LB[k][0]}">${k === 'inf' ? 'our rule' : LB[k][1]}</span></div>`).join('')}</div></div>
+          <div class="rv-note" id="rvNote"></div></div></div>`;
+      },
+      run:(t, el) => {
+        const n = i => el.querySelector(`[data-n="${i}"]`), bl = [...el.querySelectorAll('.rv-bl')];
+        el.querySelectorAll('line').forEach((l, i) => t(() => l.classList.add('on'), 200 + i * 120));
+        t(() => { n(1).setAttribute('cx', 32); n(1).setAttribute('cy', 32); n(3).setAttribute('cx', 28); n(3).setAttribute('cy', 64); }, 900);
+        bl.forEach((b, i) => t(() => b.classList.add('on'), 900 + i * 450));
+        t(() => { n(4).classList.add('rv-drag'); n(4).setAttribute('cx', 88); n(4).setAttribute('cy', 60); el.querySelector('[data-e="4"]').setAttribute('x1', 88); el.querySelector('[data-e="4"]').setAttribute('y1', 60);
+          el.querySelector('[data-e="3"]').setAttribute('x2', 88); el.querySelector('[data-e="3"]').setAttribute('y2', 60); $('rvNote').textContent = 'drag: the node stays pinned'; }, 2000);
+        t(() => { n(2).classList.add('rv-gone'); el.querySelector('[data-e="1"]').classList.add('rv-gone'); $('rvNote').textContent = 'delete: its links turn into plain text'; }, 3500);
+        return 4800;
+      } },
+
+    { k:'Black-box test', cap:'<p><b>Test the running app without reading its code, and it finds what the code hides.</b> Told not to read or change the code, the agent wrote test scenarios, ran them through REA and compared the billing page with the written pricing rules. Two accounts were shown one price and charged another.</p><small>Numbers from the video: Hooli saw half the real total, Initech saw $0.00. Every step was right except the very last sum. It also found negative seats accepted, overselling seats, and an invoice with no billing-log row.</small>',
+      html:() => `<div class="rv-row" style="gap:18px">
+        <div class="rv-vc rv-bill">${win('localhost:3000/billing · Hooli')}<div class="rv-b">${['Line items', 'Discount', 'Tax', 'Total'].map((s, i) => `<div class="rv-step" data-i="${i}"><i></i><span>${s}</span><b>…</b></div>`).join('')}</div></div>
+        <div class="rv-vc rv-split"><b>Shown vs charged</b><div class="rv-cmp"><div><small class="rv-mu">preview</small><b id="rvShown">—</b></div><div><small class="rv-mu">charged</small><b id="rvCharged">—</b></div></div>
+          <div class="rv-side">${[['obs', 'Initech: shown $0.00, charged $10.73'], ['obs', 'Server accepts −1 seats'], ['obs', 'Sells more seats than the plan allows'], ['obs', 'One invoice left no billing-log row'], ['inf', 'Cause: a settings list built into the page']]
+            .map(([k, s]) => `<div><span class="rv-lb ${LB[k][0]}">${LB[k][1]}</span><span>${s}</span></div>`).join('')}</div></div></div>`,
+      run:(t, el) => {
+        const st = [...el.querySelectorAll('.rv-step')], side = [...el.querySelectorAll('.rv-side div')];
+        st.slice(0, 3).forEach((s, i) => t(() => { s.classList.add('rv-ok'); s.querySelector('i').textContent = '✓'; s.querySelector('b').textContent = 'correct'; }, 400 + i * 500));
+        t(() => { st[3].classList.add('rv-no'); st[3].querySelector('i').textContent = '✗'; st[3].querySelector('b').textContent = 'wrong'; $('rvShown').textContent = '$10.86'; $('rvCharged').textContent = '$21.72'; $('rvShown').classList.add('rv-rd'); }, 2000);
+        side.forEach((d, i) => t(() => d.classList.add('on'), 2600 + i * 380));
+        return 5000;
+      } },
+
+    { k:'Read the competition', cap:'<p><b>The deep research comes from the code a site loads, not its marketing.</b> For a demo meeting note-taker, Claude without REA covered pricing and how each rival records meetings. With REA it read the code each rival\'s sign-in page loads before login, and found features the websites never mention.</p><small>The five rivals and their hidden features below are placeholders; the video does not name them on screen.</small>',
+      html:() => `<div style="width:100%"><div class="rv-comp">${['Rival A', 'Rival B', 'Rival C', 'Rival D', 'Rival E'].map((n, i) => `<div class="rv-vc rv-cc"><b>${n}</b>
+          <div class="rv-surf"><span>pricing tiers</span><span>records via bot</span></div><div class="rv-depth"></div>
+          <div class="rv-deep">${[['live translate flag', 'CRM sync module'], ['team analytics route', 'speaker ID model'], ['offline mode build', 'API beta keys'], ['coaching tab, hidden', 'Zoom app bundle'], ['SSO config', 'action-items v2']][i].map(s => `<span>${s}</span>`).join('')}</div></div>`).join('')}</div>
+        <div class="rv-legend"><span class="rv-pl"><span class="rv-mu">without REA</span> surface facts</span><span class="rv-pl rv-co">with REA · sign-in page code</span></div></div>`,
+      run:(t, el) => {
+        el.querySelectorAll('.rv-surf span').forEach((s, i) => t(() => s.classList.add('on'), 200 + i * 90));
+        el.querySelectorAll('.rv-cc').forEach((c, i) => c.querySelectorAll('.rv-deep span').forEach((s, j) => t(() => s.classList.add('on'), 1800 + i * 380 + j * 180)));
+        return 4400;
+      } },
+
+    { k:'Speed & security sweep', cap:'<p><b>Run the whole app and get one report, sorted by danger, with a fix for each line.</b> A checkup found a dashboard header running off the edge on phones. A security scan found the planted problems: live secret keys in the code the browser downloads, a public source map, and a logic hole exposing customer data.</p><small>The test app had those issues planted on purpose. REA redacts the keys it captures; the report cites the evidence instead.</small>',
+      html:() => `<div class="rv-vc rv-rep"><h4>Sweep · localhost:3000 <span class="rv-mu rv-mono" id="rvCnt">0 findings</span></h4><div class="rv-scan"><i id="rvScan"></i></div>
+        <div style="display:flex;flex-direction:column;gap:7px">${[
+          [3, 'Dashboard header overflows on phones', 'fixed'], [1, 'OpenAI and Stripe live keys in public/app.js', 'ev_06e8'],
+          [1, 'Source map exposes a service-role key that skips row-level security', 'ev_7c21'], [1, 'Customer data reachable without server access checks', 'ev_b3f0']]
+          .map(([s, txt, c], i) => `<div class="rv-r" data-s="${s}" data-i="${i}"><span class="rv-sev rv-s${s}">${['', 'CRITICAL', 'MEDIUM', 'LOW'][s]}</span><span>${txt}</span><span class="rv-cite">${c}</span></div>`).join('')}</div></div>`,
+      run:(t, el) => {
+        const rs = [...el.querySelectorAll('.rv-r')];
+        t(() => $('rvScan').style.width = '100%', 100);
+        rs.forEach((r, i) => t(() => { r.classList.add('on'); $('rvCnt').textContent = (i + 1) + ' findings'; }, 400 + i * 450));
+        t(() => { [...rs].sort((a, b) => a.dataset.s - b.dataset.s || a.dataset.i - b.dataset.i).forEach((r, k) => r.style.order = k); $('rvCnt').textContent = 'sorted by danger'; }, 3200);
+        return 4400;
+      } },
+
+    { k:'In our pipeline', cap:'<p><b>A black-box tester with no code access, and findings that must cite evidence.</b> After the worker opens a PR, a tester runs the preview build through REA. Observed findings fail the ticket like a failing test; inferred ones go to a person; unknowns become questions.</p><small>Our proposal, not the video\'s. The tester sees only the running app, so it cannot pass by reading the code it is checking.</small>',
+      html:() => `<div class="rv-gate">
+        <div class="rv-vc rv-box"><b>PR #212</b><small>worker · Team plan pricing</small><span class="rv-pl">preview build</span></div>
+        <div class="rv-vc rv-box" id="rvT"><b>Black-box tester</b><small>REA only · no repo access</small><span class="rv-pl rv-mono" id="rvRun">idle</span></div>
+        <div class="rv-bins">${[['obs', 'Fail the ticket, back to the worker'], ['inf', 'Human inbox: a person decides'], ['unk', 'Question added to the spec']]
+          .map(([k, s]) => `<div class="rv-vc rv-bin" data-k="${k}"><span><span class="rv-lb ${LB[k][0]}">${LB[k][1]}</span> ${s}</span><span class="rv-n" data-n>0</span></div>`).join('')}</div></div>`,
+      run:(t, el) => {
+        const bin = k => el.querySelector(`.rv-bin[data-k="${k}"]`), bump = k => { const b = bin(k), n = b.querySelector('[data-n]'); n.textContent = +n.textContent + 1; b.classList.add('rv-hit'); setTimeout(() => b.classList.remove('rv-hit'), 300); };
+        t(() => { $('rvT').classList.add('rv-busy'); $('rvRun').textContent = 'running 12 scenarios'; }, 300);
+        ['obs', 'obs', 'inf', 'obs', 'unk', 'obs'].forEach((k, i) => t(() => bump(k), 1100 + i * 420));
+        t(() => { $('rvT').classList.remove('rv-busy'); $('rvRun').textContent = '4 failures'; }, 3800);
+        return 4600;
+      } },
+  ];
+
+  let cur = 0, auto = false, timers = [];
+  const clear = () => { timers.forEach(clearTimeout); timers = []; };
+  $('rvSteps').innerHTML = SCENES.map((s, i) => `<button type="button" data-i="${i}">${i + 1}. ${s.k}</button>`).join('');
+  function show(i) {
+    clear(); cur = i; const s = SCENES[i];
+    $('rvSteps').querySelectorAll('button').forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
+    stage.innerHTML = s.html(); $('rvCap').innerHTML = s.cap;
+    const t = (fn, ms) => timers.push(setTimeout(fn, reduced ? 0 : ms));
+    const end = s.run(t, stage);
+    if (auto) t(() => i < SCENES.length - 1 ? show(i + 1) : stop(), end + 2200);
+  }
+  function stop() { auto = false; $('rvPlay').textContent = '▶ Play all'; }
+  $('rvSteps').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { stop(); show(+b.dataset.i); } });
+  reserveSceneSpace(stage, $('rvCap'), done => { for (const sc of SCENES) { stage.innerHTML = sc.html(); $('rvCap').innerHTML = sc.cap; done(); } }, () => show(cur));
+  $('rvPlay').addEventListener('click', () => { if (auto) { stop(); clear(); return; } auto = true; $('rvPlay').textContent = '❚❚ Pause'; show(cur === SCENES.length - 1 ? 0 : cur); });
+  show(0);
+})();
+
+// Vercel CEO tips post: seven scenes, one running example (Sitfirst, the showroom-booking app from the video)
+(() => {
+  const stage = document.getElementById('vlStage'); if (!stage) return;
+  const $ = id => document.getElementById(id);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const on = (el, sel) => el.querySelectorAll(sel).forEach(n => n.classList.add('on'));
+  const count = (node, to, ms, fmt = v => v) => {
+    if (reduced) { node.textContent = fmt(to); return; }
+    const t0 = performance.now(), from = +node.dataset.v || 0;
+    const f = now => { const p = Math.min(1, (now - t0) / ms), v = Math.round(from + (to - from) * p); node.textContent = fmt(v); if (p < 1) requestAnimationFrame(f); else node.dataset.v = to; };
+    requestAnimationFrame(f);
+  };
+
+  const SCENES = [
+    { k:'Try it first', cap:'<p><b>Test an idea in a throwaway project before you build it for real.</b> Rauch starts a new project for each idea and has an agent check from scratch whether it works, instead of trusting what people say. AI Labs does the same with an MVP built from the PRD\'s basic features.</p><small>Build the whole app first and a wrong early decision sits under everything built on top of it; fixing it means going back through the whole app.</small>',
+      html:() => `<div class="vl-two">
+        <div class="vl-vc vl-path"><h4 class="vl-h">PRD → full build <span class="vl-pl vl-mu">weeks</span></h4>
+          <div class="vl-stack" id="vlFull">${['data model: one store per account', 'booking flow', 'store dashboards', 'notifications', 'payments', 'reviews'].map((s, i) => `<span class="vl-blk${i === 0 ? '' : ''}">${s}</span>`).join('')}</div>
+          <div class="vl-out vl-rd" id="vlFullOut"></div></div>
+        <div class="vl-vc vl-path"><h4 class="vl-h">PRD → MVP <span class="vl-pl vl-co">an afternoon</span></h4>
+          <div class="vl-stack" id="vlMvp">${['data model: one store per account', 'book a showroom visit'].map(s => `<span class="vl-blk">${s}</span>`).join('')}</div>
+          <div class="vl-out" id="vlMvpOut"></div></div></div>`,
+      run:(t, el) => {
+        const full = [...$('vlFull').children], mvp = [...$('vlMvp').children];
+        full.forEach((b, i) => t(() => b.classList.add('on'), 300 + i * 380));
+        mvp.forEach((b, i) => t(() => b.classList.add('on'), 400 + i * 380));
+        t(() => { mvp[0].classList.add('vl-bad'); $('vlMvpOut').innerHTML = '<span class="vl-yl">chains have many stores: redo the model now</span>'; }, 1500);
+        t(() => { mvp[0].classList.remove('vl-bad'); mvp[0].textContent = 'data model: stores per chain'; $('vlMvpOut').innerHTML = '<span class="vl-gr">✓ cheap fix, idea still worth building</span>'; }, 2600);
+        t(() => { full[0].classList.add('vl-bad'); $('vlFull').classList.add('vl-shake'); $('vlFullOut').textContent = 'same flaw, found under 5 features'; }, 3000);
+        return 4600;
+      } },
+
+    { k:'Direction, not volume', cap:'<p><b>Measure whether the work heads where you planned, not how much of it there is.</b> Tokens and shipped changes only say how much you did. Building is cheap now and agents never push back, so every idea becomes a feature. A <code>/direction</code> command checks the code against the specs folder, one agent per requirement doc.</p><small>From the video\'s run on Sitfirst: OFF COURSE. The app was turning into an ordering marketplace, and the orders feature broke a PRD rule to collect only name, email and phone.</small>',
+      html:() => `<div class="vl-row" style="gap:18px">
+        <div class="vl-vc vl-map"><div class="vl-stats"><span><span id="vlCom">0</span> changes</span><span><span id="vlTok">0</span>k tokens</span></div>
+          <svg viewBox="0 0 200 170" aria-hidden="true"><path class="vl-plan" d="M14 156 C 70 120, 120 80, 186 14"/><circle cx="186" cy="14" r="5" fill="none" stroke="#777"/><text x="128" y="12">the PRD</text>
+            <path class="vl-real" id="vlReal" d="M14 156 C 60 128, 100 110, 130 108 S 176 116, 190 138"/><text x="132" y="160">marketplace?</text></svg>
+          <span class="vl-mu" style="font-size:11.5px">volume keeps rising either way</span></div>
+        <div class="vl-vc vl-rep"><h4 class="vl-h">/direction <span class="vl-mu vl-mono" id="vlRun">ready</span></h4>
+          <div class="vl-frs">${Array.from({ length: 10 }, (_, i) => `<span class="vl-fr">FR-${String(i + 1).padStart(2, '0')}</span>`).join('')}</div>
+          <div class="vl-verdict" id="vlVerdict"></div><div class="vl-why" id="vlWhy"></div>
+          <div class="vl-opts vl-vi" data-s="o"><span class="vl-pl">keep it: update the PRD</span><span class="vl-pl">or remove the drift</span></div></div></div>`,
+      run:(t, el) => {
+        const fr = [...el.querySelectorAll('.vl-fr')];
+        t(() => { $('vlReal').classList.add('on'); count($('vlCom'), 1785, 2600, v => v.toLocaleString('en')); count($('vlTok'), 940, 2600); }, 200);
+        t(() => { $('vlReal').classList.add('vl-off'); }, 2400);
+        fr.forEach((f, i) => t(() => f.classList.add('vl-run'), 1200 + i * 90));
+        t(() => $('vlRun').textContent = '10 agents · 1 per doc', 1200);
+        fr.forEach((f, i) => t(() => { f.classList.remove('vl-run'); f.classList.add(i === 8 || i === 9 ? 'vl-x' : 'vl-ok'); }, 2400 + i * 120));
+        t(() => { $('vlVerdict').innerHTML = '<span class="vl-rd">● OFF COURSE</span>'; $('vlWhy').textContent = 'Shipped features match their specs, but orders, a product catalogue and chat turn a booking app into a marketplace. Orders cross a PRD non-goal and break the privacy rule.'; $('vlRun').textContent = 'scorecard + to-dos'; }, 3700);
+        t(() => on(el, '[data-s="o"]'), 4200);
+        return 5000;
+      } },
+
+    { k:'Security & slop debt', cap:'<p><b>Agents write more code than anyone can read, and attackers have agents too.</b> So scan for security gaps after every feature (Vercel built DeepSec for this), and decide per area how much messy code you accept. Fast is fine for a side page; the parts customers trust get quality gates.</p><small>A quality gate is more than a test: a review agent holds each change to your standards, and nothing goes live until it passes every gate.</small>',
+      html:() => `<div class="vl-row" style="gap:18px">
+        <div class="vl-vc vl-debt"><h4 class="vl-h">Code written per week <span class="vl-mu vl-mono" id="vlWk">wk 1</span></h4>
+          <div class="vl-bars">${[1, 2, 3, 4, 5].map(() => '<div><i class="vl-code"></i><i class="vl-slop"></i><i class="vl-sec"></i></div>').join('')}</div>
+          <div class="vl-lg"><span style="--k:#3a3a3a">code</span><span style="--k:var(--yl)">slop debt</span><span style="--k:var(--rd)">security debt</span></div>
+          <div class="vl-scan" id="vlScan"></div></div>
+        <div class="vl-vc vl-areas"><h4 class="vl-h">How careful, per area</h4>${[['Marketing pages', 1, 'review agent'], ['Store dashboard', 2, '+ e2e tests'], ['Customer details', 3, '+ DeepSec + human'], ['Bookings, payments', 3, '+ DeepSec + human']]
+          .map(([n, r, g]) => `<div class="vl-area"><span>${n}</span><span class="vl-risk vl-r${r}">${['', 'LOW', 'MEDIUM', 'HIGH'][r]}</span><span class="vl-gate">${g}</span></div>`).join('')}</div></div>`,
+      run:(t, el) => {
+        const cols = [...el.querySelectorAll('.vl-bars div')], H = [[20, 4, 3], [34, 8, 7], [50, 13, 12], [70, 18, 18], [92, 24, 24]];
+        cols.forEach((c, i) => t(() => { const [a, b, d] = H[i], is = c.querySelectorAll('i'); is[0].style.height = a + 'px'; is[1].style.height = b + 'px'; is[2].style.height = d + 'px'; $('vlWk').textContent = 'wk ' + (i + 1); }, 200 + i * 450));
+        t(() => { $('vlScan').innerHTML = '<span class="vl-co">npx deepsec</span> · scan after each feature'; }, 2500);
+        t(() => cols.forEach(c => { c.querySelectorAll('i')[2].style.height = '3px'; }), 3100);
+        t(() => { $('vlScan').innerHTML = '<span class="vl-gr">✓ findings fixed, security debt paid down</span>'; }, 3600);
+        el.querySelectorAll('.vl-area').forEach((a, i) => t(() => a.classList.add('on'), 1200 + i * 450));
+        return 4800;
+      } },
+
+    { k:'Won\'t trade off', cap:'<p><b>Agree on what you will never trade before you start, and give every rule a test.</b> Each task trades speed against safety, polish or cost. List the non-negotiables in a must-not-trade-off section of <code>CLAUDE.md</code>; agents forget written rules in long contexts, so each one needs a check it cannot skip.</p><small>Commit those tests to git, so a rule is enforced by a failing check instead of by the agent\'s memory.</small>',
+      html:() => `<div class="vl-vc vl-md"><div class="vl-wh">CLAUDE.md · ## Must not trade off</div><div class="vl-b">${[
+          ['Collect only name, email and phone', 'e2e/privacy.spec.ts'], ['A booking confirms in under 2 s', 'perf: p95 < 2000 ms'], ['Two people never get the same slot', 'e2e/double-book.spec.ts'], ['Works on a phone first', 'viewport 390 snapshot']]
+          .map(([r, test], i) => `<div class="vl-rule"><span class="vl-mu vl-mono">${i + 1}</span><span>${r}</span><span class="vl-t">${test}</span></div>`).join('')}
+        <div class="vl-trade">${[['Speed', 'ship fast', 78, 0], ['Safety', 'locked', 92, 1]].map(([n, s, v, lock]) => `<div class="vl-sl${lock ? ' vl-lock' : ''}" style="--v:${v}%"><span><b>${n}</b> · ${s}</span><div><i data-v="${v}"></i></div></div>`).join('')}</div></div></div>`,
+      run:(t, el) => {
+        const rules = [...el.querySelectorAll('.vl-rule')];
+        rules.forEach((r, i) => t(() => r.classList.add('on'), 200 + i * 300));
+        rules.forEach((r, i) => t(() => r.querySelector('.vl-t').classList.add(i === 2 ? 'vl-x' : 'vl-ok'), 1600 + i * 300));
+        t(() => { const sp = el.querySelector('.vl-sl:not(.vl-lock) i'); sp.style.left = 'calc(40% - 7px)'; }, 2900);
+        t(() => { rules[2].querySelector('.vl-t').className = 'vl-t vl-ok'; rules[2].querySelector('.vl-t').textContent = 'double-book: fixed ✓'; }, 3700);
+        return 4600;
+      } },
+
+    { k:'Break it on purpose', cap:'<p><b>The agent that built the app tests it the way it built it, so everything passes.</b> A breaker agent attacks the app like an outsider: many users at once, clashing actions, skipped steps, hostile input. It copies the app\'s data first, so the real data stays safe, and reports every way it got in.</p><small>Then fix, rerun, and repeat in a loop until it finds nothing new. Rauch did this with a real launch, comparing speed under load with other products.</small>',
+      html:() => `<div class="vl-row" style="gap:18px">
+        <div class="vl-swarm">${Array.from({ length: 12 }, () => '<span class="vl-bot">◆</span>').join('')}</div>
+        <div class="vl-vc vl-site"><div class="vl-wh"><i></i><i></i><i></i><span>localhost:3000 · Sitfirst</span></div>
+          <div class="vl-pg"><i style="width:60%"></i><i style="width:40%"></i><div class="vl-cards"><i></i><i></i><i></i></div><i style="width:80%"></i><i style="width:50%"></i>
+            ${[[18, 8], [78, 22], [40, 52], [70, 64], [22, 78]].map(([x, y], i) => `<span class="vl-pin" style="left:${x}%;top:${y}%">${i + 1}</span>`).join('')}</div></div>
+        <div class="vl-vc vl-side"><span class="vl-copy">cp data/app.db breaker-backup/</span>${[
+          'Two bookings for the same 10:00 slot', 'Cancel during confirm leaves a ghost slot', 'Checkout reached by skipping a step', 'Search slows to 6 s under 50 users', 'Store name accepts a script tag']
+          .map((s, i) => `<div><b class="vl-rd">${i + 1}</b><span>${s}</span></div>`).join('')}</div></div>`,
+      run:(t, el) => {
+        const bots = [...el.querySelectorAll('.vl-bot')], pins = [...el.querySelectorAll('.vl-pin')], rows = [...el.querySelectorAll('.vl-side div')];
+        bots.forEach((b, i) => t(() => b.classList.add('on'), 700 + i * 90));
+        pins.forEach((p, i) => t(() => { p.classList.add('on'); rows[i].classList.add('on'); }, 1700 + i * 520));
+        return 4800;
+      } },
+
+    { k:'First-time eyes', cap:'<p><b>You can never be a new user of your own app, so send an agent that is.</b> A first-timer agent only runs the app in a browser and reports where a newcomer gets stuck; a hook blocks every Bash command except starting the app, so it cannot read the code. A second agent runs every customer path end to end.</p><small>Rauch\'s metric: error-free sessions, the share of people who get all the way through without anything going wrong. The 96% is the video\'s on-screen example.</small>',
+      html:() => `<div class="vl-row" style="gap:18px">
+        <div class="vl-vc vl-term"><div class="vl-wh" style="display:flex;gap:6px;align-items:center;padding:8px 11px;border-bottom:1px solid var(--ln);font:10.5px var(--mono);color:var(--mu)">.claude/agents/first-timer.md</div><div class="vl-b">${[
+          ['vl-blocked', '✗ Read app/booking/page.tsx · blocked by hook'], ['vl-allowed', '✓ Bash npm run dev · allowed'], ['', 'browser → /'], ['', 'stuck: "Visit type" has no explanation'],
+          ['vl-blocked', '✗ Bash cat lib/slots.ts · blocked by hook'], ['', 'stuck: no way back from the time picker'], ['', 'gave up at the phone-number step']]
+          .map(([c, s]) => `<div class="${c}">${s}</div>`).join('')}</div></div>
+        <div class="vl-vc vl-gauge"><div class="vl-ring"><svg viewBox="0 0 120 120"><circle class="vl-bg" cx="60" cy="60" r="52"/><circle class="vl-fg" id="vlArc" cx="60" cy="60" r="52"/></svg><b><span id="vlPct">0</span>%</b></div>
+          <span class="vl-mu" style="font-size:12px">error-free sessions</span>
+          <div class="vl-stuck"><span>paths in results.json: 14</span><span class="vl-rd">slow: confirm step, 3.1 s</span></div></div></div>`,
+      run:(t, el) => {
+        const ln = [...el.querySelectorAll('.vl-term .vl-b div')];
+        ln.forEach((l, i) => t(() => l.classList.add('on'), 200 + i * 420));
+        t(() => { $('vlArc').style.strokeDashoffset = String(327 * (1 - .96)); count($('vlPct'), 96, 1600); }, 1800);
+        el.querySelectorAll('.vl-stuck span').forEach((s, i) => t(() => s.classList.add('on'), 3400 + i * 400));
+        return 4800;
+      } },
+
+    { k:'Close the loop fast', cap:'<p><b>Judge a team by how fast a customer report turns into a reply and a fix.</b> Connect the inboxes (Gmail for support mail, Sentry for errors no one reported). Claude reads each report: a clear break, like a failing payment, gets fixed now; a vague "I\'m confused" goes to you, because you have to talk to the customer first.</p><small>The clock starts when the report comes in, not when someone opens it.</small>',
+      html:() => `<div class="vl-tri">
+        <div class="vl-vc vl-in"><h4 class="vl-h">Incoming</h4>${[['sentry', 'PaymentError: card declined loop', 'fix'], ['gmail', 'The "Book" button does nothing', 'fix'], ['gmail', 'I don\'t get what a visit type is', 'you'], ['sentry', 'TypeError in slot picker', 'fix'], ['gmail', 'Can you add showrooms in Porto?', 'you']]
+          .map(([s, m, k]) => `<div class="vl-msg" data-k="${k}"><small>${s}</small><span>${m}</span></div>`).join('')}</div>
+        <div class="vl-vc vl-sorter" id="vlSort"><b>Claude</b><span class="vl-mu">reads and sorts</span><span class="vl-clock vl-mono" id="vlClock">0:00</span></div>
+        <div class="vl-bins"><div class="vl-vc vl-bin"><b class="vl-gr">Fix now</b><ul id="vlFix"></ul></div><div class="vl-vc vl-bin"><b class="vl-yl">Needs you</b><ul id="vlYou"></ul></div></div></div>`,
+      run:(t, el) => {
+        const ms = [...el.querySelectorAll('.vl-msg')];
+        ms.forEach((m, i) => t(() => m.classList.add('on'), 200 + i * 250));
+        t(() => $('vlSort').classList.add('vl-busy'), 1400);
+        ms.forEach((m, i) => t(() => { m.classList.add('vl-gone'); const li = document.createElement('li'); li.textContent = m.querySelector('span').textContent; $(m.dataset.k === 'fix' ? 'vlFix' : 'vlYou').append(li); $('vlClock').textContent = '0:' + String((i + 1) * 9).padStart(2, '0'); }, 1700 + i * 500));
+        t(() => $('vlSort').classList.remove('vl-busy'), 4300);
+        return 5000;
+      } },
+  ];
+
+  let cur = 0, auto = false, timers = [];
+  const clear = () => { timers.forEach(clearTimeout); timers = []; };
+  $('vlSteps').innerHTML = SCENES.map((s, i) => `<button type="button" data-i="${i}">${i + 1}. ${s.k}</button>`).join('');
+  function show(i) {
+    clear(); cur = i; const s = SCENES[i];
+    $('vlSteps').querySelectorAll('button').forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
+    stage.innerHTML = s.html(); $('vlCap').innerHTML = s.cap;
+    const t = (fn, ms) => timers.push(setTimeout(fn, reduced ? 0 : ms));
+    const end = s.run(t, stage);
+    if (auto) t(() => i < SCENES.length - 1 ? show(i + 1) : stop(), end + 2200);
+  }
+  function stop() { auto = false; $('vlPlay').textContent = '▶ Play all'; }
+  $('vlSteps').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { stop(); show(+b.dataset.i); } });
+  // the triage bins fill while scene 7 plays, so measure them full
+  reserveSceneSpace(stage, $('vlCap'), done => { for (const sc of SCENES) { stage.innerHTML = sc.html(); $('vlCap').innerHTML = sc.cap; done(); } }, () => show(cur));
+  $('vlPlay').addEventListener('click', () => { if (auto) { stop(); clear(); return; } auto = true; $('vlPlay').textContent = '❚❚ Pause'; show(cur === SCENES.length - 1 ? 0 : cur); });
+  show(0);
+})();
+
+// ---- review-system post (.rq): evals first, separate reviewer, bounded loop, learned rules, risk tiers, find and undo
+(() => {
+  const $ = id => document.getElementById(id);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const on = (el, sel) => el.querySelectorAll(sel).forEach(n => n.classList.add('on'));
+  const count = (node, from, to, ms, fmt = v => v) => { if (reduced) { node.textContent = fmt(to); return; } const t0 = performance.now(); const f = now => { const p = Math.min(1, (now - t0) / ms); node.textContent = fmt(Math.round(from + (to - from) * p)); if (p < 1) requestAnimationFrame(f); }; requestAnimationFrame(f); };
+  const win = url => `<div class="rq-win-h"><i></i><i></i><i></i><span>${url}</span></div>`;
+
+  const SCENES = [
+    /* 1 */
+    { k:'Ask what could break',
+      cap:'<p><b>Review is the step you can\'t skip, so the team changed the question and the timing.</b> Not "did someone read the code?" but "what could go wrong, and how do we catch it?", and the checks run while Claude builds instead of at the end.</p><small>Changes to review across Anthropic went from about 2,500 to over 30,000 a day in four months. Rushing the check just moves the time later, and it costs about twice as much.</small>',
+      html:() => `<div class="rq-s1">
+        <div class="rq-s1-q"><span class="rq-old" id="rqS1o">Did someone read the code?</span><span class="rq-vi" data-s="1">What could <span class="rq-co">go wrong</span>, and how do we catch it?</span></div>
+        <div class="rq-s1-row">
+          <div class="rq-vc rq-s1-n rq-vi" data-s="2"><span class="rq-lbl">Changes to review per day</span><b id="rqS1n">2,500</b><div class="rq-bar"><i id="rqS1b" style="background:var(--c)"></i></div></div>
+          <div class="rq-vc rq-s1-t rq-vi" data-s="3"><span class="rq-lbl">Time cost of a rushed check</span>
+            <div class="rq-r"><span>Check properly</span><div class="rq-bar"><i class="rq-s1w" data-w="50" style="background:var(--gr)"></i></div></div>
+            <div class="rq-r"><span>Rush it: check, then fix what slipped through</span><div class="rq-bar"><i class="rq-s1w" data-w="50" style="background:var(--gr)"></i><i class="rq-s1w" data-w="50" style="background:var(--rd)"></i></div></div></div>
+        </div></div>`,
+      run:(t, el) => {
+        t(() => el.querySelector('#rqS1o').classList.add('rq-cut'), 300);
+        t(() => on(el, '[data-s="1"]'), 800);
+        t(() => { on(el, '[data-s="2"]'); count(el.querySelector('#rqS1n'), 2500, 30000, 1600, v => v.toLocaleString('en-US')); el.querySelector('#rqS1b').style.width = '100%'; }, 1500);
+        t(() => { on(el, '[data-s="3"]'); el.querySelectorAll('.rq-s1w').forEach(b => { b.style.width = b.dataset.w + '%'; }); }, 3300);
+        return 5000;
+      } },
+
+    /* 2 */
+    { k:'Write the evals first',
+      cap:'<p><b>Give the agent a way to prove the work, and make a human approve it before anything is built.</b> Each feature gets a requirements file and a strict eval file, plus a mockup if it has a design. A hook stops the agent from calling the task done until the evals pass.</p><small>An eval is a fixed test that tells you whether the work is done, strict enough that bad work fails it. Without your review of the evals, nothing gets built.</small>',
+      html:() => `<div class="rq-s2">
+        <div class="rq-vc rq-s2-tree rq-vi" data-s="0">${win('specs/&lt;feature&gt;/')}<div class="rq-b">
+          <div class="rq-f rq-vi" data-s="1">📄 RD.md <span>requirements</span></div>
+          <div class="rq-f rq-vi" data-s="2">🧪 eval.md <span>how to check it</span></div>
+          <div class="rq-f rq-vi" data-s="3">🖼 mockup.html <span>design to match</span></div></div></div>
+        <div class="rq-s2-flow">
+          <div class="rq-s2-st rq-vi" data-s="4"><span class="rq-pill rq-s2-a">draft</span><span class="rq-mu">›</span><span class="rq-pill rq-s2-b">in review</span><span class="rq-mu">›</span><span class="rq-pill rq-s2-c">reviewed, ready to build</span></div>
+          <div class="rq-vc rq-s2-gate rq-vi" data-s="4" id="rqS2g"><span class="rq-ic" id="rqS2i">🔒</span><span id="rqS2t">Hook: the task can't be marked done until the evals pass.</span></div></div></div>`,
+      run:(t, el) => {
+        const A = el.querySelector('.rq-s2-a'), B = el.querySelector('.rq-s2-b'), C = el.querySelector('.rq-s2-c'), g = el.querySelector('#rqS2g');
+        t(() => on(el, '[data-s="0"]'), 100);
+        [1, 2, 3].forEach(i => t(() => on(el, `[data-s="${i}"]`), 500 + i * 500));
+        t(() => { on(el, '[data-s="4"]'); A.classList.add('on'); }, 2400);
+        t(() => { g.classList.add('rq-bl'); el.querySelector('#rqS2t').textContent = 'Agent tries to finish early: blocked.'; }, 3000);
+        t(() => { A.classList.remove('on'); B.classList.add('on'); el.querySelector('#rqS2t').textContent = 'Human reviews the evals and the mockups, changes anything, approves.'; g.classList.remove('rq-bl'); }, 4000);
+        t(() => { B.classList.remove('on'); C.classList.add('rq-ok'); g.classList.add('rq-go'); el.querySelector('#rqS2i').textContent = '🔓'; el.querySelector('#rqS2t').textContent = 'Approved: now it can be built.'; }, 5300);
+        return 6300;
+      } },
+
+    /* 3 */
+    { k:'Build, verify, review',
+      cap:'<p><b>The agent that built it shouldn\'t be the one that reviews it, so each role gets a fresh context window.</b> A builder builds from the requirements, a verifier marks every eval passed or failed, and a reviewer hunts for what the evals missed using <code>review.md</code>. The main agent only runs the loop.</p><small>The loop stops only when every eval passes and the review finds nothing new. A decision it can\'t make alone comes back to you as a progress report.</small>',
+      html:() => `<div class="rq-s3">
+        <div class="rq-pill rq-vi" data-s="1">main agent: orchestrator</div>
+        <div class="rq-s3-chain rq-vi" data-s="1">
+          <div class="rq-vc rq-s3-n"><b>Builder</b>from RD.md<em>fresh context</em></div><span class="rq-mu">›</span>
+          <div class="rq-vc rq-s3-n"><b>Verifier</b>runs the evals<em>fresh context</em></div><span class="rq-mu">›</span>
+          <div class="rq-vc rq-s3-n"><b>Reviewer</b>uses review.md<em>fresh context</em></div><span class="rq-mu">↺</span></div>
+        <div class="rq-vc rq-s3-st rq-vi" data-s="2"><span class="rq-mu">state.md</span><span class="rq-big" id="rqS3r">round 1</span><span id="rqS3f">still failing: …</span></div></div>`,
+      run:(t, el) => {
+        const ns = [...el.querySelectorAll('.rq-s3-n')], R = el.querySelector('#rqS3r'), F = el.querySelector('#rqS3f');
+        const fails = [['3 evals', 'builder wrote it'], ['1 eval + 1 review finding', 'fixes applied'], ['nothing', 'all evals pass, review finds nothing new']];
+        t(() => on(el, '[data-s="1"]'), 100); t(() => on(el, '[data-s="2"]'), 500);
+        fails.forEach((f, r) => {
+          const b = 900 + r * 1900;
+          t(() => { R.textContent = 'round ' + (r + 1); F.textContent = 'still failing: ' + f[0]; }, b);
+          ns.forEach((n, i) => { t(() => n.classList.add('rq-run'), b + 200 + i * 450); t(() => n.classList.remove('rq-run'), b + 600 + i * 450); });
+        });
+        t(() => { R.innerHTML = '<span class="rq-gr">✓ loop done</span> · round 3'; F.textContent = 'still failing: nothing'; }, 900 + 3 * 1900 - 300);
+        return 6900;
+      } },
+
+    /* 4 */
+    { k:'Rules that stick',
+      cap:'<p><b>Claude doesn\'t remember mistakes between sessions, so fix the instructions, not just the code.</b> <code>review.md</code> ends with a "rules learned over time" section. When the same problem comes back in a later round, the loop matches it to the earlier one and proposes a one-line rule, added only if you approve.</p><small>The same section takes rules the other way too: when review keeps flagging something that turns out not to be a real problem. The rule shown is an example, not from the video.</small>',
+      html:() => `<div class="rq-s4">
+        <div class="rq-vc rq-s4-doc rq-vi" data-s="0">${win('review.md')}<div class="rq-b">
+          <div class="rq-h">What counts as a failure</div><div class="rq-ln">severity levels · what to ignore · how to report</div>
+          <div class="rq-h">Rules learned over time</div><div class="rq-s4-rule" id="rqS4r">…</div></div></div>
+        <div class="rq-s4-log">
+          <div class="rq-vc rq-s4-ev rq-vi" data-s="1"><span class="rq-t">round 2</span><span>Finding: empty list shows a blank screen</span></div>
+          <div class="rq-vc rq-s4-ev rq-vi" data-s="2"><span class="rq-t">round 4</span><span class="rq-yl">Same finding again: matched to the earlier one</span></div>
+          <div class="rq-vc rq-s4-ev rq-vi" data-s="3"><span class="rq-t">proposal</span><span>One-line rule? <b class="rq-gr">You approve</b></span></div>
+          <div class="rq-vc rq-s4-ev rq-vi" data-s="4"><span class="rq-t">next feature</span><span class="rq-gr">✓ not made again</span></div></div></div>`,
+      run:(t, el) => {
+        t(() => on(el, '[data-s="0"]'), 100);
+        t(() => on(el, '[data-s="1"]'), 700); t(() => on(el, '[data-s="2"]'), 1700); t(() => on(el, '[data-s="3"]'), 2700);
+        t(() => { el.querySelector('#rqS4r').textContent = '+ Every list needs an empty state.'; }, 3700);
+        t(() => on(el, '[data-s="4"]'), 4500);
+        return 5400;
+      } },
+
+    /* 5 */
+    { k:'Rate the risk',
+      cap:'<p><b>Check harder where a mistake can do more damage, and ask one question to find out where.</b> "What happens to a customer if this feature breaks?" A skill rates each feature low, medium or high before you build, and that rating is passed to the eval step.</p><small>Low only looks wrong. Medium stops a feature but nobody loses anything, so it can be fixed later. High loses money, locks someone out or shows another person\'s data, and can\'t be taken back.</small>',
+      html:() => `<div class="rq-s5">
+        <div class="rq-s5-q rq-vi" data-s="0">What happens to a <span class="rq-co">customer</span> if it breaks?</div>
+        <div class="rq-s5-tiers">
+          <div class="rq-vc rq-s5-t rq-lo rq-vi" data-s="1"><b class="rq-gr">Low</b>It only looks wrong.</div>
+          <div class="rq-vc rq-s5-t rq-md rq-vi" data-s="1"><b class="rq-yl">Medium</b>A feature stops working, but nobody loses anything. Fixable later.</div>
+          <div class="rq-vc rq-s5-t rq-hi rq-vi" data-s="1"><b class="rq-rd">High</b>Lost money, locked out, or someone else\'s data. Can\'t be undone.</div></div>
+        <div class="rq-vc rq-s5-m rq-vi" data-s="2"><span>Eval strictness</span><div class="rq-segs"><i></i><i></i><i></i><i></i></div><span class="rq-w" id="rqS5w">–</span></div></div>`,
+      run:(t, el) => {
+        const T = [...el.querySelectorAll('.rq-s5-t')], S = [...el.querySelectorAll('.rq-segs i')], W = el.querySelector('#rqS5w');
+        t(() => on(el, '[data-s="0"]'), 100); t(() => on(el, '[data-s="1"]'), 700); t(() => on(el, '[data-s="2"]'), 1300);
+        [[0, 1, 'light'], [1, 2, 'standard'], [2, 4, 'strict']].forEach(([i, n, w], k) => {
+          t(() => { T.forEach((x, j) => x.classList.toggle('rq-sel', j === i)); S.forEach((s, j) => s.classList.toggle('on', j < n)); W.textContent = w; }, 1900 + k * 1300);
+        });
+        return 5800;
+      } },
+
+    /* 6 */
+    { k:'Stop the ping-pong',
+      cap:'<p><b>Builder and reviewer don\'t know when to stop, so the loop needs three limits.</b> One change went back and forth more than 50 times, and about 59% of what the reviewer reported had been there since round one. After three rounds the reviewer stops listing problems and tells the builder to rethink the approach. After round one it checks only what the last fix changed, and it names the kind of each problem so the builder fixes that kind everywhere.</p><small>The team\'s limit is 3 rounds. AI LABS stops at 5, because each of its rounds builds, checks every eval in the browser and reviews the code, and also stops early if the same problem survives 2 fixes.</small>',
+      html:() => `<div class="rq-s6">
+        <div class="rq-vc rq-s6-court rq-vi" data-s="0">
+          <div class="rq-s6-pp"><div class="rq-pad">Builder</div><div class="rq-s6-ball" id="rqS6b"></div><div class="rq-pad">Reviewer</div></div>
+          <div class="rq-s6-meta"><span class="rq-mu">Rounds on one change</span><b id="rqS6n">0</b></div>
+          <div class="rq-s6-bar"><i class="rq-o" id="rqS6o"></i><i class="rq-n" id="rqS6w"></i></div>
+          <div class="rq-s6-meta" style="font-size:12px"><span class="rq-yl">■ re-reported from round 1</span><span class="rq-co">■ new</span></div></div>
+        <div class="rq-s6-rules">
+          <div class="rq-vc rq-s6-r rq-vi" data-s="1"><span class="rq-nn">RULE 1</span><b>Rethink after 3 rounds</b>More of the same fix won't get there.</div>
+          <div class="rq-vc rq-s6-r rq-vi" data-s="2"><span class="rq-nn">RULE 2</span><b>Only check what changed</b>No re-reporting what's already been reported.</div>
+          <div class="rq-vc rq-s6-r rq-vi" data-s="3"><span class="rq-nn">RULE 3</span><b>Name the kind of problem</b>Fix that kind everywhere it shows up.</div></div></div>`,
+      run:(t, el) => {
+        t(() => on(el, '[data-s="0"]'), 100);
+        t(() => { count(el.querySelector('#rqS6n'), 0, 52, 1800); }, 600);
+        t(() => { el.querySelector('#rqS6o').style.width = '59%'; el.querySelector('#rqS6w').style.width = '41%'; }, 1200);
+        t(() => { const b = el.querySelector('#rqS6b'); b.classList.add('rq-stop'); el.querySelector('#rqS6n').innerHTML = '<span class="rq-gr">stop at 3</span>'; }, 3000);
+        [1, 2, 3].forEach(i => t(() => on(el, `[data-s="${i}"]`), 3200 + i * 500));
+        return 5600;
+      } },
+
+    /* 7 */
+    { k:'Find it, undo it',
+      cap:'<p><b>Some mistakes still get through, so you need a way to find them and a way to undo them fast.</b> A fresh agent that never saw the app uses it like a first-time customer, and it is blocked from reading the code, including through terminal commands, and works on a temporary database. Git gives each feature its own branch and a saved version at every working step, so the change that broke something can be found and rolled back.</p><small>The Claude Code team can undo almost anything they release within minutes, and that is what lets them read less.</small>',
+      html:() => `<div class="rq-s7">
+        <div class="rq-vc rq-s7-p rq-vi" data-s="0">${win('live app · first-time user')}<div class="rq-b">
+          <div class="rq-s7-chips"><span class="rq-pill rq-blk" id="rqS7a">src/ code</span><span class="rq-pill rq-blk" id="rqS7b">cat · grep</span><span class="rq-pill rq-gr">temporary database</span></div>
+          <div class="rq-s7-find"><div class="rq-vi" data-s="1">Stuck: no hint what to do on the first screen</div><div class="rq-vi" data-s="2">Stuck: error with no way back</div></div></div></div>
+        <div class="rq-vc rq-s7-p rq-vi" data-s="3"><div class="rq-b"><span class="rq-lbl">git · one branch per feature</span>
+          <svg class="rq-s7-git" viewBox="0 0 400 130" aria-label="git history with a bad change rolled back">
+            <path class="rq-ln" d="M10 100 H390"/><path class="rq-ln" d="M110 100 C130 100 130 40 160 40 H300"/>
+            <circle class="rq-ok" cx="30" cy="100" r="6"/><circle class="rq-ok" cx="90" cy="100" r="6"/>
+            <circle id="rqS7c1" cx="170" cy="40" r="6"/><circle id="rqS7c2" cx="230" cy="40" r="6"/><circle id="rqS7c3" cx="290" cy="40" r="6"/>
+            <path class="rq-rb" id="rqS7rb" d="M290 40 C250 40 230 70 170 40"/>
+            <text x="14" y="124">main</text><text x="200" y="22">feature branch</text></svg>
+          <div class="rq-vi rq-mono" data-s="4" style="font-size:12px"><span class="rq-rd">✗ 3rd version broke it</span> → <span class="rq-gr">roll back to the 2nd</span></div></div></div></div>`,
+      run:(t, el) => {
+        t(() => on(el, '[data-s="0"]'), 100);
+        t(() => { el.querySelector('#rqS7a').classList.add('on'); }, 500);
+        t(() => on(el, '[data-s="1"]'), 1000); t(() => on(el, '[data-s="2"]'), 1700);
+        t(() => on(el, '[data-s="3"]'), 2500);
+        ['#rqS7c1', '#rqS7c2'].forEach((c, i) => t(() => el.querySelector(c).setAttribute('class', 'rq-ok'), 3000 + i * 400));
+        t(() => el.querySelector('#rqS7c3').setAttribute('class', 'rq-bad'), 3900);
+        t(() => { on(el, '[data-s="4"]'); el.querySelector('#rqS7rb').classList.add('on'); }, 4500);
+        return 6200;
+      } },
+  ];
+
+  const stage = document.getElementById('rqStage'); if (!stage) return;
+  const clear = () => { timers.forEach(clearTimeout); timers = []; };
+  let cur = 0, auto = false, timers = [];
+  $('rqSteps').innerHTML = SCENES.map((s, i) => `<button type="button" data-i="${i}">${i + 1}. ${s.k}</button>`).join('');
+  function show(i) {
+    clear(); cur = i; const s = SCENES[i];
+    $('rqSteps').querySelectorAll('button').forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
+    stage.innerHTML = s.html(); $('rqCap').innerHTML = s.cap;
+    const t = (fn, ms) => timers.push(setTimeout(fn, reduced ? 0 : ms));
+    const end = s.run(t, stage);
+    if (auto) t(() => i < SCENES.length - 1 ? show(i + 1) : stop(), end + 2000);
+  }
+  function stop() { auto = false; $('rqPlay').textContent = '▶ Play all'; }
+  $('rqSteps').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { stop(); show(+b.dataset.i); } });
+  reserveSceneSpace(stage, $('rqCap'), done => { for (const sc of SCENES) { stage.innerHTML = sc.html(); $('rqCap').innerHTML = sc.cap; done(); } }, () => show(cur));
+  $('rqPlay').addEventListener('click', () => { if (auto) { stop(); clear(); return; } auto = true; $('rqPlay').textContent = '❚❚ Pause'; show(cur === SCENES.length - 1 ? 0 : cur); });
+  show(0);
+})();
+
+const POSTS = [['review', 'Workflow'], ['vercel', 'Workflow'], ['rea', 'Workflow'], ['mods', 'Setup & tooling'], ['design', 'Design'], ['amb', 'Workflow'], ['know', 'Context & memory'], ['orch', 'Orchestration'], ['spec', 'Workflow'],
   ['iceberg', 'Concepts'], ['teams', 'Orchestration'], ['rag', 'Context & memory'], ['devsetup', 'Setup & tooling'], ['harness', 'Workflow'], ['flow', 'Orchestration']]
   .map(([id, cat]) => {
     const v = document.getElementById('v-' + id);
@@ -2997,22 +4635,62 @@ const VIEWS = ['home', 'videos', ...POST_IDS];
 // thumbnails are YouTube-style title cards made from each post's own diagram (research/thumbs/<id>.jpg)
 const thumb = p => `<img loading="lazy" alt="" src="thumbs/${p.id}.jpg" width="960" height="540">`;
 const mins = p => Math.max(2, Math.round((document.getElementById('v-' + p.id).textContent.match(/\S+/g) || []).length / 230));
-const featured = POSTS.slice(0, 3), rest = POSTS.slice(3);
-$('#rsFeatured').innerHTML = featured.map(p => `<a class="rs-fc" href="#${p.id}">${thumb(p)}<small>${esc(p.cat)}</small><b>${esc(p.title)}</b><span>${esc(p.lede)}</span></a>`).join('');
-const row = p => `<a class="rs-row" href="#${p.id}">${thumb(p)}<small>${esc(p.cat)}</small><b>${esc(p.title)}</b><span>${esc(p.lede)}</span><em>${p.round ? esc(p.round) + ' · ' : ''}${mins(p)} min read</em></a>`;
-const TOPICS = [...new Set(POSTS.map(p => p.cat))];
-function renderList(topic) {
-  const list = topic ? POSTS.filter(p => p.cat === topic) : rest;
-  $('#v-home').classList.toggle('rs-filtered', !!topic);
-  $('#rsListTitle').innerHTML = topic ? `${esc(topic)}<a href="#">all articles</a>` : 'All articles';
-  $('#rsPosts').innerHTML = list.map(row).join('');
-  $('#rsPostCount').textContent = (topic ? list.length : POSTS.length) + (list.length === 1 && topic ? ' article' : ' articles');
+const row = it => `<a class="rs-row" href="${it.href}">${it.img}<small>${it.kind} · ${esc(it.topic)}</small><b>${esc(it.title)}</b><span>${esc(it.lede)}</span><em>${esc(it.meta)}</em></a>`;
+const card = it => `<a class="rs-fc" href="${it.href}">${it.img}<small>${it.kind} · ${esc(it.meta)}</small><b>${esc(it.title)}</b><span>${esc(it.lede)}</span></a>`;
+const TOPIC_INFO = {
+  'Workflow': 'How work moves through the factory: specs, ambition, reverse engineering, quality gates.',
+  'Orchestration': 'Running many agents together: teams, sub-agents, review loops, parallel jobs.',
+  'Context & memory': 'What agents know and remember: knowledge files, retrieval, session state.',
+  'Setup & tooling': 'The environment around the agents: mods, MCP, skills, local setup.',
+  'Design': 'Design skills and tools that agents can drive.',
+  'Concepts': 'Mental models for thinking about agent systems.'
+};
+// a video belongs to the topic of the post it feeds into, else to the topic its tags suggest
+const TAG_TOPIC = [[/design|stitch|ui/, 'Design'], [/memory|context|rag|knowledge/, 'Context & memory'], [/orchestr|sub-?agent|review-loop|factory|parallel|worktree/, 'Orchestration'], [/mcp|skill|mods|setup|tooling|voice/, 'Setup & tooling']];
+function vidTopic(r) {
+  if (r.topic) return r.topic;
+  const post = r.page?.startsWith('../#') && POSTS.find(p => p.id === r.page.slice(3));
+  if (post) return post.cat;
+  const tags = (r.tags || []).join(' ');
+  return (TAG_TOPIC.find(([re]) => re.test(tags)) || [0, 'Workflow'])[1];
 }
-renderList('');
+// posts, plus feed videos that have no post of their own (a video that feeds a post is shown as that post)
+const homeItems = () => [
+  ...POSTS.map(p => ({ kind:'Article', topic:p.cat, href:'#' + p.id, img:thumb(p), title:p.title, lede:p.lede, meta:`${mins(p)} min read` })),
+  ...(vdRows || []).filter(r => !r.page?.startsWith('../#')).map(r => ({ kind:'Video', topic:vidTopic(r), href:vdTarget(r), tags:r.tags,
+    img:`<img loading="lazy" alt="" src="https://i.ytimg.com/vi/${esc(r.id)}/mqdefault.jpg" width="320" height="180">`, title:r.title, lede:r.summary, meta:r.channel }))
+];
+const topicsOf = items => [...new Set([...POSTS.map(p => p.cat), ...items.map(i => i.topic)])];
+let curTopic = '';
+function renderHome(topic = curTopic) {
+  curTopic = topic;
+  const all = homeItems(), topics = topicsOf(all);
+  const q = $('#rsQ').value.trim().toLowerCase();
+  $('#v-home').classList.toggle('rs-filtered', !!topic);
+  $('#rsChips').innerHTML = `<a href="#" ${topic ? '' : 'aria-current="true"'}>All <span>${all.length}</span></a>` +
+    topics.map(t => `<a href="#topic/${encodeURIComponent(t)}" ${t === topic ? 'aria-current="true"' : ''}>${esc(t)} <span>${all.filter(i => i.topic === t).length}</span></a>`).join('');
+  const hit = it => !q || `${it.title} ${it.lede} ${it.topic} ${(it.tags || []).join(' ')}`.toLowerCase().includes(q);
+  const box = $('#rsTopics');
+  if (topic || q) {
+    const list = all.filter(i => (!topic || i.topic === topic) && hit(i));
+    const title = q ? `Results${topic ? ' in ' + esc(topic) : ''}` : esc(topic);
+    box.innerHTML = `<div class="rs-sec"><div class="rs-h"><h2>${title}</h2><span>${list.length} ${list.length === 1 ? 'item' : 'items'}</span></div>` +
+      (topic && !q && TOPIC_INFO[topic] ? `<p class="rs-blurb">${esc(TOPIC_INFO[topic])}</p>` : '') +
+      (list.length ? `<div class="rs-list">${list.map(row).join('')}</div>` : '<div class="rs-none">Nothing matches that yet.</div>') + '</div>';
+  } else {
+    box.innerHTML = topics.map(t => {
+      const list = all.filter(i => i.topic === t);
+      return `<section class="rs-sec"><div class="rs-h"><h2>${esc(t)}</h2><a href="#topic/${encodeURIComponent(t)}">${list.length > 3 ? `All ${list.length} →` : `${list.length} ${list.length === 1 ? 'item' : 'items'} →`}</a></div>` +
+        `<p class="rs-blurb">${esc(TOPIC_INFO[t] || '')}</p><div class="rs-featured">${list.slice(0, 3).map(card).join('')}</div></section>`;
+    }).join('');
+  }
+}
+$('#rsQ').addEventListener('input', () => renderHome());
+const TOPICS = [...new Set(POSTS.map(p => p.cat))];
 
 // ---- Topics menu ----
 const topicsBtn = $('#rsTopicsBtn'), menu = $('#rsMenu');
-menu.innerHTML = `<a href="#">All articles <span>${POSTS.length}</span></a><hr>` +
+menu.innerHTML = `<a href="#">All topics <span>${POSTS.length}</span></a><hr>` +
   TOPICS.map(t => `<a href="#topic/${encodeURIComponent(t)}">${esc(t)} <span>${POSTS.filter(p => p.cat === t).length}</span></a>`).join('');
 const setMenu = open => { menu.hidden = !open; topicsBtn.setAttribute('aria-expanded', String(open)); };
 topicsBtn.addEventListener('click', e => { e.stopPropagation(); setMenu(menu.hidden); });
@@ -3067,9 +4745,7 @@ async function vdLoad() {
   // only tags shared by 2+ videos make useful filters
   const n = {}; vdRows.forEach(r => (r.tags || []).forEach(t => { n[t] = (n[t] || 0) + 1; }));
   $('#vdTags').innerHTML = ['', ...Object.keys(n).filter(t => n[t] > 1).sort()].map(t => `<button type="button" data-t="${esc(t)}">${t ? '#' + esc(t) : 'all'}</button>`).join('');
-  $('#rsVids').innerHTML = vdRows.length ? vdRows.slice(0, 3).map(r => `<a class="rs-card" href="${vdTarget(r)}">
-      <img loading="lazy" alt="" src="https://i.ytimg.com/vi/${esc(r.id)}/mqdefault.jpg"><small>${esc(r.channel)} · ${esc(r.date)}</small><b>${esc(r.title)}</b><span>${esc(r.summary)}</span><em>${r.page ? 'animated explainer →' : 'summary and video →'}</em></a>`).join('')
-    : `<div class="vd-empty">The feed couldn't load here. <a href="${SITE}research/#videos" target="_blank" rel="noopener">Open it on the live site ↗</a></div>`;
+  if (!$('#v-home').hidden) renderHome();
   return vdRows;
 }
 function vdRender() {
@@ -3162,7 +4838,7 @@ async function route() {
     return;
   }
   if (h.startsWith('topic/')) {
-    show('home'); renderList(h.slice(6)); vdLoad(); scrollTo(0, 0);
+    show('home'); renderHome(h.slice(6)); vdLoad(); scrollTo(0, 0);
     return;
   }
   $('#vdVideo').hidden = true; $('#vdVideo').innerHTML = ''; // stops an embedded video
@@ -3183,7 +4859,7 @@ async function route() {
   const v = host ? host.id.slice(2) : VIEWS.includes(h) ? h : 'home';
   show(v);
   if (v === 'videos') { $('#vdFeed').hidden = false; $('#vdPlayer').hidden = true; $('#vdFrame').removeAttribute('src'); await vdLoad(); vdRender(); }
-  if (v === 'home') { renderList(''); vdLoad(); }
+  if (v === 'home') { renderHome(''); vdLoad(); }
   if (host) target.scrollIntoView(); else scrollTo(0, 0);
 }
 addEventListener('hashchange', route);
