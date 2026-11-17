@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DeepSeek's super agent in Claude Code: one router, many workers</title>
+<style>
+:root { --bg:#f4f4f2; --fg:#151515; --muted:#666; --accent:#c25a35; --line:#ddd; --panel:#fff;
+  --sans:"Inter", ui-sans-serif, system-ui, sans-serif; --mono:"JetBrains Mono", ui-monospace, Menlo, monospace; color-scheme:light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#0b0d0e; --fg:#ececec; --muted:#9a9a9a; --accent:#e0896a; --line:#262a2c; --panel:#141719; color-scheme:dark; } }
+:root[data-theme="dark"] { --bg:#0b0d0e; --fg:#ececec; --muted:#9a9a9a; --accent:#e0896a; --line:#262a2c; --panel:#141719; color-scheme:dark; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.55 var(--sans); }
+main { max-width:1180px; margin:0 auto; padding:24px 16px 64px; display:grid; gap:18px; }
+.top { display:flex; gap:16px; flex-wrap:wrap; font-size:14px; }
+a { color:var(--accent); }
+h1 { margin:0; font-size:28px; letter-spacing:-.02em; } .lede { color:var(--muted); max-width:76ch; margin:0; }
+h2 { margin:18px 0 0; font-size:19px; }
+code { font-family:var(--mono); font-size:.9em; }
+.ctl { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+.seg { display:inline-flex; flex-wrap:wrap; border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+.seg button { background:var(--panel); border:0; border-right:1px solid var(--line); padding:6px 12px; cursor:pointer; color:var(--muted); font:inherit; font-size:13px; }
+.seg button[aria-pressed="true"] { color:var(--fg); background:color-mix(in srgb, var(--accent) 14%, var(--panel)); }
+.play { font:inherit; font-size:13px; font-weight:600; background:var(--accent); color:var(--bg); border:0; border-radius:8px; padding:7px 13px; cursor:pointer; }
+.cap { border-left:3px solid var(--accent); padding:4px 0 4px 14px; max-width:84ch; min-height:64px; } .cap p { margin:0 0 4px; } .cap small { color:var(--muted); }
+.sa-wrap { overflow-x:auto; }
+.sa-tbl { border-collapse:collapse; width:100%; font-size:14px; }
+.sa-tbl th, .sa-tbl td { text-align:left; vertical-align:top; padding:9px 10px; border-bottom:1px solid var(--line); }
+.sa-tbl th { color:var(--muted); font-weight:600; font-size:13px; }
+.sa-tbl td:first-child { font-weight:600; white-space:nowrap; }
+.sa-src { margin:0; padding-left:20px; display:grid; gap:6px; font-size:14px; }
+
+/* ---- stage: always dark, every class prefixed .x / .sa- ---- */
+.x { --c:#d97757; --card:#1c1c1c; --card2:#232323; --ln:#2e2e2e; --tx:#ececec; --mu:#8d8d8d; --gr:#7bd88f; --yl:#e8c468; --rd:#f0716a;
+  background:#0e0e0e; color:var(--tx); border:1px solid #222; border-radius:14px; min-height:440px; padding:26px; position:relative; overflow:hidden;
+  display:grid; align-content:center; font-size:14px; }
+.x .vc { background:var(--card); border:1px solid var(--ln); border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,.45); }
+.x .vi { opacity:0; transform:translateY(10px); transition:opacity .5s, transform .5s; } .x .vi.on { opacity:1; transform:none; }
+.x .mu { color:var(--mu); } .x .co { color:var(--c); } .x .gr { color:var(--gr); } .x .yl { color:var(--yl); } .x .rd { color:var(--rd); } .x .mono { font-family:var(--mono); }
+.x .pill { display:inline-flex; align-items:center; gap:8px; background:var(--card2); border:1px solid var(--ln); border-radius:99px; padding:5px 13px; font-weight:600; font-size:13px; white-space:nowrap; }
+.x .sa-h { font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--mu); margin:0 0 10px; font-weight:600; }
+.x .sa-bar { height:7px; border-radius:99px; background:#2a2a2a; overflow:hidden; }
+.x .sa-bar i { display:block; height:100%; width:0; background:var(--c); border-radius:99px; transition:width .9s cubic-bezier(.2,.8,.2,1), background .3s; }
+
+/* 1 juggling */
+.x .sa-jug { display:grid; grid-template-columns:200px 1fr; gap:26px; align-items:center; }
+.x .sa-you { padding:18px; text-align:center; display:grid; gap:10px; justify-items:center; }
+.x .sa-face { width:54px; height:54px; border-radius:50%; background:var(--card2); border:2px solid var(--c); display:grid; place-items:center; font-weight:700; }
+.x .sa-slots { display:flex; gap:5px; } .x .sa-slots i { width:20px; height:10px; border-radius:3px; background:#2a2a2a; transition:background .3s; }
+.x .sa-slots i.on { background:var(--c); } .x .sa-slots.over i { background:var(--yl); }
+.x .sa-over { font:600 12px var(--mono); color:var(--yl); opacity:0; transition:opacity .3s; } .x .sa-over.on { opacity:1; }
+.x .sa-sess { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:10px; transition:opacity .6s, filter .6s; }
+.x .sa-sess.gone { opacity:.12; filter:blur(1px); }
+.x .sa-s { padding:10px 12px; font:12px var(--mono); position:relative; transition:border-color .3s, color .3s; min-width:0; }
+.x .sa-s b { display:block; color:var(--c); font-size:11px; } .x .sa-s span { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.x .sa-s em { display:block; font-style:normal; font-size:10.5px; color:var(--gr); margin-top:4px; }
+.x .sa-s.lost { color:#555; border-color:#3a3420; } .x .sa-s.lost b { color:#555; } .x .sa-s.lost em { color:var(--yl); }
+.x .sa-one { grid-column:1 / -1; justify-self:center; padding:14px 22px; font-size:17px; font-weight:700; border-color:var(--c); display:flex; gap:12px; align-items:center; }
+
+/* 2 split jobs */
+.x .sa-split { display:grid; grid-template-columns:1fr 1fr; gap:22px; }
+.x .sa-pan { padding:18px; display:grid; gap:12px; align-content:start; }
+.x .sa-lane { display:grid; grid-template-columns:96px 1fr; gap:10px; align-items:center; min-height:34px; }
+.x .sa-lane > span { font-size:12px; color:var(--mu); }
+.x .sa-bub { font-size:12.5px; background:var(--card2); border:1px solid var(--ln); border-radius:10px 10px 10px 2px; padding:5px 10px; justify-self:start; opacity:0; transition:opacity .25s; white-space:nowrap; }
+.x .sa-bub.on { opacity:1; }
+.x .sa-pan .sa-bar.hit i { background:var(--yl); }
+.x .sa-tag { font:11px var(--mono); color:var(--mu); }
+.x .sa-rtl { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.x .sa-wk { display:grid; grid-template-columns:96px 1fr; gap:10px; align-items:center; font:12px var(--mono); }
+.x .sa-wk .sa-bar i { transition:width 3.4s linear; }
+.x .sa-res { font-weight:700; font-size:13px; opacity:0; transition:opacity .4s; } .x .sa-res.on { opacity:1; }
+
+/* 3 race */
+.x .sa-race { display:grid; gap:26px; width:min(860px,100%); justify-self:center; }
+.x .sa-trk { display:grid; grid-template-columns:200px 1fr 90px; gap:14px; align-items:center; }
+.x .sa-trk .lb { font-size:13.5px; font-weight:600; } .x .sa-trk .lb small { display:block; color:var(--mu); font-weight:400; font-size:12px; }
+.x .sa-rail { position:relative; height:12px; background:#1f1f1f; border-radius:99px; border:1px solid var(--ln); }
+.x .sa-rail i { position:absolute; left:0; top:0; bottom:0; width:0; border-radius:99px; background:var(--c); transition-property:width; transition-timing-function:linear; }
+.x .sa-rail.slow i { background:#8a5a49; }
+.x .sa-trk .v { font:700 20px var(--mono); text-align:right; white-space:nowrap; }
+.x .sa-axis { display:flex; justify-content:space-between; font:11px var(--mono); color:var(--mu); margin-left:214px; margin-right:104px; }
+.x .sa-race .pills { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+
+/* 4 tickets */
+.x .sa-tix { display:grid; grid-template-columns:1fr 1fr 1.25fr; gap:16px; align-items:start; }
+.x .sa-card { padding:14px 16px; display:grid; gap:8px; }
+.x .sa-q { font-size:12.5px; display:flex; gap:8px; align-items:baseline; } .x .sa-q b { color:var(--gr); }
+.x .sa-tree { font:12px/1.7 var(--mono); } .x .sa-tree div { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.x .sa-tree .d1 { padding-left:14px; } .x .sa-tree .d2 { padding-left:28px; } .x .sa-tree .d3 { padding-left:42px; color:var(--mu); font-size:11px; }
+.x .sa-brd { width:100%; border-collapse:collapse; font-size:12px; }
+.x .sa-brd th { text-align:left; color:var(--mu); font-weight:600; padding:4px 6px; border-bottom:1px solid var(--ln); }
+.x .sa-brd td { padding:6px; border-bottom:1px solid #262626; vertical-align:top; }
+.x .sa-st { font:600 11px var(--mono); padding:2px 8px; border-radius:99px; background:#2a2a2a; color:var(--mu); transition:background .3s, color .3s; white-space:nowrap; }
+.x .sa-st.ready { background:#24402c; color:var(--gr); }
+.x .sa-cnt { font:700 26px var(--mono); color:var(--c); }
+
+/* 5 dispatch */
+.x .sa-disp { display:grid; grid-template-columns:150px 54px 220px 54px 1fr; align-items:center; gap:4px; }
+.x .sa-who { padding:14px; text-align:center; display:grid; gap:8px; justify-items:center; }
+.x .sa-ask { font-size:12px; display:flex; gap:6px; opacity:0; transition:opacity .3s; } .x .sa-ask.on { opacity:1; }
+.x .sa-ask span { border:1px solid var(--ln); border-radius:6px; padding:2px 8px; background:var(--card2); transition:border-color .3s, color .3s; }
+.x .sa-ask span.pick { border-color:var(--gr); color:var(--gr); }
+.x .sa-ar { text-align:center; font-size:22px; color:#3a3a3a; transition:color .3s; } .x .sa-ar.on { color:var(--c); }
+.x .sa-rt { padding:16px; display:grid; gap:8px; border-color:var(--c); }
+.x .sa-rt .nm { font-weight:700; font-size:17px; }
+.x .sa-rt .tk { font:12px var(--mono); padding:6px 10px; border:1px dashed var(--ln); border-radius:8px; color:#555; transition:all .4s; }
+.x .sa-rt .tk.on { border-style:solid; border-color:var(--c); color:var(--tx); }
+.x .sa-team { display:grid; gap:10px; }
+.x .sa-tm { padding:10px 12px; display:grid; gap:6px; transition:border-color .3s, opacity .4s; }
+.x .sa-tm .t { display:flex; justify-content:space-between; gap:8px; font:12px var(--mono); }
+.x .sa-tm.ask { border-color:var(--yl); }
+.x .sa-tm .w { color:var(--mu); font-size:10.5px; }
+.x .sa-after { display:flex; gap:8px; justify-content:center; align-items:center; flex-wrap:wrap; margin-top:24px; }
+.x .sa-nd { padding:10px 14px; font-size:12.5px; display:grid; gap:2px; text-align:center; min-width:150px; position:relative; transition:border-color .3s; }
+.x .sa-nd small { color:var(--mu); font:10.5px var(--mono); }
+.x .sa-nd .ck { position:absolute; top:-7px; right:-7px; width:17px; height:17px; border-radius:50%; background:var(--gr); color:#0e0e0e; font-size:10px; display:grid; place-items:center; transform:scale(0); transition:transform .3s cubic-bezier(.3,1.6,.5,1); }
+.x .sa-nd.run { border-color:var(--c); } .x .sa-nd.on { border-color:#2f5a3a; } .x .sa-nd.on .ck { transform:scale(1); }
+
+/* 6 watchdog radar */
+.x .sa-wd { display:grid; grid-template-columns:auto 1fr; gap:34px; align-items:center; justify-content:center; }
+.x .sa-rad { position:relative; width:320px; height:320px; border-radius:50%; border:1px solid var(--ln);
+  background:radial-gradient(circle, transparent 32%, #161616 33%, transparent 34%, transparent 64%, #161616 65%, transparent 66%); }
+.x .sa-sw { position:absolute; inset:0; border-radius:50%; background:conic-gradient(from 0deg, rgba(217,119,87,.35), rgba(217,119,87,0) 70deg, transparent 360deg); opacity:0; transition:opacity .4s; }
+.x .sa-sw.on { opacity:1; animation:sa-spin 2s linear infinite; }
+@keyframes sa-spin { to { transform:rotate(360deg); } }
+.x .sa-core { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); padding:10px 12px; text-align:center; font-size:12px; width:120px; }
+.x .sa-core b { display:block; font-size:14px; }
+.x .sa-ag { position:absolute; transform:translate(-50%,-50%); font:11.5px var(--mono); padding:4px 9px; border-radius:99px; background:var(--card2); border:1px solid var(--ln); white-space:nowrap; transition:border-color .3s, color .3s; }
+.x .sa-ag.ok { border-color:#2f5a3a; color:var(--gr); } .x .sa-ag.bad { border-color:var(--yl); color:var(--yl); } .x .sa-ag.lock { border-color:var(--rd); color:var(--rd); }
+.x .sa-log { display:grid; gap:10px; width:min(360px,100%); }
+.x .sa-ln { font:12.5px var(--mono); padding:9px 12px; }
+.x .sa-clock { font:700 22px var(--mono); }
+
+/* 7 gantt */
+.x .sa-gt { display:grid; gap:10px; width:min(900px,100%); justify-self:center; }
+.x .sa-gr { display:grid; grid-template-columns:190px 1fr; gap:12px; align-items:center; }
+.x .sa-gr .lb { font-size:12.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .x .sa-gr .lb small { color:var(--mu); font-family:var(--mono); }
+.x .sa-lane2 { position:relative; height:26px; background:repeating-linear-gradient(90deg, #1a1a1a 0 1px, transparent 1px 16.666%); border-radius:6px; }
+.x .sa-lane2 i { position:absolute; top:3px; bottom:3px; width:0; border-radius:5px; background:var(--c); transition:width 1.2s cubic-bezier(.2,.8,.2,1); font:600 11px/20px var(--mono); color:#0e0e0e; padding-left:6px; overflow:hidden; white-space:nowrap; font-style:normal; }
+.x .sa-lane2 i.solo { background:#c99a6f; } .x .sa-lane2 i.wait { background:transparent; border:1px dashed #444; color:var(--mu); }
+.x .sa-ax { display:grid; grid-template-columns:190px 1fr; gap:12px; font:11px var(--mono); color:var(--mu); }
+.x .sa-ax div { display:flex; justify-content:space-between; }
+.x .sa-mk { position:absolute; top:-6px; bottom:-6px; width:2px; background:var(--gr); opacity:0; transition:opacity .3s; } .x .sa-mk.on { opacity:1; }
+.x .sa-ctx { display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-top:14px; font-size:12.5px; }
+.x .sa-ctx span.w { font:11px var(--mono); padding:3px 8px; border:1px solid var(--ln); border-radius:5px; background:var(--card2); }
+
+@media (max-width:760px) {
+  .x { padding:18px 12px; min-height:0; font-size:13px; }
+  .x .sa-jug { grid-template-columns:1fr; gap:14px; }
+  .x .sa-you { grid-template-columns:auto auto; justify-content:center; text-align:left; padding:12px; }
+  .x .sa-sess { grid-template-columns:repeat(2, minmax(0,1fr)); gap:7px; }
+  .x .sa-s { padding:7px 9px; font-size:11px; }
+  .x .sa-one { font-size:14px; padding:10px 14px; }
+  .x .sa-split { grid-template-columns:1fr; gap:12px; }
+  .x .sa-pan { padding:12px; }
+  .x .sa-lane, .x .sa-wk { grid-template-columns:80px 1fr; }
+  .x .sa-bub { font-size:11px; white-space:normal; }
+  .x .sa-trk { grid-template-columns:1fr 64px; gap:6px 10px; }
+  .x .sa-trk .lb { grid-column:1 / -1; }
+  .x .sa-trk .v { font-size:15px; }
+  .x .sa-axis { margin:0 74px 0 0; }
+  .x .sa-tix { grid-template-columns:1fr; gap:10px; }
+  .x .sa-disp { grid-template-columns:1fr; gap:6px; }
+  .x .sa-ar { transform:rotate(90deg); font-size:18px; line-height:1; }
+  .x .sa-who { grid-template-columns:auto auto; justify-content:center; }
+  .x .sa-nd { min-width:0; padding:8px 10px; font-size:11.5px; }
+  .x .sa-wd { grid-template-columns:1fr; gap:16px; justify-items:center; }
+  .x .sa-rad { width:270px; height:270px; }
+  .x .sa-ag { font-size:10px; padding:3px 6px; }
+  .x .sa-gr, .x .sa-ax { grid-template-columns:96px 1fr; gap:8px; }
+  .x .sa-gr .lb { font-size:11px; }
+  .x .sa-lane2 i { font-size:10px; }
+}
+@media (prefers-reduced-motion: reduce) { .x .sa-sw.on { animation:none; } }
+</style>
+
+<main>
+  <nav class="top"><a href="../../research/#videos">← Video feed</a><a href="https://www.youtube.com/watch?v=3DklR44DHnM" target="_blank" rel="noopener">▶ Watch the video (AI LABS, 14:16)</a></nav>
+  <h1>DeepSeek's super agent in Claude Code: one router, many workers</h1>
+  <p class="lede">DeepSeek's "super agent" replaces a row of Claude Code tabs with one agent you talk to. It's a <b>router</b> that only talks and hands out work, plus <b>workers</b> that only build. AI LABS rebuilt it as Claude Code agents: tickets with an <code>eval.md</code>, a router that checks results itself, a watchdog for silent failures, and a merger and checker for the end. One running example throughout: their app's v0.2 tickets 001, 002 and 006.</p>
+  <div class="ctl"><div class="seg" id="steps"></div><button type="button" class="play" id="play">▶ Play all</button></div>
+  <div class="x" id="stage"></div>
+  <div class="cap" id="cap" aria-live="polite"></div>
+
+  <h2>The cast, as AI LABS set it up</h2>
+  <div class="sa-wrap"><table class="sa-tbl">
+    <thead><tr><th>Agent</th><th>Model</th><th>Job</th></tr></thead>
+    <tbody>
+      <tr><td>router</td><td>Opus, effort high</td><td>Talks to you, starts every other agent, checks results against <code>eval.md</code>, sends fixes back to the same worker. Told never to write code: it keeps its tools because teammates inherit the session's tools. DeepSeek runs its router on a <i>lighter</i> model.</td></tr>
+      <tr><td>watchdog</td><td>Sonnet, effort medium</td><td>Runs in the background and compacts at 150k tokens. Every 10 minutes it runs a script that lists stuck, looping, silent or deadlocked agents and tells the router.</td></tr>
+      <tr><td>worker / teammate</td><td>Sonnet</td><td>Builds one ticket in its own git worktree. Writes the contract, results and screenshots into the ticket folder. A Stop hook checks it before it can say "done".</td></tr>
+      <tr><td>tester</td><td>Sonnet</td><td>Started by a worker. Runs every check in <code>eval.md</code> in a real browser (Vercel's agent-browser) and reports PASS/FAIL with evidence. It never fixes anything.</td></tr>
+      <tr><td>merger → checker</td><td>Sonnet</td><td>The merger brings the worktrees into main and resolves conflicts. The checker tests the merged feature in the browser.</td></tr>
+      <tr><td>reproducer</td><td>Sonnet</td><td>When something breaks, it replays the steps in the browser and fixes small bugs on its own branch. Otherwise it writes a report.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>What this means for us</h2>
+  <div class="sa-wrap"><table class="sa-tbl">
+    <thead><tr><th>Idea</th><th>What to do in the factory</th></tr></thead>
+    <tbody>
+      <tr><td>Talking and building are two jobs</td><td>The Console session the human talks to should never build. It routes tickets and relays choices. Builders get their own context, so a new message never interrupts them.</td></tr>
+      <tr><td>Tickets before agents</td><td>No ticket leaves <i>Draft</i> without <code>rd.md</code> (what, what not to touch, decisions made) and <code>eval.md</code> (checks, edge cases, what done means). The board's <i>Runs</i> column (alongside / waits for #) is the scheduler's input.</td></tr>
+      <tr><td>Only choices reach the human</td><td>Questions from workers show up in the Human inbox as 2–3 options. The router checks "done" against <code>eval.md</code> itself, so the inbox gets choices, not status updates.</td></tr>
+      <tr><td>Someone watches the quiet ones</td><td>Run a cheap watchdog on a timer: no output for N minutes, repeated tool calls, or two agents waiting on each other. Each becomes an Issue.</td></tr>
+      <tr><td>Parallel costs tokens</td><td>Each worker is its own context window. Track tokens per ticket on the Costs view, and use a smaller model wherever the ticket already spells out the work.</td></tr>
+      <tr><td>Local dies with the laptop</td><td>DeepSeek's version runs in the cloud and is reached through team chat and GitHub. A local router needs remote sessions, or the factory needs a hosted runner.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Sources</h2>
+  <ul class="sa-src">
+    <li><a href="https://www.youtube.com/watch?v=3DklR44DHnM" target="_blank" rel="noopener">Deepseek Just Released The Greatest Claude Code Workflow Ever</a>, AI LABS (YouTube, 14:16). The source for the agent files, the board, the 26/11/17-minute run, and DeepSeek's numbers as AI LABS reports them (3–5 sessions; 15.7 vs 29.5 min slowest task over 5 runs each). DeepSeek's own write-up wasn't checked for this page.</li>
+    <li><a href="https://code.claude.com/docs/en/sub-agents" target="_blank" rel="noopener">Claude Code subagents</a>: custom agents with their own model, tools and prompt (<code>claude --agent router</code>)</li>
+    <li><a href="https://code.claude.com/docs/en/agent-teams" target="_blank" rel="noopener">Claude Code agent teams</a>: the experimental feature behind "team" tickets, where teammates can message each other</li>
+    <li><a href="https://github.com/vercel-labs/agent-browser" target="_blank" rel="noopener">agent-browser</a> (Vercel Labs): the browser CLI the tester, checker and reproducer use</li>
+  </ul>
+</main>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const on = (el, sel) => el.querySelectorAll(sel).forEach(n => n.classList.add('on'));
+  const count = (node, to, ms, fmt = v => v) => { if (reduced) { node.textContent = fmt(to); return; } const t0 = performance.now(); const f = now => { const p = Math.min(1, (now - t0) / ms); node.textContent = fmt(to * p); if (p < 1) requestAnimationFrame(f); }; requestAnimationFrame(f); };
+
+  const SESS = [['001', 'foundations'], ['002', 'password reset'], ['003', 'email verify'], ['004', 'account'], ['005', 'terms'], ['006', 'real 404s'], ['007', 'seo / social'], ['008', 'site settings']];
+  const AGENTS = [['@schema', 50, 4], ['@mailer', 93, 38], ['@events', 80, 84], ['worker 002', 20, 84], ['worker 006', 7, 38]];
+
+  const SCENES = [
+    { k:'Too many tabs',
+      cap:'<p><b>Past three to five sessions, you lose track of what each one is doing.</b> DeepSeek\'s fix is one agent you give every task to.</p><small>DeepSeek\'s claim, as AI LABS tells it: the usual fix, opening one more session per task, is what causes the problem.</small>',
+      html:() => `<div class="sa-jug">
+        <div class="vc sa-you"><div class="sa-face">you</div><div style="display:grid;gap:6px;justify-items:center"><div class="sa-slots">${'<i></i>'.repeat(5)}</div><span class="mu" style="font-size:12px">tracks 3–5 at once</span><span class="sa-over">overloaded</span></div></div>
+        <div class="sa-sess">${SESS.map(([n, s]) => `<div class="vc sa-s vi"><b>session ${n}</b><span>${s}</span><em>building…</em></div>`).join('')}</div>
+        <div class="vc sa-one vi"><span class="co" style="font-size:22px">◉</span> one super agent · every task goes here</div></div>`,
+      run:(t, el) => {
+        const ss = el.querySelectorAll('.sa-s'), sl = el.querySelectorAll('.sa-slots i');
+        ss.forEach((s, i) => t(() => {
+          s.classList.add('on');
+          if (i < 5) sl[i].classList.add('on');
+          else { el.querySelector('.sa-slots').classList.add('over'); el.querySelector('.sa-over').classList.add('on');
+            const lost = ss[(i - 5) * 2]; lost.classList.add('lost'); lost.querySelector('em').textContent = 'what was this doing?'; }
+        }, 200 + i * 420));
+        t(() => { const l = ss[6]; l.classList.add('lost'); l.querySelector('em').textContent = 'what was this doing?'; }, 3700);
+        t(() => { el.querySelector('.sa-sess').classList.add('gone'); on(el, '.sa-one'); }, 4500);
+        return 5400;
+      } },
+
+    { k:'Two jobs, split',
+      cap:'<p><b>A single session does two jobs, talking to you and building, so every message interrupts the build.</b> The router only talks and hands out work, and the workers only build.</p><small>It isn\'t a lead agent with subagents: a lead breaks one task into steps. The router never splits a task. It only tracks who is doing what. And when a single session was told to use subagents, it often did the work itself anyway.</small>',
+      html:() => `<div class="sa-split">
+        <div class="vc sa-pan"><p class="sa-h">One session, two jobs</p>
+          <div class="sa-lane"><span>talk to you</span><div class="sa-bub" id="sa-b1"></div></div>
+          <div class="sa-lane"><span>do the work</span><div class="sa-bar" id="sa-b1b"><i></i></div></div>
+          <div class="sa-lane"><span></span><span class="sa-res yl" id="sa-r1">↺ interrupted 3× · 40% done</span></div></div>
+        <div class="vc sa-pan"><p class="sa-h">Router + workers</p>
+          <div class="sa-lane"><span>router</span><div class="sa-bub" id="sa-b2"></div></div>
+          ${['worker 001', 'worker 002', 'worker 006'].map(w => `<div class="sa-wk"><span class="mu">${w}</span><div class="sa-bar"><i></i></div></div>`).join('')}
+          <div class="sa-lane"><span></span><span class="sa-res gr" id="sa-r2">✓ nothing interrupted the workers</span></div></div></div>`,
+      run:(t, el) => {
+        const b1 = el.querySelector('#sa-b1'), bar = el.querySelector('#sa-b1b'), bi = bar.querySelector('i'), b2 = el.querySelector('#sa-b2');
+        const msgs = ['also, the footer is broken?', 'what about ticket 006?', 'can you add a test?'];
+        const fwd = ['→ handed to worker 006', '→ asked worker 002', '→ queued for tester'];
+        t(() => { bi.style.width = '45%'; el.querySelectorAll('.sa-wk i').forEach(i => { i.style.width = '100%'; }); }, 200);
+        msgs.forEach((m, k) => {
+          const at = 1100 + k * 1200;
+          t(() => { b1.textContent = m; b1.classList.add('on'); bar.classList.add('hit'); bi.style.width = (18 + k * 6) + '%'; b2.textContent = m; b2.classList.add('on'); }, at);
+          t(() => { bar.classList.remove('hit'); bi.style.width = (38 + k * 1) + '%'; b2.textContent = fwd[k]; }, at + 600);
+        });
+        t(() => on(el, '.sa-res'), 4300);
+        return 5000;
+      } },
+
+    { k:'The test',
+      cap:'<p><b>Router + workers finished its slowest task in 15.7 minutes. A single session with subagents took 29.5, almost twice as long.</b></p><small>DeepSeek\'s test, as AI LABS reports it: five runs of each setup. The router setup uses more tokens, because every worker has its own context window. What it buys is fewer slow outliers.</small>',
+      html:() => `<div class="sa-race">
+        <div class="sa-trk"><div class="lb">One session + subagents<small>talks and builds</small></div><div class="sa-rail slow"><i></i></div><div class="v"><span class="n">0.0</span>m</div></div>
+        <div class="sa-trk"><div class="lb co">Router + workers<small>router only routes</small></div><div class="sa-rail"><i></i></div><div class="v co"><span class="n">0.0</span>m</div></div>
+        <div class="sa-axis"><span>0</span><span>10</span><span>20</span><span>30 min</span></div>
+        <div class="pills"><span class="pill vi">5 runs each</span><span class="pill vi">slowest task</span><span class="pill vi co">≈ 1.9× faster</span></div></div>`,
+      run:(t, el) => {
+        const r = el.querySelectorAll('.sa-rail i'), n = el.querySelectorAll('.sa-trk .n'), pills = el.querySelectorAll('.pill');
+        const f = v => v.toFixed(1);
+        t(() => { pills[0].classList.add('on'); pills[1].classList.add('on'); }, 100);
+        t(() => {
+          r[0].style.transitionDuration = '3.4s'; r[0].style.width = (29.5 / 30 * 100) + '%';
+          r[1].style.transitionDuration = '1.8s'; r[1].style.width = (15.7 / 30 * 100) + '%';
+          count(n[0], 29.5, 3400, f); count(n[1], 15.7, 1800, f);
+        }, 400);
+        t(() => pills[2].classList.add('on'), 4000);
+        return 4600;
+      } },
+
+    { k:'Tickets first',
+      cap:'<p><b>Workers never talk to you, so every feature is written down in full before any agent picks it up.</b> <code>rd.md</code> says what to build, and <code>eval.md</code> says how to check it.</p><small>A <code>write-tickets</code> skill splits the request into features and asks questions until nothing is left to guess. Every ticket starts as a draft. You flip it to ready.</small>',
+      html:() => `<div class="sa-tix">
+        <div class="vc sa-card"><p class="sa-h">write-tickets skill</p>
+          <div class="mono" style="font-size:12px"><span class="co">›</span> turn the v0.2 PRD into tickets</div>
+          ${['Which mailer in dev: real or local outbox?', 'Rate-limit per IP or per account?', 'Track events client or server side?'].map(q => `<div class="sa-q vi"><b>?</b><span>${q}</span></div>`).join('')}
+          <div class="vi" style="font-size:12px"><span class="sa-cnt"><span class="n">0</span></span> tickets drafted</div></div>
+        <div class="vc sa-card sa-tree vi"><p class="sa-h" style="font-family:var(--sans)">specs/tickets/</p>
+          <div>001-v02-foundations/</div>
+          <div class="d1"><span class="co">rd.md</span></div><div class="d3">does · changes · must not touch · decisions</div>
+          <div class="d1"><span class="co">eval.md</span></div><div class="d3">how to run · checks · edge cases · done means</div>
+          <div>002-password-reset/</div><div>006-real-404s/ …</div><div class="co">BOARD.md</div></div>
+        <div class="vc sa-card vi"><p class="sa-h">BOARD.md</p>
+          <table class="sa-brd"><thead><tr><th>#</th><th>Status</th><th>Mode</th><th>Runs</th></tr></thead><tbody>
+            <tr><td class="mono">001</td><td><span class="sa-st">draft</span></td><td>team</td><td>alongside</td></tr>
+            <tr><td class="mono">002</td><td><span class="sa-st">draft</span></td><td>solo</td><td class="mu">waits for 001</td></tr>
+            <tr><td class="mono">006</td><td><span class="sa-st">draft</span></td><td>solo</td><td class="mu">waits for 001</td></tr>
+            <tr><td class="mono">003</td><td><span class="sa-st">draft</span></td><td>solo</td><td class="mu">waits for 002</td></tr>
+          </tbody></table></div></div>`,
+      run:(t, el) => {
+        const qs = el.querySelectorAll('.sa-q'), cards = el.querySelectorAll('.sa-card');
+        qs.forEach((q, i) => { t(() => q.classList.add('on'), 300 + i * 500); t(() => { q.querySelector('b').textContent = '✓'; }, 650 + i * 500); });
+        t(() => { on(el, '.sa-card .vi:last-child'); count(el.querySelector('.sa-cnt .n'), 19, 900, v => Math.round(v)); }, 1900);
+        t(() => cards[1].classList.add('on'), 2200);
+        t(() => cards[2].classList.add('on'), 2700);
+        const st = el.querySelectorAll('.sa-st');
+        [0, 1, 2].forEach(i => t(() => { st[i].textContent = 'ready'; st[i].classList.add('ready'); }, 3600 + i * 450));
+        return 5200;
+      } },
+
+    { k:'Router dispatches',
+      cap:'<p><b>The router hands out ready tickets, brings you only the choices, and checks the work against <code>eval.md</code> itself.</b></p><small>Ticket 001 is a team ticket, so three teammates each take one part, each in its own worktree. The router is told not to write rather than stripped of its Write tool: teammates inherit the starting session\'s tools.</small>',
+      html:() => `<div class="sa-disp">
+        <div class="vc sa-who vi"><div class="sa-face" style="width:44px;height:44px">you</div><div class="sa-ask"><span>A</span><span>B</span></div></div>
+        <div class="sa-ar a1">⇄</div>
+        <div class="vc sa-rt vi"><div class="nm">router</div><div class="mono mu" style="font-size:11.5px">opus · effort high · writes nothing</div><div class="tk">001 · team · ready</div></div>
+        <div class="sa-ar a2">→</div>
+        <div class="sa-team">${['@schema', '@mailer', '@events'].map(n => `<div class="vc sa-tm vi"><div class="t"><span>${n}</span><span class="w">worktree</span></div><div class="sa-bar"><i></i></div></div>`).join('')}</div></div>
+        <div class="sa-after">${[['eval.md check', 'router'], ['merge to main', 'merger'], ['test in browser', 'checker']].map(([a, b], i) => `${i ? '<span class="mu">›</span>' : ''}<div class="vc sa-nd">${a}<small>${b}</small><span class="ck">✓</span></div>`).join('')}</div>`,
+      run:(t, el) => {
+        const tms = el.querySelectorAll('.sa-tm'), bars = el.querySelectorAll('.sa-tm .sa-bar i'), ask = el.querySelector('.sa-ask'), nds = el.querySelectorAll('.sa-nd');
+        t(() => { el.querySelector('.sa-who').classList.add('on'); el.querySelector('.sa-rt').classList.add('on'); }, 100);
+        t(() => el.querySelector('.tk').classList.add('on'), 600);
+        t(() => { el.querySelector('.a2').classList.add('on'); tms.forEach(n => n.classList.add('on')); }, 1100);
+        t(() => bars.forEach((b, i) => { b.style.width = [45, 30, 50][i] + '%'; }), 1500);
+        t(() => { tms[1].classList.add('ask'); tms[1].querySelector('.w').textContent = 'needs a choice'; }, 2300);
+        t(() => { el.querySelector('.a1').classList.add('on'); ask.classList.add('on'); }, 2800);
+        t(() => ask.children[1].classList.add('pick'), 3500);
+        t(() => { tms[1].classList.remove('ask'); tms[1].querySelector('.w').textContent = 'got: B'; bars.forEach(b => { b.style.width = '100%'; }); }, 3900);
+        nds.forEach((n, i) => { t(() => n.classList.add('run'), 4800 + i * 550); t(() => n.classList.replace('run', 'on'), 5150 + i * 550); });
+        return 6600;
+      } },
+
+    { k:'Watchdog',
+      cap:'<p><b>The router only hears about problems a worker reports, so a background watchdog looks for the agents that have gone quiet.</b></p><small>Sonnet on medium effort, compacting at 150k tokens instead of the full million. Every 10 minutes it runs a small script that lists slow, looping or silent agents, and pairs waiting on each other.</small>',
+      html:() => `<div class="sa-wd">
+        <div class="sa-rad"><div class="sa-sw"></div>
+          <div class="vc sa-core"><b>watchdog</b><span class="mu mono" style="font-size:10.5px">sonnet · medium</span></div>
+          ${AGENTS.map(([n, x, y]) => `<span class="sa-ag" style="left:${x}%;top:${y}%">${n}</span>`).join('')}</div>
+        <div class="sa-log"><div class="sa-clock">t + <span class="n">0</span> min</div>
+          <div class="vc sa-ln vi"><span class="gr">✓</span> sweep 1 · 5 agents active</div>
+          <div class="vc sa-ln vi"><span class="yl">!</span> worker 002 · no output for 14 min</div>
+          <div class="vc sa-ln vi"><span class="rd">✕</span> @mailer ⇄ @events · waiting on each other</div>
+          <div class="vc sa-ln vi" style="border-color:var(--c)"><span class="co">→</span> router: 2 problems</div></div></div>`,
+      run:(t, el) => {
+        const ag = el.querySelectorAll('.sa-ag'), ln = el.querySelectorAll('.sa-ln'), n = el.querySelector('.sa-clock .n');
+        t(() => el.querySelector('.sa-sw').classList.add('on'), 200);
+        t(() => { n.textContent = '10'; ag.forEach(a => a.classList.add('ok')); ln[0].classList.add('on'); }, 1400);
+        t(() => { n.textContent = '20'; ag[3].classList.replace('ok', 'bad'); ln[1].classList.add('on'); }, 3000);
+        t(() => { ag[1].classList.replace('ok', 'lock'); ag[2].classList.replace('ok', 'lock'); ln[2].classList.add('on'); }, 3700);
+        t(() => ln[3].classList.add('on'), 4500);
+        return 5400;
+      } },
+
+    { k:'One hour, three tickets',
+      cap:'<p><b>In AI LABS\' run, the router built three tickets in about an hour. Their part was flipping tickets to ready and picking one option.</b></p><small>The team ticket ran 26 minutes before they stopped and merged it. Then 002 and 006, both waiting on 001, ran side by side for 11 and 17 minutes. The cost: one context window per agent instead of one in total.</small>',
+      html:() => `<div class="sa-gt">
+        ${[['001 foundations', 'team'], ['002 password reset', 'solo'], ['006 real 404s', 'solo'], ['003 email verify', 'draft']].map(([a, b]) => `<div class="sa-gr"><div class="lb">${a} <small>${b}</small></div><div class="sa-lane2"><i></i></div></div>`).join('')}
+        <div class="sa-ax"><span></span><div><span>0</span><span>10</span><span>20</span><span>30</span><span>40</span><span>50</span><span>60 min</span></div></div>
+        <div class="sa-ctx vi"><span class="mu">context windows open:</span> <span class="mono">single session = 1</span> <span class="mu">vs</span>
+          ${['router', 'watchdog', '@schema', '@mailer', '@events', 'merger', 'checker', 'worker 002', 'worker 006'].map(w => `<span class="w">${w}</span>`).join('')}</div></div>`,
+      run:(t, el) => {
+        const b = el.querySelectorAll('.sa-lane2 i'), lane = el.querySelectorAll('.sa-lane2');
+        const set = (i, from, len, txt, cls) => { b[i].style.left = (from / 60 * 100) + '%'; b[i].style.width = (len / 60 * 100) + '%'; b[i].textContent = txt; if (cls) b[i].classList.add(cls); };
+        t(() => set(0, 0, 26, '26 min'), 300);
+        t(() => { const m = document.createElement('span'); m.className = 'sa-mk'; m.style.left = (26 / 60 * 100) + '%'; lane[1].appendChild(m); requestAnimationFrame(() => m.classList.add('on'));
+          const m2 = m.cloneNode(); lane[2].appendChild(m2); requestAnimationFrame(() => m2.classList.add('on')); }, 1600);
+        t(() => { set(1, 26, 11, '11 min', 'solo'); set(2, 26, 17, '17 min', 'solo'); }, 2000);
+        t(() => set(3, 37, 23, 'waits for 002', 'wait'), 3400);
+        t(() => on(el, '.sa-ctx'), 4200);
+        return 5200;
+      } },
+  ];
+
+  const stage = $('stage'); let cur = 0, auto = false, timers = [];
+  const clear = () => { timers.forEach(clearTimeout); timers = []; };
+  $('steps').innerHTML = SCENES.map((s, i) => `<button type="button" data-i="${i}">${i + 1}. ${s.k}</button>`).join('');
+  function show(i) {
+    clear(); cur = i; const s = SCENES[i];
+    $('steps').querySelectorAll('button').forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
+    stage.innerHTML = s.html(); $('cap').innerHTML = s.cap;
+    const t = (fn, ms) => timers.push(setTimeout(fn, reduced ? 0 : ms));
+    const end = s.run(t, stage);
+    if (auto) t(() => i < SCENES.length - 1 ? show(i + 1) : stop(), end + 2000);
+  }
+  function stop() { auto = false; $('play').textContent = '▶ Play all'; }
+  $('steps').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { stop(); show(+b.dataset.i); } });
+  $('play').addEventListener('click', () => { if (auto) { stop(); clear(); return; } auto = true; $('play').textContent = '❚❚ Pause'; show(cur === SCENES.length - 1 ? 0 : cur); });
+  show(0);
+})();
+</script>
+</html>

@@ -175,5 +175,95 @@
     "page": "../#review",
     "slug": "claude-code-team-review-loop-system",
     "transcript": true
+  },
+  {
+    "id": "3DklR44DHnM",
+    "channel": "AI LABS",
+    "date": "2026-11-05",
+    "title": "Deepseek Just Released The Greatest Claude Code Workflow Ever",
+    "summary": "DeepSeek's 'super agent' splits work between a router session that only talks to you and dispatches tickets, and worker agents that each build one ticket in their own context window and worktree. In their test of five runs each, the slowest task took 15.7 min versus 29.5 min for a single session using sub-agents, because the single session kept doing the work itself and was interrupted by new messages. The idea worth keeping is to separate talking to the human from doing the work, and to feed the router self-contained tickets (a requirements file plus an eval file) so workers never need to ask questions, with the router checking results against the eval.",
+    "tags": [
+      "router-worker",
+      "multi-agent-orchestration",
+      "tickets-and-evals",
+      "claude-code",
+      "worktrees"
+    ],
+    "score": 5,
+    "page": "2026-11-05-router-worker-super-agent-claude-code/",
+    "slug": "router-worker-super-agent-claude-code",
+    "transcript": true
+  },
+  {
+    "id": "of628n5754g",
+    "channel": "AI LABS",
+    "date": "2026-11-07",
+    "title": "Head Of Design At X's New Claude Skill Is Insane",
+    "summary": "Benji Taylor (head of design at X) packaged his landing-page demo design process as a skill called Stage Show, claiming agents fail at animated product demos because they lack taste and draw generic fake UIs. The skill walks the agent through seven steps (placement, look, story, start from one of ~40 real examples, fill screen, motion, self-check) and closes with a verification loop that records the running demo, lays the frames out on one contact sheet, and uses a small program to flag overflow and jumps. The idea worth keeping: make the agent verify motion by recording it and checking frames programmatically, and gate handoff on that check passing, instead of reading code or taking a single static screenshot.",
+    "tags": [
+      "claude-skills",
+      "design-agents",
+      "self-verification",
+      "visual-testing",
+      "few-shot-examples"
+    ],
+    "score": 4,
+    "page": null,
+    "slug": "stage-show-design-skill-record-and-verify",
+    "transcript": true
+  },
+  {
+    "id": "6gT2sGrYgHk",
+    "channel": "AI LABS",
+    "date": "2026-11-09",
+    "title": "This Finally Cut Claude Code's Token Usage In Half",
+    "summary": "The video claims Claude Code's built-in web tool wastes tokens on page markup and menus, and that it only reads the first 13% of a long page verbatim while a smaller model summarizes the next 34% and the last 53% goes unread. An open-source CLI called OC (onlycli) instead returns a ~500-token numbered outline that the agent navigates section by section, saving about 21% of tokens on a single task and about 20% (3.9M vs 4.9M) on a five-agent research run. The idea worth keeping is to give agents a cheap outline and let them pull in only the sections they need, instead of loading whole pages into context.",
+    "tags": [
+      "token-efficiency",
+      "context-management",
+      "web-fetch",
+      "claude-code",
+      "progressive-disclosure"
+    ],
+    "score": 4,
+    "page": null,
+    "slug": "outline-first-web-reading-cuts-tokens",
+    "transcript": true
+  },
+  {
+    "id": "-bv2xKQzZio",
+    "channel": "AI LABS",
+    "date": "2026-11-12",
+    "title": "Creator Of The Best Design Skill Just Unveiled His AI Design Workflow",
+    "summary": "Leon Lin, author of the trending Taste Skill, argues that good AI-generated design comes from a structured process rather than prompt wording: short prompts with 9-12 visual references, a mockup as a target, a numeric quality bar, long time budgets, banned-pattern lists, design-then-animation staging, specific feedback, and independent judges. His 'cook' skill packages this as a loop of build, screenshot, compare to references, and review by fresh-context judges (possibly a different model) until a score threshold such as 9.2/10 is met. The idea worth keeping: don't let the builder agent grade its own work. Use separate-context, cross-model judges plus a numeric bar, and tell the agent its self-score is inflated.",
+    "tags": [
+      "review-loops",
+      "llm-as-judge",
+      "design-skill",
+      "claude-code",
+      "harness"
+    ],
+    "score": 4,
+    "page": null,
+    "slug": "design-workflow-judges-numeric-bar-loop",
+    "transcript": true
+  },
+  {
+    "id": "EFGvVCpW9zc",
+    "channel": "AI LABS",
+    "date": "2026-11-14",
+    "title": "Fable 5.2 Is Insane... Only If You Use It Anthropic's Way",
+    "summary": "The video distills nine rules from Anthropic's Claude Code team (Lydia Hallie, Addy Osmani) and launch guidance for using Fable 5.2: start on Opus 5.5 and escalate only when needed, define verifiable finish lines up front, and use Fable as the lead agent that delegates to cheaper Sonnet, Opus and Haiku workers. It also covers running the lead on high effort, pre-authorizing safe steps so long runs don't stall, writing final reports for readers who never watched the work, trimming old 'never/important' lines from CLAUDE.md, and compacting before model switches to avoid cache loss. The idea worth keeping is the split of roles: a strong model plans and reviews in a fresh session against pass/fail checks, while cheaper models build. Sub-agent cost notes in CLAUDE.md cut spawning by about half, and the setup only pays off on big jobs.",
+    "tags": [
+      "lead-agent-orchestration",
+      "model-routing",
+      "definition-of-done",
+      "review-loops",
+      "claude-md"
+    ],
+    "score": 5,
+    "page": null,
+    "slug": "fable-lead-agent-nine-rules-anthropic",
+    "transcript": true
   }
 ]
