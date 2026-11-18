@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Side quests: why agents drift off task, and how Google cleaned up what distracts them</title>
+<style>
+:root { --bg:#f4f4f2; --fg:#151515; --muted:#666; --accent:#c25a35; --line:#ddd; --panel:#fff;
+  --sans:"Inter", ui-sans-serif, system-ui, sans-serif; --mono:"JetBrains Mono", ui-monospace, Menlo, monospace; color-scheme:light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#0b0d0e; --fg:#ececec; --muted:#9a9a9a; --accent:#e0896a; --line:#262a2c; --panel:#141719; color-scheme:dark; } }
+:root[data-theme="dark"] { --bg:#0b0d0e; --fg:#ececec; --muted:#9a9a9a; --accent:#e0896a; --line:#262a2c; --panel:#141719; color-scheme:dark; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.55 var(--sans); }
+main { max-width:1180px; margin:0 auto; padding:24px 16px 64px; display:grid; gap:18px; }
+.top { display:flex; gap:16px; flex-wrap:wrap; font-size:14px; }
+a { color:var(--accent); }
+h1 { margin:0; font-size:28px; letter-spacing:-.02em; } .lede { color:var(--muted); max-width:76ch; margin:0; }
+h2 { margin:18px 0 0; font-size:19px; }
+code { font-family:var(--mono); font-size:.9em; }
+.ctl { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+.seg { display:inline-flex; flex-wrap:wrap; border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+.seg button { background:var(--panel); border:0; border-right:1px solid var(--line); padding:6px 12px; cursor:pointer; color:var(--muted); font:inherit; font-size:13px; }
+.seg button[aria-pressed="true"] { color:var(--fg); background:color-mix(in srgb, var(--accent) 14%, var(--panel)); }
+.play { font:inherit; font-size:13px; font-weight:600; background:var(--accent); color:var(--bg); border:0; border-radius:8px; padding:7px 13px; cursor:pointer; }
+.cap { border-left:3px solid var(--accent); padding:4px 0 4px 14px; max-width:84ch; min-height:64px; } .cap p { margin:0 0 4px; } .cap small { color:var(--muted); }
+.sq-wrap { overflow-x:auto; }
+.sq-tbl { border-collapse:collapse; width:100%; font-size:14px; }
+.sq-tbl th, .sq-tbl td { text-align:left; vertical-align:top; padding:9px 10px; border-bottom:1px solid var(--line); }
+.sq-tbl th { color:var(--muted); font-weight:600; font-size:13px; }
+.sq-tbl td:first-child { font-weight:600; }
+.sq-src { margin:0; padding-left:20px; display:grid; gap:6px; font-size:14px; }
+
+/* ---- stage: always dark; every class prefixed .sq- under .x ---- */
+.x { --c:#d97757; --card:#1c1c1c; --card2:#232323; --ln:#2e2e2e; --tx:#ececec; --mu:#8d8d8d; --gr:#7bd88f; --yl:#e8c468; --rd:#f0716a; --gb:#4285f4;
+  background:#0e0e0e; color:var(--tx); border:1px solid #222; border-radius:14px; min-height:440px; padding:26px; position:relative; overflow:hidden;
+  display:grid; align-content:center; font-size:14px; }
+.x .vi { opacity:0; transform:translateY(10px); transition:opacity .5s, transform .5s; } .x .vi.on { opacity:1; transform:none; }
+.x .sq-card { background:var(--card); border:1px solid var(--ln); border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,.45); }
+.x .sq-h { display:flex; align-items:center; gap:6px; padding:8px 12px; border-bottom:1px solid var(--ln); font:11px var(--mono); color:var(--mu); }
+.x .sq-h i { width:8px; height:8px; border-radius:50%; background:#ff5f57; } .x .sq-h i:nth-child(2) { background:#febc2e; } .x .sq-h i:nth-child(3) { background:#28c840; }
+.x .sq-h span { margin-left:8px; }
+.x .sq-mu { color:var(--mu); } .x .sq-co { color:var(--c); } .x .sq-gr { color:var(--gr); } .x .sq-yl { color:var(--yl); } .x .sq-rd { color:var(--rd); }
+.x .sq-mono { font-family:var(--mono); }
+.x .sq-chip { display:inline-flex; align-items:center; gap:8px; background:var(--card2); border:1px solid var(--ln); border-radius:8px; padding:6px 10px; font:12.5px var(--mono); white-space:nowrap; transition:border-color .35s, background .35s, color .35s; }
+.x .sq-tag { font:10.5px var(--sans); font-weight:700; letter-spacing:.04em; text-transform:uppercase; padding:2px 7px; border-radius:99px; }
+.x .sq-big { font-size:30px; font-weight:800; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+.x .sq-bot { width:22px; height:16px; background:var(--c); border-radius:3px; position:relative; flex:none; }
+.x .sq-bot::before, .x .sq-bot::after { content:""; position:absolute; top:5px; width:3px; height:4px; background:#0e0e0e; } .x .sq-bot::before { left:5px; } .x .sq-bot::after { right:5px; }
+
+/* scene 1: context fills */
+.x .sq-ctx { display:grid; grid-template-columns:minmax(0,1fr) 230px; gap:22px; align-items:start; max-width:860px; margin:0 auto; width:100%; }
+.x .sq-ctxbox { padding:14px; display:grid; gap:8px; min-height:290px; align-content:start; }
+.x .sq-ctxbox .sq-chip { justify-content:space-between; }
+.x .sq-chip.sq-stale { border-color:#6b5a26; background:#2a2617; }
+.x .sq-chip .sq-tag { opacity:0; transition:opacity .4s; background:#3a321a; color:var(--yl); } .x .sq-chip.sq-stale .sq-tag { opacity:1; }
+.x .sq-fillw { display:flex; gap:10px; align-items:center; font-size:12px; color:var(--mu); }
+.x .sq-fill { flex:1; height:8px; border-radius:99px; background:#2a2a2a; overflow:hidden; } .x .sq-fill i { display:block; height:100%; width:0; background:var(--c); transition:width .5s; }
+.x .sq-who { display:grid; gap:12px; }
+.x .sq-who .sq-card { padding:12px 14px; display:grid; gap:6px; }
+.x .sq-strike { position:relative; } .x .sq-strike::after { content:""; position:absolute; left:0; top:52%; height:2px; width:0; background:var(--mu); transition:width .5s; } .x .sq-strike.on::after { width:100%; }
+.x .sq-quest { border:1.5px dashed var(--c); color:var(--c); border-radius:10px; padding:8px 12px; font-weight:700; }
+
+/* scene 2: Google's probe */
+.x .sq-probe { display:grid; grid-template-columns:300px minmax(0,1fr); gap:28px; align-items:center; max-width:900px; margin:0 auto; width:100%; }
+.x .sq-checks { padding:12px; display:grid; gap:10px; }
+.x .sq-ck { display:grid; grid-template-columns:22px 1fr auto; gap:10px; align-items:center; background:var(--card2); border:1px solid var(--ln); border-radius:9px; padding:9px 11px; transition:border-color .3s; }
+.x .sq-ck b { width:22px; height:22px; border-radius:50%; display:grid; place-items:center; font-size:11px; background:#2c2c2c; color:var(--mu); }
+.x .sq-ck .sq-res { font-size:12px; font-weight:700; opacity:0; transition:opacity .4s; }
+.x .sq-ck.sq-done .sq-res { opacity:1; }
+.x .sq-stats { display:grid; gap:16px; }
+.x .sq-tiles { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.x .sq-tile { padding:12px 14px; } .x .sq-tile small { display:block; color:var(--mu); font-size:12.5px; }
+.x .sq-split { display:flex; height:30px; border-radius:8px; overflow:hidden; background:#222; }
+.x .sq-split i { display:grid; place-items:center; width:0; font:700 12px var(--sans); font-style:normal; color:#0e0e0e; white-space:nowrap; overflow:hidden; transition:width .9s cubic-bezier(.2,.8,.2,1); }
+.x .sq-leg { display:flex; gap:16px; flex-wrap:wrap; font-size:12.5px; color:var(--mu); }
+.x .sq-leg span::before { content:""; display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:6px; background:var(--k); }
+
+/* scene 3: cost race */
+.x .sq-race { max-width:820px; width:100%; margin:0 auto; display:grid; gap:20px; }
+.x .sq-lane { display:grid; grid-template-columns:110px minmax(0,1fr); gap:14px; align-items:center; }
+.x .sq-track { position:relative; height:44px; border-bottom:2px solid #2c2c2c; }
+.x .sq-track .sq-flag { position:absolute; right:0; bottom:6px; font-size:12px; color:var(--mu); }
+.x .sq-runner { position:absolute; left:0; bottom:6px; display:flex; align-items:center; gap:6px; transition:left 2.2s linear; white-space:nowrap; font-size:12px; }
+.x .sq-loop { position:absolute; left:34%; bottom:2px; width:90px; height:34px; border:1.5px dashed var(--c); border-bottom:0; border-radius:45px 45px 0 0; opacity:0; transition:opacity .4s; }
+.x .sq-loop.on { opacity:1; } .x .sq-loop span { position:absolute; top:-18px; left:50%; transform:translateX(-50%); font-size:11px; color:var(--c); white-space:nowrap; }
+.x .sq-meas { display:grid; gap:10px; }
+.x .sq-m { display:grid; grid-template-columns:110px minmax(0,1fr) 92px; gap:14px; align-items:center; font-size:13px; }
+.x .sq-m .sq-pair { display:grid; gap:4px; }
+.x .sq-m .sq-pair i { display:block; height:9px; border-radius:99px; width:0; transition:width 1s cubic-bezier(.2,.8,.2,1); }
+.x .sq-m .sq-pair i:first-child { background:#4a4a4a; } .x .sq-m .sq-pair i:last-child { background:var(--c); }
+.x .sq-m b { font-variant-numeric:tabular-nums; text-align:right; }
+
+/* scene 4: file vs app */
+.x .sq-duel { display:grid; grid-template-columns:220px minmax(0,1fr) 220px; gap:18px; align-items:center; max-width:880px; width:100%; margin:0 auto; }
+.x .sq-side { padding:0; } .x .sq-side .sq-body { padding:12px 14px; font:12.5px var(--mono); display:grid; gap:4px; }
+.x .sq-side.sq-win { border-color:var(--c); box-shadow:0 0 0 1px var(--c), 0 12px 32px rgba(0,0,0,.45); }
+.x .sq-arena { position:relative; height:150px; }
+.x .sq-dot { position:absolute; top:50%; left:50%; width:12px; height:12px; margin:-6px; border-radius:50%; background:var(--mu); transition:left .7s cubic-bezier(.3,.7,.3,1), top .7s, background .3s; }
+.x .sq-score { position:absolute; left:0; right:0; bottom:-6px; text-align:center; font-size:13px; color:var(--mu); }
+.x .sq-rule { max-width:720px; margin:22px auto 0; padding:10px 14px; font:12.5px/1.5 var(--mono); border-left:3px solid var(--c); }
+
+/* scene 5: plan drift timeline */
+.x .sq-tl { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:16px; max-width:940px; width:100%; margin:0 auto; }
+.x .sq-col { display:grid; gap:10px; align-content:start; }
+.x .sq-col > .sq-mu { font-size:12px; text-transform:uppercase; letter-spacing:.06em; }
+.x .sq-doc { padding:0; } .x .sq-doc .sq-body { padding:10px 12px; font:12px/1.6 var(--mono); }
+.x .sq-ln { display:flex; align-items:center; gap:8px; transition:color .4s, opacity .4s; }
+.x .sq-ln.sq-x { color:var(--mu); text-decoration:line-through; }
+.x .sq-say { background:var(--card2); border:1px solid var(--ln); border-radius:10px; padding:9px 12px; font-size:13px; }
+.x .sq-say.sq-you { border-color:#3a3a3a; }
+.x .sq-say.sq-bad { border-color:#6a2c28; background:#2a1716; }
+.x .sq-say.sq-ask { border-color:var(--c); background:#2b1e18; }
+.x .sq-say.sq-ok { border-color:#2f5a3a; background:#16231a; }
+.x .sq-mode { text-align:center; margin-bottom:14px; }
+.x .sq-mode span { display:inline-block; padding:4px 12px; border-radius:99px; font-size:12.5px; font-weight:700; border:1px solid var(--ln); background:var(--card2); transition:all .4s; }
+.x .sq-mode span.sq-good { border-color:#2f5a3a; color:var(--gr); }
+
+/* scene 6: Google's cleanup chain */
+.x .sq-chain { display:flex; align-items:stretch; gap:8px; justify-content:center; flex-wrap:wrap; }
+.x .sq-node { width:138px; padding:12px 10px; display:grid; gap:6px; align-content:start; font-size:12.5px; position:relative; transition:border-color .3s; }
+.x .sq-node b { font-size:13.5px; } .x .sq-node .sq-mu { font-size:11.5px; line-height:1.4; }
+.x .sq-node.sq-run { border-color:var(--c); } .x .sq-node.on { border-color:#2f5a3a; }
+.x .sq-node .sq-tick { position:absolute; top:-7px; right:-7px; width:18px; height:18px; border-radius:50%; background:var(--gr); color:#0e0e0e; font-size:11px; display:grid; place-items:center; transform:scale(0); transition:transform .3s cubic-bezier(.3,1.6,.5,1); }
+.x .sq-node.on .sq-tick { transform:scale(1); }
+.x .sq-arrow { align-self:center; color:var(--mu); }
+.x .sq-out { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-top:22px; }
+.x .sq-out .sq-card { padding:10px 14px; display:grid; gap:2px; min-width:180px; }
+
+/* scene 7: /sweep fan-out */
+.x .sq-sweep { display:grid; grid-template-columns:230px 210px minmax(0,1fr); gap:20px; align-items:center; max-width:960px; width:100%; margin:0 auto; }
+.x .sq-term { font:12px/1.6 var(--mono); } .x .sq-term .sq-body { padding:10px 12px; display:grid; gap:4px; min-height:120px; }
+.x .sq-vers { display:grid; gap:9px; }
+.x .sq-ver { padding:8px 10px; font-size:12px; display:grid; gap:2px; position:relative; transition:border-color .3s; }
+.x .sq-ver.sq-run { border-color:var(--c); } .x .sq-ver.on { border-color:#2f5a3a; }
+.x .sq-bins { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.x .sq-bin { padding:8px 10px; min-height:84px; display:grid; gap:6px; align-content:start; }
+.x .sq-bin > .sq-tag { justify-self:start; }
+.x .sq-bin .sq-chip { font-size:11px; padding:4px 8px; white-space:normal; }
+.x .sq-arch { grid-column:1 / -1; display:flex; align-items:center; gap:10px; padding:8px 12px; font-size:12.5px; }
+.x .sq-lock { font-size:16px; }
+
+@media (max-width:860px) {
+  .x { padding:18px 14px; min-height:0; }
+  .x .sq-ctx, .x .sq-probe, .x .sq-sweep { grid-template-columns:1fr; }
+  .x .sq-ctxbox { min-height:0; }
+  .x .sq-duel { grid-template-columns:1fr 1fr; } .x .sq-arena { grid-column:1 / -1; grid-row:2; height:110px; }
+  .x .sq-tl { grid-template-columns:1fr; }
+  .x .sq-node { width:calc(50% - 20px); } .x .sq-chain .sq-arrow { display:none; }
+}
+@media (max-width:520px) {
+  .x .sq-tiles { grid-template-columns:1fr; }
+  .x .sq-lane { grid-template-columns:72px minmax(0,1fr); gap:8px; } .x .sq-m { grid-template-columns:62px minmax(0,1fr) 70px; gap:8px; font-size:12px; }
+  .x .sq-runner span { display:none; }
+  .x .sq-loop { width:60px; }
+  .x .sq-duel .sq-body { font-size:11px; }
+  .x .sq-node { width:100%; }
+  .x .sq-chip { font-size:11.5px; }
+  .x .sq-bins { grid-template-columns:1fr; }
+}
+</style>
+
+<main>
+  <nav class="top"><a href="../../research/#videos">← Video feed</a><a href="https://www.youtube.com/watch?v=JhZB3spnuIY" target="_blank" rel="noopener">▶ Watch the video (AI LABS, 13:47)</a></nav>
+  <h1>Side quests: why agents drift off task, and how Google cleaned up what distracts them</h1>
+  <p class="lede">An agent reads every old plan, stale note and outdated rule in your project and treats each one as something to act on. Google calls the result <b>side quests</b>. It measured them across its own engineers' sessions, then built agents that find stale notes and prove they're stale before removing them. AI LABS rebuilt the idea for Claude Code: two <code>CLAUDE.md</code> rules, status tags on tickets, and a <code>/sweep</code> skill. Running example: a demo shop app whose login ticket still says "email <i>or</i> Google" after the team dropped Google.</p>
+  <div class="ctl"><div class="seg" id="steps"></div><button type="button" class="play" id="play">▶ Play all</button></div>
+  <div class="x" id="stage"></div>
+  <div class="cap" id="cap" aria-live="polite"></div>
+
+  <h2>What this means for us</h2>
+  <div class="sq-wrap"><table class="sq-tbl">
+    <thead><tr><th>Idea</th><th>What to do in the factory</th></tr></thead>
+    <tbody>
+      <tr><td>The code is the source of truth</td><td>Put the rule in every builder's <code>CLAUDE.md</code>: when notes, plans or instructions disagree with the app, follow the app and say so in the reply. The one exception is a ticket marked <i>in progress</i>, where the plan wins over half-built code.</td></tr>
+      <tr><td>Every ticket carries a status</td><td><code>not started</code> / <code>in progress</code> / <code>done</code> / <code>dropped</code> in each <code>rd.md</code>. A feature that's in the plan but missing from the code is only a gap if its status says so. Builders set it to done when they finish.</td></tr>
+      <tr><td>List side quests, don't take them</td><td>Builders leave TODOs, notes and plans they weren't asked about alone and list the relevant ones at the end of the reply. Those lists can feed the Issues view, so nothing gets fixed quietly.</td></tr>
+      <tr><td>Changes to a plan go through the plan</td><td>When a request conflicts with a spec (like "email only"), the agent stops and asks before building. Then the spec gets updated in the same session, not three sessions later.</td></tr>
+      <tr><td>Sweep on a schedule, delete only with proof</td><td>Run a read-only sweep: verifiers get the claims only, check them against the code and git history, and return CURRENT / OUTDATED / UNPROVEN. Conflicts go to the Human inbox. Approved files move to <code>archive/</code>, and a hook blocks agents from reading it. Claude Code's loop and monitor stop when the session closes, so a weekly sweep needs a scheduler (launchd or a cloud routine).</td></tr>
+      <tr><td>One task, one session</td><td>Start a new session per ticket, even right after planning, so failed attempts don't stay in context. Watch for side quests on the Traces view: extra actions and tokens on a run that still "passed".</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Sources</h2>
+  <ul class="sq-src">
+    <li><a href="https://www.youtube.com/watch?v=JhZB3spnuIY" target="_blank" rel="noopener">Google Just Released Something To Fix Claude Code's Biggest Problem</a>, AI LABS (YouTube, 13:47). The source for every number on this page as AI LABS reports them (1 in 7 sessions; more than 4 in 5 unasked; 41% / 57%; +70% actions, +77% tokens, more than 2× the time; more than 95% accepted over 6 months), the demo app, the two <code>CLAUDE.md</code> rules and the <code>/sweep</code> skill. Google's own write-up wasn't checked for this page, and neither were the study on outdated <code>CLAUDE.md</code> files (Claude Code and Codex, 9 in 10) nor the ~20% cost figure for long generated context files.</li>
+    <li><a href="https://research.trychroma.com/context-rot" target="_blank" rel="noopener">Context Rot</a>, Chroma Research: 18 models, all less reliable as input length grows</li>
+    <li><a href="https://code.claude.com/docs/en/memory" target="_blank" rel="noopener">Claude Code memory</a>: how <code>CLAUDE.md</code> and auto memory are loaded into every session</li>
+    <li><a href="https://code.claude.com/docs/en/hooks" target="_blank" rel="noopener">Claude Code hooks</a>: the <code>PreToolUse</code> hook behind the archive guard</li>
+    <li><a href="https://code.claude.com/docs/en/skills" target="_blank" rel="noopener">Claude Code skills</a> and <a href="https://code.claude.com/docs/en/sub-agents" target="_blank" rel="noopener">subagents</a>: <code>/sweep</code> and its <code>sweep-verifier</code></li>
+  </ul>
+</main>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const on = (el, sel) => el.querySelectorAll(sel).forEach(n => n.classList.add('on'));
+  const count = (node, to, ms, fmt = v => Math.round(v)) => { if (reduced) { node.textContent = fmt(to); return; } const t0 = performance.now(); const f = now => { const p = Math.min(1, (now - t0) / ms); node.textContent = fmt(to * p); if (p < 1) requestAnimationFrame(f); }; requestAnimationFrame(f); };
+  const head = s => `<div class="sq-h"><i></i><i></i><i></i><span>${s}</span></div>`;
+  const bot = '<span class="sq-bot"></span>';
+
+  const READS = [
+    ['CLAUDE.md', 0, 'loaded at start'],
+    ['specs/01-accounts-auth/rd.md', 1, 'plan changed'],
+    ['src/auth/session.ts  // TODO(bug/4821)', 1, 'bug fixed 2023'],
+    ['memory/MEMORY.md', 1, 'never expires'],
+    ['specs/old-v0-plan.md', 1, 'superseded'],
+    ['turn 34: failed attempt', 1, 'still in context'],
+  ];
+
+  const SCENES = [
+    { k:'It reads everything', cap:'<p><b>Everything the agent reads becomes something it might act on, including what\'s out of date.</b> Before building, Claude Code opens <code>CLAUDE.md</code>, the specs, memory and the code around the task. A person skips a note about a bug fixed years ago. An agent treats it as work. Google calls these <i>side quests</i>.</p><small>Reading widely is how the agent plans, so the fix isn\'t to read less. It\'s to keep what it reads true.</small>',
+      html:() => `<div class="sq-ctx">
+        <div class="sq-card sq-ctxbox">
+          <div class="sq-fillw">${bot}<span>Claude's context</span><span class="sq-fill"><i></i></span></div>
+          ${READS.map(([f, s, why], i) => `<div class="sq-chip vi" data-r="${i}" data-st="${s}"><span>${f}</span><span class="sq-tag">${why}</span></div>`).join('')}
+        </div>
+        <div class="sq-who">
+          <div class="sq-card vi" data-s="p"><span class="sq-mu" style="font-size:12px">A person sees <span class="sq-mono">TODO(bug/4821)</span></span><span class="sq-strike" data-s="ps">"old note, ignore it"</span></div>
+          <div class="sq-card vi" data-s="a"><span class="sq-mu" style="font-size:12px">The agent sees <span class="sq-mono">TODO(bug/4821)</span></span><span>"this needs fixing"</span>
+            <span class="sq-quest vi" data-s="q">↳ side quest</span></div>
+        </div></div>`,
+      run:(t, el) => {
+        const chips = el.querySelectorAll('[data-r]'), fill = el.querySelector('.sq-fill i');
+        chips.forEach((c, i) => t(() => { c.classList.add('on'); fill.style.width = ((i + 1) / chips.length * 92) + '%'; }, 200 + i * 360));
+        t(() => chips.forEach(c => c.dataset.st === '1' && c.classList.add('sq-stale')), 2600);
+        t(() => on(el, '[data-s="p"]'), 3100);
+        t(() => el.querySelector('[data-s="ps"]').classList.add('on'), 3600);
+        t(() => on(el, '[data-s="a"]'), 3900);
+        t(() => on(el, '[data-s="q"]'), 4500);
+        return 5200;
+      } },
+
+    { k:'Google measures it', cap:'<p><b>About 1 in 7 sessions hit a stale note, and when the agent chased one, more than 4 times in 5 nobody had asked.</b> Google linked each <code>TODO(bug/…)</code> to its bug record, so it could check two things: was the bug already fixed, and did the person ask about it. Millions of sessions, thousands of its own engineers.</p><small>41% of side quests chased a bug already fixed (one went back to a bug closed in 2023). 57% fixed an open bug nobody asked about, and an engineer had to push back. AI LABS adds that Opus and Fable models are especially prone to doing more than asked.</small>',
+      html:() => `<div class="sq-probe">
+        <div class="sq-card">
+          ${head('google: side-quest probe')}
+          <div class="sq-checks">
+            <span class="sq-chip vi" data-s="1" style="justify-self:start"><span class="sq-co">//</span> TODO(bug/4821)</span>
+            <div class="sq-ck vi" data-s="2"><b>1</b><span>Already fixed?</span><span class="sq-res sq-yl">bug/4821 · Fixed</span></div>
+            <div class="sq-ck vi" data-s="3"><b>2</b><span>Asked for?</span><span class="sq-res sq-rd">✕ no</span></div>
+          </div>
+        </div>
+        <div class="sq-stats">
+          <div class="sq-tiles">
+            <div class="sq-card sq-tile vi" data-s="4"><span class="sq-big">1 in <span class="sq-n" data-to="7">0</span></span><small>sessions ran into a stale note</small></div>
+            <div class="sq-card sq-tile vi" data-s="4"><span class="sq-big">&gt;<span class="sq-n" data-to="4">0</span> in 5</span><small>chases that nobody asked for</small></div>
+          </div>
+          <div class="vi" data-s="5" style="display:grid;gap:8px">
+            <span class="sq-mu" style="font-size:12.5px">Where the side quests went</span>
+            <div class="sq-split"><i style="background:var(--yl)" data-w="41">41%</i><i style="background:var(--c)" data-w="57">57%</i><i style="background:#555" data-w="2"></i></div>
+            <div class="sq-leg"><span style="--k:var(--yl)">bug was already fixed</span><span style="--k:var(--c)">bug open, fixed unasked</span></div>
+          </div>
+        </div></div>`,
+      run:(t, el) => {
+        t(() => on(el, '[data-s="1"]'), 100);
+        t(() => on(el, '[data-s="2"]'), 600); t(() => el.querySelectorAll('.sq-ck')[0].classList.add('sq-done'), 1100);
+        t(() => on(el, '[data-s="3"]'), 1400); t(() => el.querySelectorAll('.sq-ck')[1].classList.add('sq-done'), 1900);
+        t(() => { on(el, '[data-s="4"]'); el.querySelectorAll('.sq-n').forEach(n => count(n, +n.dataset.to, 900)); }, 2300);
+        t(() => { on(el, '[data-s="5"]'); el.querySelectorAll('.sq-split i').forEach(b => b.style.width = b.dataset.w + '%'); }, 3300);
+        return 4600;
+      } },
+
+    { k:'What it costs', cap:'<p><b>A side-quest session took 70% more actions, 77% more tokens and more than twice as long, and it still finished the task.</b> That last part is the trap: nothing fails, so you never notice. At best a side quest costs time and tokens. At worst the agent builds on something that stopped being true.</p><small>Even a correct unasked fix costs you: it may change a part you wanted left alone, or build something you planned to do differently, and you have to review or undo it before moving on.</small>',
+      html:() => `<div class="sq-race">
+        <div class="sq-lane"><span class="sq-mu">On task</span><div class="sq-track"><span class="sq-runner" data-r="a">${bot}<span>fix login bug</span></span><span class="sq-flag">✓ done</span></div></div>
+        <div class="sq-lane"><span class="sq-co">Side quest</span><div class="sq-track"><span class="sq-loop"><span>TODO(bug/4821)</span></span><span class="sq-runner" data-r="b">${bot}<span>fix login bug</span></span><span class="sq-flag">✓ done</span></div></div>
+        <div class="sq-card sq-meas vi" data-s="m" style="padding:14px 16px">
+          ${[['Actions', 170, '+70%'], ['Tokens', 177, '+77%'], ['Time', 210, '&gt;2×']].map(([l, v, s]) => `<div class="sq-m"><span>${l}</span><span class="sq-pair"><i data-w="${100 / 2.1}"></i><i data-w="${v / 2.1}"></i></span><b class="sq-co">${s}</b></div>`).join('')}
+          <div class="sq-leg" style="margin-top:4px"><span style="--k:#4a4a4a">stayed on task</span><span style="--k:var(--c)">took a side quest</span></div>
+        </div></div>`,
+      run:(t, el) => {
+        const a = el.querySelector('[data-r="a"]'), b = el.querySelector('[data-r="b"]'), loop = el.querySelector('.sq-loop');
+        const end = r => `calc(100% - ${r.offsetWidth + 52}px)`;
+        t(() => { a.style.left = end(a); b.style.transition = 'left 1s linear'; b.style.left = '34%'; }, 200);
+        t(() => loop.classList.add('on'), 1200);
+        t(() => { b.style.transition = 'left 2.4s linear'; b.style.left = end(b); }, 2300);
+        t(() => { on(el, '[data-s="m"]'); el.querySelectorAll('.sq-pair i').forEach(i => i.style.width = i.dataset.w + '%'); }, 3000);
+        return 5000;
+      } },
+
+    { k:'The file wins', cap:'<p><b>When <code>CLAUDE.md</code> and the app disagree, the agent believes the file, and one rule flips that.</b> A study of Claude Code and Codex found they followed the outdated file 9 times in 10. AI LABS saw the same in their app: the products page had moved to <code>/catalog</code>, but <code>CLAUDE.md</code> still said <code>/products</code>. With the rule added, their agent followed the code just as often.</p><small>Other ways context goes stale: a generated <code>CLAUDE.md</code> that\'s too long (about 20% more cost per task, no better results), two rules that contradict (Claude picks one without asking), memory notes that never expire, and long sessions. Chroma found all 18 models it tested got less reliable as context grew.</small>',
+      html:() => `<div class="sq-duel">
+        <div class="sq-card sq-side" data-side="f">${head('CLAUDE.md')}<div class="sq-body"><span class="sq-mu">## Pages</span><span>Products → <span class="sq-yl">/products</span></span><span class="sq-mu">src/app/products/</span></div></div>
+        <div class="sq-arena">${'<span class="sq-dot"></span>'.repeat(10)}<div class="sq-score">followed the <b class="sq-who-l">…</b> <b class="sq-cnt sq-co">0</b>/10</div></div>
+        <div class="sq-card sq-side" data-side="a">${head('the app')}<div class="sq-body"><span class="sq-mu">src/app/</span><span>Catalog → <span class="sq-gr">/catalog</span></span><span class="sq-mu">(renamed in a later task)</span></div></div>
+      </div>
+      <div class="sq-card sq-rule vi" data-s="r"><span class="sq-co">+ CLAUDE.md</span><br>If notes, plans or instructions disagree with the app, follow the app and point out the mismatch in your reply. Exception: a plan marked "in progress". When you finish a plan, change its status to done.</div>`,
+      run:(t, el) => {
+        const dots = [...el.querySelectorAll('.sq-dot')], cnt = el.querySelector('.sq-cnt'), who = el.querySelector('.sq-who-l');
+        const F = el.querySelector('[data-side="f"]'), A = el.querySelector('[data-side="a"]');
+        const send = (toApp, round) => dots.forEach((d, i) => {
+          const app = toApp ? i !== 9 : i === 9;
+          t(() => { d.style.left = (app ? 92 : 8) + '%'; d.style.top = (18 + (i % 5) * 16) + '%'; d.style.background = app ? 'var(--gr)' : 'var(--yl)'; cnt.textContent = Math.min(9, (+cnt.textContent || 0) + (app === toApp ? 1 : 0)); }, round + i * 140);
+        });
+        t(() => { who.textContent = 'file'; cnt.textContent = '0'; }, 100);
+        send(false, 300);
+        t(() => F.classList.add('sq-win'), 1900);
+        t(() => on(el, '[data-s="r"]'), 2500);
+        t(() => { F.classList.remove('sq-win'); dots.forEach(d => { d.style.left = '50%'; d.style.top = '50%'; d.style.background = 'var(--mu)'; }); who.textContent = 'app'; cnt.textContent = '0'; }, 3400);
+        send(true, 4000);
+        t(() => A.classList.add('sq-win'), 5600);
+        return 6000;
+      } },
+
+    { k:'A plan goes stale', cap:'<p><b>A plan can go out of date in one message, and the next session builds it anyway.</b> The login spec said "email or Google". Mid-build they said "email only"; the agent built it but left <code>rd.md</code> alone. A fresh session asked to "add any missing features" saw Google sign-in missing and built it. Second pass, same story, with a status tag on each ticket and a rule to stop and ask when a request conflicts with a plan.</p><small>Status tags tell the agent whether a feature that\'s in the plan but not in the code is not started, in progress or dropped. Compaction can do the same damage: people report finished plans coming back after a long session is compacted.</small>',
+      html:() => `<div class="sq-mode"><span>Without the rules</span></div>
+        <div class="sq-tl">
+          <div class="sq-col"><span class="sq-mu">The plan</span>
+            <div class="sq-card sq-doc">${head('specs/01-accounts-auth/rd.md')}<div class="sq-body">
+              <div class="sq-ln"><span class="sq-mu">status:</span> <span class="sq-stv">—</span></div>
+              <div class="sq-ln">Sign in with email magic link</div>
+              <div class="sq-ln" data-g>Sign in with Google (OAuth)</div></div></div></div>
+          <div class="sq-col"><span class="sq-mu">Session 1 · tickets 01–05</span>
+            <div class="sq-say sq-you vi" data-s="1">You: use email only, drop Google.</div>
+            <div class="sq-say vi" data-s="2" data-c="s1">${bot} Built email sign-in. <span class="sq-mu">rd.md not touched.</span></div></div>
+          <div class="sq-col"><span class="sq-mu">Session 2 · new context</span>
+            <div class="sq-say sq-you vi" data-s="3">You: add any missing features.</div>
+            <div class="sq-say vi" data-s="4" data-c="s2">${bot} Read 01-accounts-auth/rd.md. Google sign-in is missing, building it…</div></div>
+        </div>`,
+      run:(t, el) => {
+        const mode = el.querySelector('.sq-mode span'), s1 = el.querySelector('[data-c="s1"]'), s2 = el.querySelector('[data-c="s2"]'), g = el.querySelector('[data-g]'), st = el.querySelector('.sq-stv');
+        const reset = () => el.querySelectorAll('.sq-say').forEach(n => n.classList.remove('on'));
+        [1, 2, 3, 4].forEach((n, i) => t(() => on(el, `[data-s="${n}"]`), 200 + i * 650));
+        t(() => { s2.classList.add('sq-bad'); g.classList.add('sq-yl'); }, 2400);
+        t(() => { reset(); s2.classList.remove('sq-bad'); g.classList.remove('sq-yl'); mode.textContent = 'With status tags + the conflict rule'; mode.classList.add('sq-good'); st.innerHTML = '<span class="sq-gr">in progress</span>'; }, 3500);
+        t(() => on(el, '[data-s="1"]'), 3800);
+        t(() => { s1.classList.add('sq-ask', 'on'); s1.innerHTML = `${bot} rd.md still lists Google sign-in. Drop it from the plan too?`; }, 4400);
+        t(() => { g.classList.add('sq-x'); g.textContent = 'Sign in with Google (dropped)'; s1.classList.replace('sq-ask', 'sq-ok'); s1.innerHTML = `${bot} Built email sign-in. Plan updated.`; }, 5100);
+        t(() => { on(el, '[data-s="3"]'); st.innerHTML = '<span class="sq-gr">done</span>'; }, 5600);
+        t(() => { s2.classList.add('sq-ok', 'on'); s2.innerHTML = `${bot} Checked the app against the plan: nothing missing.`; }, 6100);
+        return 6700;
+      } },
+
+    { k:'Google cleans up', cap:'<p><b>Finding stale notes is easy; proving they\'re stale is the part worth copying.</b> Google\'s agents went through every file for notes about bugs that were fixed or dropped. But a note can look old and still matter, like a warning that a bug comes back if someone removes the code around it. So each note got a history check before anything was suggested, and an engineer reviewed every suggestion.</p><small>Over 6 months this removed thousands of notes, and engineers accepted more than 95% of the suggestions. Google\'s tool isn\'t public.</small>',
+      html:() => `<div class="sq-chain">
+          ${[['Find', 'every note pointing at a fixed or dropped bug'], ['Bug record', 'is it really closed, and why?'], ['Code history', 'every change to that code, even years back'], ['Suggest', 'only when the note and its reason are both stale'], ['Engineer', 'reviews before anything is removed']]
+            .map(([b, s], i) => `${i ? '<span class="sq-arrow">›</span>' : ''}<div class="sq-card sq-node"><b>${b}</b><span class="sq-mu">${s}</span><span class="sq-tick">✓</span></div>`).join('')}
+        </div>
+        <div class="sq-out">
+          <div class="sq-card vi" data-s="k"><span class="sq-chip" style="justify-self:start"><span class="sq-gr">//</span> keep: bug returns if this is removed</span><span class="sq-mu" style="font-size:12px;margin-top:6px">looks old, history says it still matters → kept</span></div>
+          <div class="sq-card vi" data-s="n"><span class="sq-big"><span class="sq-n">0</span>%+</span><span class="sq-mu" style="font-size:12px">of suggestions accepted · thousands removed in 6 months</span></div>
+        </div>`,
+      run:(t, el) => {
+        const ns = el.querySelectorAll('.sq-node');
+        ns.forEach((n, i) => { t(() => n.classList.add('sq-run'), 200 + i * 600); t(() => { n.classList.remove('sq-run'); n.classList.add('on'); }, 650 + i * 600); });
+        t(() => on(el, '[data-s="k"]'), 1500);
+        t(() => { on(el, '[data-s="n"]'); count(el.querySelector('.sq-n'), 95, 1200); }, 3300);
+        return 4800;
+      } },
+
+    { k:'Build /sweep', cap:'<p><b>A read-only <code>/sweep</code> skill brings Google\'s check to your project: prove each claim against the code, report, and wait for a yes.</b> It quotes claims from notes, plans, TODOs, <code>CLAUDE.md</code>, rules and memory, and hands them to verifier agents that get only the claims, not the main agent\'s suspicions, so they can\'t be steered into agreeing. Unproven claims are left alone. A memory or rule that conflicts with the code is listed separately for you to decide.</p><small>Approved files move to <code>archive/</code>, and a <code>guard-archive</code> hook blocks any read or search there. Claude Code\'s loop and monitor features stop when the session closes, so run the sweep yourself or from a scheduler. Start a new session per task, too: rules stop new staleness, a sweep clears the old.</small>',
+      html:() => `<div class="sq-sweep">
+        <div class="sq-card sq-term vi" data-s="1">${head('~/shop-app')}<div class="sq-body"><span><span class="sq-co">›</span> <span class="sq-typed"></span></span>
+          <span class="sq-mu vi" data-s="2">Read-only until you say yes.</span><span class="sq-mu vi" data-s="2">3 verifiers launched…</span></div></div>
+        <div class="sq-vers">${['tickets 01–12 statuses', 'tickets 13–24, TODOs, specs, rules', 'memory index'].map(v => `<div class="sq-card sq-ver vi" data-s="3"><b>sweep-verifier</b><span class="sq-mu">${v}</span></div>`).join('')}</div>
+        <div class="sq-bins">
+          <div class="sq-card sq-bin"><span class="sq-tag" style="background:#1d3324;color:var(--gr)">Current</span><span class="sq-chip vi" data-s="4">rd.md 02: status done ✓ code</span></div>
+          <div class="sq-card sq-bin"><span class="sq-tag" style="background:#3a321a;color:var(--yl)">Outdated</span><span class="sq-chip vi" data-s="4">CLAUDE.md: products page at /products (now /catalog)</span><span class="sq-chip vi" data-s="5">TODO(bug/4821): fixed</span></div>
+          <div class="sq-card sq-bin"><span class="sq-tag" style="background:#2a2a2a;color:var(--mu)">Unproven</span><span class="sq-chip vi" data-s="5">note: "retry is flaky"; left alone</span></div>
+          <div class="sq-card sq-bin"><span class="sq-tag" style="background:#3a1f1c;color:var(--rd)">Conflict · you decide</span><span class="sq-chip vi" data-s="5">memory: "Google sign-in planned"</span></div>
+          <div class="sq-card sq-arch vi" data-s="6"><span class="sq-lock">🔒</span><span><b>archive/</b> <span class="sq-mu">outdated files moved here after your yes · hook blocks Read/Grep/Glob</span></span></div>
+        </div></div>`,
+      run:(t, el) => {
+        t(() => on(el, '[data-s="1"]'), 100);
+        const s = '/sweep';
+        [...s].forEach((_, i) => t(() => { el.querySelector('.sq-typed').textContent = s.slice(0, i + 1); }, 400 + i * 80));
+        t(() => on(el, '[data-s="2"]'), 1100);
+        const vs = el.querySelectorAll('.sq-ver');
+        vs.forEach((v, i) => { t(() => v.classList.add('on', 'sq-run'), 1500 + i * 250); t(() => v.classList.remove('sq-run'), 2900 + i * 300); });
+        t(() => on(el, '[data-s="4"]'), 3000);
+        t(() => on(el, '[data-s="5"]'), 3700);
+        t(() => on(el, '[data-s="6"]'), 4500);
+        return 5300;
+      } },
+  ];
+
+  const stage = $('stage'); let cur = 0, auto = false, timers = [];
+  const clear = () => { timers.forEach(clearTimeout); timers = []; };
+  $('steps').innerHTML = SCENES.map((s, i) => `<button type="button" data-i="${i}">${i + 1}. ${s.k}</button>`).join('');
+  function show(i) {
+    clear(); cur = i; const s = SCENES[i];
+    $('steps').querySelectorAll('button').forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
+    stage.innerHTML = s.html(); $('cap').innerHTML = s.cap;
+    const t = (fn, ms) => timers.push(setTimeout(fn, reduced ? 0 : ms));
+    const end = s.run(t, stage);
+    if (auto) t(() => i < SCENES.length - 1 ? show(i + 1) : stop(), end + 2500);
+  }
+  function stop() { auto = false; $('play').textContent = '▶ Play all'; }
+  $('steps').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { stop(); show(+b.dataset.i); } });
+  $('play').addEventListener('click', () => { if (auto) { stop(); clear(); return; } auto = true; $('play').textContent = '❚❚ Pause'; show(cur === SCENES.length - 1 ? 0 : cur); });
+  show(0);
+})();
+</script>
+</html>

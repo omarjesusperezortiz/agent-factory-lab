@@ -265,5 +265,23 @@
     "page": null,
     "slug": "fable-lead-agent-nine-rules-anthropic",
     "transcript": true
+  },
+  {
+    "id": "JhZB3spnuIY",
+    "channel": "AI LABS",
+    "date": "2026-11-17",
+    "title": "Google Just Released Something To Fix Claude Code's Biggest Problem",
+    "summary": "Google measured agent distraction across millions of internal sessions and found that agents chase stale or unrequested 'side quests' (e.g. old TODO notes tied to already-fixed bugs), which cost 70% more actions, 77% more tokens and over twice the time. Outdated CLAUDE.md files, specs and memory notes cause the same drift, with agents following the stale file about 9 times in 10. The idea worth keeping: treat the code as the source of truth, tag tickets with status, and run a periodic sweep that verifies a note is stale against history (via an independent checker agent) before archiving it.",
+    "tags": [
+      "agent-distraction",
+      "context-hygiene",
+      "claude-md",
+      "stale-specs",
+      "sweep-skill"
+    ],
+    "score": 4,
+    "page": "2026-11-17-google-fix-agent-distraction-side-quests/",
+    "slug": "google-fix-agent-distraction-side-quests",
+    "transcript": true
   }
 ]
