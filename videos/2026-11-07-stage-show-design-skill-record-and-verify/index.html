@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stage Show: a design skill that records its own demo and checks every frame</title>
+<style>
+:root { --bg:#f4f4f2; --fg:#151515; --muted:#666; --accent:#6a58e0; --line:#ddd; --panel:#fff;
+  --sans:"Inter", ui-sans-serif, system-ui, sans-serif; --mono:"JetBrains Mono", ui-monospace, Menlo, monospace; color-scheme:light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#0b0d0e; --fg:#ececec; --muted:#9a9a9a; --accent:#9d8fff; --line:#262a2c; --panel:#141719; color-scheme:dark; } }
+:root[data-theme="dark"] { --bg:#0b0d0e; --fg:#ececec; --muted:#9a9a9a; --accent:#9d8fff; --line:#262a2c; --panel:#141719; color-scheme:dark; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.55 var(--sans); }
+main { max-width:1180px; margin:0 auto; padding:32px 16px 64px; display:grid; gap:18px; }
+.top { display:flex; gap:16px; flex-wrap:wrap; font-size:14px; }
+a { color:var(--accent); }
+h1 { margin:0; font-size:28px; letter-spacing:-.02em; line-height:1.2; } .lede { color:var(--muted); max-width:78ch; margin:0; }
+h2 { margin:18px 0 0; font-size:19px; }
+code { font-family:var(--mono); font-size:.9em; }
+.ctl { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+.seg { display:inline-flex; flex-wrap:wrap; border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+.seg button { background:var(--panel); border:0; border-right:1px solid var(--line); padding:6px 12px; cursor:pointer; color:var(--muted); font:inherit; font-size:13px; }
+.seg button[aria-pressed="true"] { color:var(--fg); background:color-mix(in srgb, var(--accent) 14%, var(--panel)); }
+.play { font:inherit; font-size:13px; font-weight:600; background:var(--accent); color:var(--bg); border:0; border-radius:8px; padding:7px 13px; cursor:pointer; }
+.cap { border-left:3px solid var(--accent); padding:4px 0 4px 14px; max-width:80ch; min-height:64px; } .cap p { margin:0 0 4px; } .cap small { color:var(--muted); }
+.tbl { width:100%; border-collapse:collapse; font-size:14px; }
+.tbl th, .tbl td { text-align:left; vertical-align:top; padding:9px 10px; border-bottom:1px solid var(--line); }
+.tbl th { color:var(--muted); font-weight:600; font-size:13px; }
+.src { margin:0; padding-left:20px; color:var(--muted); font-size:14px; } .src li { margin:4px 0; }
+@media (max-width:760px) { .tbl, .tbl tbody, .tbl tr, .tbl td { display:block; } .tbl thead { display:none; } .tbl tr { border-bottom:1px solid var(--line); padding:6px 0; } .tbl td { border:0; padding:3px 0; } h1 { font-size:23px; } }
+
+/* ---- stage: always dark, its own tokens; every class is prefixed .x / .ss- ---- */
+.x { --c:#8b7cf6; --or:#e8772e; --card:#1c1c1c; --card2:#232323; --ln:#2e2e2e; --tx:#ececec; --mu:#8d8d8d; --gr:#7bd88f; --yl:#e8c468; --rd:#f0716a;
+  background:#0e0e0e; color:var(--tx); border:1px solid #222; border-radius:14px; min-height:440px; padding:26px; position:relative; overflow:hidden;
+  display:grid; align-content:center; font-size:14px; }
+.x .vc { background:var(--card); border:1px solid var(--ln); border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,.45); }
+.x .vi { opacity:0; transform:translateY(10px); transition:opacity .5s, transform .5s; } .x .vi.on { opacity:1; transform:none; }
+.x .row { display:flex; gap:22px; align-items:center; justify-content:center; flex-wrap:wrap; }
+.x .mu { color:var(--mu); } .x .co { color:var(--c); } .x .gr { color:var(--gr); } .x .rd { color:var(--rd); } .x .mono { font-family:var(--mono); }
+.x .pill { display:inline-flex; align-items:center; gap:8px; background:var(--card2); border:1px solid var(--ln); border-radius:99px; padding:6px 14px; font-weight:600; font-size:13px; white-space:nowrap; }
+.x .win-h { display:flex; align-items:center; gap:6px; padding:8px 11px; border-bottom:1px solid var(--ln); }
+.x .win-h i { width:8px; height:8px; border-radius:50%; background:#ff5f57; } .x .win-h i:nth-child(2) { background:#febc2e; } .x .win-h i:nth-child(3) { background:#28c840; }
+.x .win-h span { margin:0 auto; font:11px var(--mono); color:var(--mu); }
+
+/* the running example: a beat-maker app mock (sidebar + arrangement rows) */
+.x .ss-app { width:min(400px,100%); overflow:hidden; transition:transform .6s cubic-bezier(.2,.8,.2,1), filter .5s; transform-origin:center; }
+.x .ss-body { display:flex; min-height:200px; }
+.x .ss-side { width:52px; border-right:1px solid var(--ln); padding:12px 10px; display:grid; gap:10px; align-content:start; }
+.x .ss-side i { height:7px; border-radius:4px; background:#333; } .x .ss-side i:first-child { background:var(--c); width:70%; }
+.x .ss-main { flex:1; padding:12px 14px; display:grid; gap:9px; align-content:start; }
+.x .ss-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:2px; }
+.x .ss-ttl { font-weight:700; font-size:15px; transition:all .4s; }
+.x .ss-btn { background:var(--c); color:#fff; font-size:12px; font-weight:600; border-radius:7px; padding:4px 10px; transition:all .4s; white-space:nowrap; }
+.x .ss-tr { position:relative; height:24px; display:flex; align-items:center; gap:8px; }
+.x .ss-tr .ss-lb { width:42px; height:6px; border-radius:3px; background:#3a3a3a; flex:none; font-size:11px; line-height:6px; color:transparent; overflow:visible; white-space:nowrap; }
+.x .ss-lane { position:relative; flex:1; height:100%; background:#202020; border-radius:5px; }
+.x .ss-clip { position:absolute; top:4px; bottom:4px; border-radius:4px; background:var(--k,var(--c)); transition:all .4s; }
+.x .ss-num { position:absolute; left:4px; right:4px; top:4px; font:9.5px var(--mono); color:#ddd; white-space:nowrap; overflow:hidden; opacity:0; transition:opacity .3s; z-index:1; }
+/* the five failure modes */
+.x .ss-bland { filter:grayscale(1) brightness(.85); }
+.x .ss-much .ss-num { opacity:1; } .x .ss-much .ss-tr .ss-lb { color:#bbb; background:none; line-height:14px; height:14px; font-size:9.5px; }
+.x .ss-wire .ss-clip, .x .ss-wire .ss-btn, .x .ss-wire .ss-side i { background:#3b3b3b !important; color:transparent; } .x .ss-wire .ss-ttl { color:transparent; background:#3b3b3b; border-radius:4px; }
+.x .ss-boxed { transform:scale(.55); }
+.x .ss-flat .ss-clip, .x .ss-flat .ss-btn { background:#5a5a66 !important; } .x .ss-flat .ss-ttl { font-weight:400; font-size:13px; color:#aaa; }
+.x .ss-boxwrap { border:1px dashed transparent; border-radius:14px; transition:border-color .4s, background .4s; }
+.x .ss-boxwrap.ss-on { border-color:#444; background:#161616; }
+.x .ss-modes { display:grid; gap:7px; min-width:220px; }
+.x .ss-mode { display:flex; gap:10px; align-items:center; padding:7px 12px; border-radius:9px; border:1px solid var(--ln); background:var(--card); color:var(--mu); transition:all .3s; }
+.x .ss-mode b { color:var(--tx); width:84px; flex:none; } .x .ss-mode span { font-size:12.5px; }
+.x .ss-mode.ss-now { border-color:var(--rd); color:var(--tx); } .x .ss-mode.ss-done { opacity:.5; } .x .ss-mode.ss-done b { text-decoration:line-through; text-decoration-color:var(--rd); }
+.x .ss-mode.ss-good { border-color:#2f5a3a; color:var(--tx); } .x .ss-mode.ss-good b { color:var(--gr); }
+
+/* scene 2: a hundred decisions */
+.x .ss-dots { display:grid; grid-template-columns:repeat(10,14px); gap:6px; }
+.x .ss-dots i { width:14px; height:14px; border-radius:4px; background:#262626; transition:background .25s, transform .25s; }
+.x .ss-dots i.on { background:var(--c); transform:scale(1.08); }
+.x .ss-big { font:700 44px/1 var(--sans); letter-spacing:-.03em; }
+.x .ss-md { width:min(340px,100%); font-size:13px; }
+.x .ss-md .ss-l { display:flex; gap:8px; padding:6px 14px; border-top:1px solid #262626; } .x .ss-md .ss-l:first-of-type { border-top:0; }
+.x .ss-md .ss-l span:first-child { color:var(--mu); width:96px; flex:none; }
+.x .ss-quote { max-width:560px; text-align:center; font-size:15px; color:#cfcfcf; font-style:italic; }
+
+/* scene 3: seven steps */
+.x .ss-steps { display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); gap:8px; width:100%; max-width:900px; margin:0 auto; position:relative; }
+.x .ss-st { padding:12px 8px 10px; text-align:center; border-top:3px solid var(--g); position:relative; transition:border-color .3s, background .3s, transform .3s; }
+.x .ss-st .ss-n { font:11px var(--mono); color:var(--mu); } .x .ss-st b { display:block; font-size:13.5px; margin:3px 0 2px; white-space:nowrap; } .x .ss-st small { color:var(--mu); font-size:11.5px; line-height:1.3; display:block; }
+.x .ss-st.ss-run { background:#25223a; transform:translateY(-4px); } .x .ss-st.ss-past { background:#1e1e1e; }
+.x .ss-legend { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:22px; font-size:13px; }
+.x .ss-legend span::before { content:''; display:inline-block; width:12px; height:3px; margin-right:6px; vertical-align:middle; background:var(--g); }
+.x .ss-planbar { height:8px; border-radius:99px; background:#222; overflow:hidden; display:flex; max-width:900px; width:100%; margin:16px auto 0; }
+.x .ss-planbar i { height:100%; width:0; transition:width .45s; }
+
+/* scene 4: place + look */
+.x .ss-src { padding:14px; display:grid; gap:9px; width:190px; }
+.x .ss-tok { display:flex; align-items:center; gap:8px; font-size:12.5px; padding:6px 9px; border-radius:8px; background:var(--card2); border:1px solid var(--ln); transition:transform .8s cubic-bezier(.2,.8,.2,1), opacity .5s; white-space:nowrap; }
+.x .ss-tok.ss-fly { transform:translateX(60px); opacity:0; }
+.x .ss-sw { width:14px; height:14px; border-radius:4px; background:#8b7cf6; flex:none; }
+.x .ss-screens { display:flex; gap:18px; align-items:flex-end; flex-wrap:wrap; justify-content:center; }
+.x .ss-desk { width:300px; } .x .ss-phone { width:112px; border-radius:18px; }
+.x .ss-scr { --c:#666; }
+.x .ss-scr .ss-in { padding:10px; display:grid; gap:7px; }
+.x .ss-scr .ss-h { height:9px; width:55%; border-radius:3px; background:#555; transition:background .5s, border-radius .5s; }
+.x .ss-scr .ss-r { height:16px; border-radius:2px; background:#262626; position:relative; transition:border-radius .5s; }
+.x .ss-scr .ss-r::after { content:''; position:absolute; top:3px; bottom:3px; left:var(--l); width:var(--w); border-radius:2px; background:var(--c); transition:background .5s, border-radius .5s; }
+.x .ss-styled .ss-h { background:#e9e9e9; border-radius:5px; } .x .ss-styled .ss-r, .x .ss-styled .ss-r::after { border-radius:6px; } .x .ss-styled { --c:#8b7cf6; }
+.x .ss-phone .ss-in { padding:12px 8px; }
+.x .ss-phone .ss-r { height:26px; }
+.x .ss-tag { font-size:11.5px; color:var(--mu); text-align:center; margin-top:6px; white-space:nowrap; }
+.x .ss-shrunk { width:62px; opacity:.55; position:relative; }
+.x .ss-shrunk::after { content:'✕'; position:absolute; inset:0; display:grid; place-items:center; color:var(--rd); font-size:30px; font-weight:700; }
+.x .ss-shrunk .ss-in { padding:4px; gap:3px; } .x .ss-shrunk .ss-r { height:6px; } .x .ss-shrunk .ss-h { height:4px; }
+
+/* scene 5: story + fill */
+.x .ss-demo { width:min(420px,100%); position:relative; }
+.x .ss-demo .ss-tr .ss-lb.ss-real { color:#ddd; background:none; height:14px; line-height:14px; font-size:11.5px; }
+.x .ss-new { overflow:hidden; max-height:0; opacity:0; transform:translateY(-6px); transition:max-height .5s cubic-bezier(.2,.8,.2,1), opacity .5s, transform .5s; }
+.x .ss-new.on { max-height:30px; opacity:1; transform:none; }
+.x .ss-cur { position:absolute; width:18px; height:18px; left:88%; top:92%; z-index:3; pointer-events:none;
+  transition:left 1.1s cubic-bezier(.45,.05,.55,.95), top 1.1s cubic-bezier(.6,0,.9,.55), transform .15s, opacity .4s; }
+.x .ss-cur svg { width:18px; height:18px; filter:drop-shadow(0 2px 3px rgba(0,0,0,.6)); }
+.x .ss-cur.ss-press { transform:scale(.8); }
+.x .ss-btn.ss-hit { box-shadow:0 0 0 4px rgba(139,124,246,.35); }
+.x .ss-tl { width:min(560px,100%); padding:12px 16px 14px; }
+.x .ss-track { position:relative; height:30px; margin-top:8px; }
+.x .ss-track .ss-rail { position:absolute; left:0; right:0; top:14px; height:2px; background:#333; }
+.x .ss-track .ss-ph { position:absolute; top:6px; width:2px; height:18px; background:var(--c); left:0; transition:left linear; }
+.x .ss-mk { position:absolute; top:9px; width:12px; height:12px; margin-left:-6px; border-radius:50%; background:#2a2a2a; border:2px solid #555; transition:all .3s; }
+.x .ss-mk.on { background:var(--c); border-color:var(--c); }
+.x .ss-mkl { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; font-size:11.5px; color:var(--mu); margin-top:4px; }
+.x .ss-mkl span { transition:color .3s; } .x .ss-mkl span.on { color:var(--tx); }
+.x .ss-wc { display:grid; gap:10px; min-width:150px; }
+
+/* scene 6: record + check (the contact sheet) */
+.x .ss-cmp { display:grid; grid-template-columns:auto 1fr; gap:22px; align-items:center; width:100%; max-width:960px; margin:0 auto; }
+.x .ss-shot { width:170px; padding:10px; position:relative; }
+.x .ss-shot .ss-lbl { font-size:12px; margin-top:8px; }
+.x .ss-sheet { padding:12px; position:relative; }
+.x .ss-frames { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; }
+.x .ss-fr { aspect-ratio:16/10; background:#151515; border:1px solid #2b2b2b; border-radius:6px; position:relative; overflow:hidden; transition:border-color .3s; }
+.x .ss-fr .ss-fi { position:absolute; left:6px; top:5px; font:9px var(--mono); color:#666; }
+.x .ss-fr .ss-a, .x .ss-fr .ss-b { position:absolute; left:14%; height:13%; border-radius:3px; background:#2e2e2e; }
+.x .ss-fr .ss-a { top:28%; width:70%; } .x .ss-fr .ss-b { top:48%; width:70%; }
+.x .ss-fr .ss-c { position:absolute; left:14%; top:68%; height:13%; width:70%; border-radius:3px; background:var(--c); }
+.x .ss-fr .ss-t { position:absolute; left:18%; top:68%; font:8.5px var(--sans); color:#fff; white-space:nowrap; line-height:10px; margin-top:1px; }
+.x .ss-fr.ss-bad { border-color:var(--rd); box-shadow:0 0 0 2px rgba(240,113,106,.25); }
+.x .ss-fr.ss-ok { border-color:#2f5a3a; }
+.x .ss-flag { position:absolute; right:4px; bottom:3px; font:600 9px var(--sans); color:var(--rd); opacity:0; transition:opacity .3s; white-space:nowrap; }
+.x .ss-fr.ss-bad .ss-flag { opacity:1; }
+.x .ss-scan { position:absolute; top:8px; bottom:8px; width:3px; border-radius:2px; background:var(--yl); box-shadow:0 0 12px var(--yl); left:8px; opacity:0; transition:left 1.6s linear, opacity .3s; }
+.x .ss-gate { display:flex; gap:10px; align-items:center; justify-content:center; flex-wrap:wrap; margin-top:16px; }
+.x .ss-gate .pill.ss-fail { border-color:var(--rd); color:var(--rd); } .x .ss-gate .pill.ss-pass { border-color:#2f5a3a; color:var(--gr); }
+.x .ss-reh { font:12px var(--mono); padding:8px 12px; border-radius:9px; }
+
+/* scene 7: human + feedback loop */
+.x .ss-two { display:grid; grid-template-columns:1fr 1fr; gap:18px; width:100%; max-width:820px; margin:0 auto; }
+.x .ss-lane2 { padding:14px 16px; display:grid; gap:8px; align-content:start; }
+.x .ss-lane2 h4 { margin:0 0 4px; font-size:13px; color:var(--mu); font-weight:600; text-transform:uppercase; letter-spacing:.06em; }
+.x .ss-chk { display:flex; justify-content:space-between; gap:10px; font-size:13.5px; padding:6px 10px; border-radius:8px; background:var(--card2); }
+.x .ss-loop { display:flex; gap:8px; align-items:center; justify-content:center; flex-wrap:wrap; margin-top:18px; }
+.x .ss-ln { padding:9px 13px; font-size:13px; border-radius:10px; transition:border-color .3s, background .3s; white-space:nowrap; }
+.x .ss-ln.ss-run { border-color:var(--c); background:#25223a; }
+.x .ss-rule { font:12px var(--mono); color:var(--gr); }
+
+@media (max-width:760px) {
+  .x { padding:18px 12px; min-height:0; }
+  .x .ss-modes { min-width:0; width:100%; } .x .ss-mode b { width:70px; }
+  .x .ss-steps { grid-template-columns:repeat(4, minmax(0,1fr)); } .x .ss-st b { font-size:12px; } .x .ss-st small { display:none; }
+  .x .ss-desk { width:190px; } .x .ss-phone { width:84px; } .x .ss-src { width:100%; grid-template-columns:1fr 1fr; } .x .ss-tok.ss-fly { transform:translateY(30px); }
+  .x .ss-cmp { grid-template-columns:1fr; } .x .ss-shot { width:100%; display:flex; gap:12px; align-items:center; } .x .ss-shot .ss-fr { width:120px; flex:none; }
+  .x .ss-frames { grid-template-columns:repeat(5,1fr); gap:4px; } .x .ss-flag { font-size:7px; }
+  .x .ss-two { grid-template-columns:1fr; } .x .ss-big { font-size:34px; } .x .ss-dots { grid-template-columns:repeat(10,11px); gap:4px; } .x .ss-dots i { width:11px; height:11px; }
+  .x .ss-mkl { font-size:10.5px; }
+}
+</style>
+
+<main>
+  <nav class="top"><a href="../../research/#videos">← Video feed</a><a href="https://www.youtube.com/watch?v=of628n5754g" target="_blank" rel="noopener">▶ Watch the video (AI LABS, 12:16)</a></nav>
+  <h1>Stage Show: a design skill that records its own demo and checks every frame</h1>
+  <p class="lede">Benji Taylor, head of design at X, wrote down how he builds the animated product demos on landing pages and packaged it as a skill called <b>Stage Show</b>. It's a seven-step process, not a list of rules. The step no other design skill has: the agent <b>records the demo while it plays</b>, lays every moment out on one sheet, and a script checks that sheet before the agent can hand the demo over. Running example: the beat-maker app from the video, and its one demo action, "add a drum track".</p>
+  <div class="ctl"><div class="seg" id="steps"></div><button type="button" class="play" id="play">▶ Play all</button></div>
+  <div class="x" id="stage"></div>
+  <div class="cap" id="cap" aria-live="polite"></div>
+
+  <h2>What this means for us</h2>
+  <table class="tbl">
+    <thead><tr><th>Stage Show does</th><th>Where we stand</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td>Records the animation and checks a sheet of frames taken <i>during</i> the motion</td><td>Our <code>visual-explainer</code> check waits for a scene to finish, then takes one screenshot. That's the "screenshot once everything has stopped" check the video calls blind to motion.</td><td>Capture 8–10 frames while each scene runs, tile them into one image, and check that image for jumps and text that overflows.</td></tr>
+      <tr><td>Can't hand over until the check passes; fixes the biggest problem first, then records again</td><td>Verification is a checklist step. Nothing blocks publishing.</td><td>Make the frame-sheet check a gate in the explainer flow: fail, fix the worst frame, record again.</td></tr>
+      <tr><td>Writes <code>rehearsal.md</code> next to the demo: the example it started from, what it changed, what it checked</td><td>Explainers ship with no record of what was checked.</td><td>Leave a short check note per explainer (scenes run, widths tested, issues fixed).</td></tr>
+      <tr><td>Starts from one of ~40 real demos instead of rules alone</td><td>The skill says "never reuse an earlier stage", so every explainer starts blank.</td><td>Keep a small gallery of good past scenes as <i>references</i> to learn from, not to copy.</td></tr>
+      <tr><td>Plain-words feedback gets written back into the skill</td><td>Corrections land in memory or CLAUDE.md now and then.</td><td>After each review round, ask the agent to add the fix to the skill as a rule.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Sources</h2>
+  <ul class="src">
+    <li><a href="https://www.youtube.com/watch?v=of628n5754g" target="_blank" rel="noopener">AI LABS: Head Of Design At X's New Claude Skill Is Insane</a> (video, 12:16)</li>
+    <li><a href="https://github.com/benjitaylor/skills" target="_blank" rel="noopener">benjitaylor/skills</a>: the repo named in the install command shown in the video, <code>npx skills add benjitaylor/skills --skill stageshow</code> (repo not read for this page)</li>
+  </ul>
+</main>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const on = (el, sel) => el.querySelectorAll(sel).forEach(n => n.classList.add('on'));
+  const count = (node, to, ms, fmt = v => v) => { if (reduced) { node.textContent = fmt(to); return; } const t0 = performance.now(); const f = now => { const p = Math.min(1, (now - t0) / ms); node.textContent = fmt(Math.round(to * p)); if (p < 1) requestAnimationFrame(f); }; requestAnimationFrame(f); };
+  const win = url => `<div class="win-h"><i></i><i></i><i></i><span>${url}</span></div>`;
+
+  // the running example: beat-maker arrangement rows
+  const TRACKS = [['Kick', 4, 40, '#8b7cf6'], ['Snare', 30, 44, '#b39cff'], ['Hats', 10, 70, '#6fc3df'], ['Bass', 48, 38, '#e8772e']];
+  const row = ([n, l, w, k], real = false, cls = '') => `<div class="ss-tr ${cls}"><span class="ss-lb${real ? ' ss-real' : ''}">${n}</span><div class="ss-lane"><span class="ss-clip" style="left:${l}%;width:${w}%;--k:${k}"></span><span class="ss-num">${n.toUpperCase()} · 120 BPM · −3.2 dB · 4/4 · ${l}ms · ${w}%</span></div></div>`;
+  const app = (title = 'Arrangement') => `${win('studio.app')}<div class="ss-body"><div class="ss-side"><i></i><i></i><i></i><i></i></div><div class="ss-main"><div class="ss-top"><b class="ss-ttl">${title}</b><span class="ss-btn">+ Track</span></div>${TRACKS.map(t => row(t)).join('')}</div></div>`;
+  const cursor = `<div class="ss-cur"><svg viewBox="0 0 24 24"><path d="M4 2l15 9-6.5 1.6L9 19z" fill="#fff" stroke="#111" stroke-width="1.4" stroke-linejoin="round"/></svg></div>`;
+
+  const SCENES = [
+    { k:'Five ways it breaks',
+      cap:'<p><b>Ask an agent for a product demo and you get one of five failures.</b> Benji\'s names: bland, too much, wireframe, boxed, flat. Each is one small wrong decision that makes the whole demo look sloppy.</p><small>A plain screenshot fails too: it shows so much that people skip it.</small>',
+      html:() => `<div class="row">
+        <div class="ss-boxwrap"><div class="vc ss-app">${app()}</div></div>
+        <div class="ss-modes">${[['Bland', 'asked for a style, got none'], ['Too much', 'text and numbers everywhere'], ['Wireframe', 'grey boxes, not your app'], ['Boxed', 'whole app shrunk into a card'], ['Flat', 'nothing stands out']].map(([a, b]) => `<div class="ss-mode"><b>${a}</b><span>${b}</span></div>`).join('')}
+          <div class="ss-mode vi" data-s="g"><b>Stage Show</b><span>your look, one clear focus</span></div></div></div>`,
+      run:(t, el) => {
+        const A = el.querySelector('.ss-app'), W = el.querySelector('.ss-boxwrap'), M = el.querySelectorAll('.ss-mode');
+        const modes = ['ss-bland', 'ss-much', 'ss-wire', 'ss-boxed', 'ss-flat'];
+        modes.forEach((m, i) => t(() => {
+          A.classList.remove(...modes); A.classList.add(m); W.classList.toggle('ss-on', m === 'ss-boxed');
+          M.forEach((x, j) => { x.classList.toggle('ss-now', j === i); x.classList.toggle('ss-done', j < i); });
+        }, 300 + i * 900));
+        t(() => { A.classList.remove(...modes); W.classList.remove('ss-on'); M[4].classList.replace('ss-now', 'ss-done'); M[5].classList.add('on', 'ss-good'); }, 300 + 5 * 900);
+        return 5200;
+      } },
+
+    { k:'Taste, written down',
+      cap:'<p><b>Taste is a hundred small decisions, so Benji wrote them all down.</b> Without them you have to give Claude those decisions again on every demo. In the skill, the agent works them out from his rules.</p><small>"Taste sounds mysterious, but most of taste is just small decisions you make over and over until you know which ones work."</small>',
+      html:() => `<div style="display:grid;gap:22px;justify-items:center">
+        <div class="row" style="gap:34px">
+          <div style="display:grid;gap:10px;justify-items:center"><div class="ss-dots">${'<i></i>'.repeat(100)}</div><div><span class="ss-big co ss-n">0</span> <span class="mu">decisions per demo</span></div></div>
+          <div class="vc ss-md vi" data-s="2">${win('stageshow/SKILL.md')}
+            ${[['corners', 'read the app\'s radius'], ['real words', '3–7, rest are bars'], ['story', '1 action, 3–5 moments'], ['cursor', 'curved, like a hand'], ['loop', 'last frame = first']].map(([a, b]) => `<div class="ss-l vi" data-s="3"><span>${a}</span><span>${b}</span></div>`).join('')}</div>
+        </div></div>`,
+      run:(t, el) => {
+        const d = [...el.querySelectorAll('.ss-dots i')];
+        d.forEach((x, i) => t(() => x.classList.add('on'), 200 + i * 18));
+        t(() => count(el.querySelector('.ss-n'), 100, 1800), 200);
+        t(() => on(el, '[data-s="2"]'), 2200);
+        el.querySelectorAll('[data-s="3"]').forEach((x, i) => t(() => x.classList.add('on'), 2600 + i * 300));
+        return 4300;
+      } },
+
+    { k:'Seven steps',
+      cap:'<p><b>Each part of the skill is one step of Benji\'s process, and most steps are planning.</b> The agent works out the whole demo before it writes any of it, then checks what it built.</p><small>The skill only builds the demo. It uses the styles your landing page already has and doesn\'t design the rest of the page.</small>',
+      html:() => {
+        const S = [['Place', 'still or moving, size, phone version', 'p'], ['Look', 'your colors, fonts, corners', 'p'], ['Story', '1 action, 3–5 moments', 'p'], ['Example', 'copy the closest of ~40 demos', 'p'], ['Fill', '3–7 real words', 'b'], ['Motion', 'every move has a reason', 'b'], ['Verify', 'record, check, fix', 'v']];
+        const G = { p:'#8b7cf6', b:'#e8772e', v:'#7bd88f' };
+        return `<div style="width:100%"><div class="ss-steps">${S.map(([a, b, g], i) => `<div class="vc ss-st" style="--g:${G[g]}"><span class="ss-n">${i + 1}</span><b>${a}</b><small>${b}</small></div>`).join('')}</div>
+          <div class="ss-planbar"><i style="background:${G.p}"></i><i style="background:${G.b}"></i><i style="background:${G.v}"></i></div>
+          <div class="ss-legend"><span style="--g:${G.p}">plan: 4 steps, no code yet</span><span style="--g:${G.b}">build: 2</span><span style="--g:${G.v}">check: 1</span></div></div>`;
+      },
+      run:(t, el) => {
+        const st = el.querySelectorAll('.ss-st'), bar = el.querySelectorAll('.ss-planbar i');
+        st.forEach((s, i) => { t(() => s.classList.add('ss-run'), 200 + i * 520); t(() => s.classList.replace('ss-run', 'ss-past'), 200 + (i + 1) * 520); });
+        t(() => bar[0].style.width = '57.2%', 200 + 3 * 520); t(() => bar[1].style.width = '28.6%', 200 + 5 * 520); t(() => bar[2].style.width = '14.2%', 200 + 6 * 520);
+        return 4200;
+      } },
+
+    { k:'Place & look',
+      cap:'<p><b>The demo is built for the phone separately, and in your app\'s own look.</b> The agent reads your colors, fonts and corner radius, so it looks like your product and not a template. The phone gets its own layout instead of a shrunk desktop.</p><small>It builds a stripped-down working copy of one screen made only for the demo, not your real app.</small>',
+      html:() => {
+        const rs = n => [[4, 30], [24, 46], [8, 62], [40, 34]].slice(0, n).map(([l, w]) => `<div class="ss-r" style="--l:${l}%;--w:${w}%"></div>`).join('');
+        return `<div class="row" style="gap:30px">
+          <div class="vc ss-src"><span class="mu" style="font-size:12px;grid-column:1/-1">your app</span>
+            <div class="ss-tok"><span class="ss-sw"></span>#8b7cf6</div><div class="ss-tok"><b style="width:14px">Aa</b>Inter, 600</div><div class="ss-tok"><span class="ss-sw" style="background:none;border:2px solid #aaa;border-radius:6px"></span>radius 10px</div></div>
+          <div class="ss-screens">
+            <div><div class="vc ss-scr ss-desk">${win('desktop')}<div class="ss-in"><div class="ss-h"></div>${rs(4)}</div></div><div class="ss-tag">desktop: wide rows</div></div>
+            <div><div class="vc ss-scr ss-phone"><div class="ss-in"><div class="ss-h"></div>${rs(3)}</div></div><div class="ss-tag">phone: own layout</div></div>
+            <div class="vi" data-s="x"><div class="vc ss-scr ss-shrunk"><div class="ss-in"><div class="ss-h"></div>${rs(4)}</div></div><div class="ss-tag">shrunk copy</div></div>
+          </div></div>`;
+      },
+      run:(t, el) => {
+        el.querySelectorAll('.ss-tok').forEach((x, i) => t(() => x.classList.add('ss-fly'), 500 + i * 450));
+        t(() => el.querySelectorAll('.ss-desk, .ss-phone').forEach(s => s.classList.add('ss-styled')), 1900);
+        t(() => on(el, '[data-s="x"]'), 2700);
+        t(() => el.querySelectorAll('.ss-tok').forEach(x => x.classList.remove('ss-fly')), 3600);
+        return 4000;
+      } },
+
+    { k:'Story & fill',
+      cap:'<p><b>One action, three to five moments, 10–16 seconds, and only 3–7 real words on the screen.</b> Everything else is a bar standing in for text. The cursor moves in a curve like a real hand, the new track slides in instead of popping in, and the last moment matches the first, so the loop never shows a restart.</p><small>When Benji has to choose between adding more to the story and keeping it simple, he keeps it simple.</small>',
+      html:() => `<div style="display:grid;gap:18px;justify-items:center;width:100%">
+        <div class="row" style="gap:26px;align-items:center">
+          <div class="vc ss-app ss-demo">${win('studio.app')}<div class="ss-body"><div class="ss-side"><i></i><i></i><i></i><i></i></div><div class="ss-main">
+            <div class="ss-top"><b class="ss-ttl">Arrangement</b><span class="ss-btn">+ Track</span></div>
+            ${TRACKS.slice(0, 3).map(tk => row(tk)).join('')}${row(['Drums', 0, 62, '#7bd88f'], true, 'ss-new')}</div></div>${cursor}</div>
+          <div class="ss-wc"><span class="pill">real words <span class="co mono ss-wn">2</span><span class="mu">/ 7</span></span><span class="pill vi" data-s="loop">↺ last frame = first</span></div>
+        </div>
+        <div class="vc ss-tl"><div style="display:flex;justify-content:space-between;font-size:12px" class="mu"><span>0 s</span><span>one action: add a drum track</span><span>12 s</span></div>
+          <div class="ss-track"><div class="ss-rail"></div>${[6, 34, 62, 94].map(p => `<span class="ss-mk" style="left:${p}%"></span>`).join('')}<div class="ss-ph"></div></div>
+          <div class="ss-mkl"><span>1 cursor enters</span><span>2 clicks + Track</span><span>3 track slides in</span><span>4 settles</span></div></div></div>`,
+      run:(t, el) => {
+        const c = el.querySelector('.ss-cur'), ph = el.querySelector('.ss-ph'), mk = el.querySelectorAll('.ss-mk'), ml = el.querySelectorAll('.ss-mkl span'), b = el.querySelector('.ss-btn');
+        const mark = i => { mk[i].classList.add('on'); ml[i].classList.add('on'); };
+        t(() => { ph.style.transitionDuration = '4200ms'; ph.style.left = '100%'; mark(0); }, 100);
+        t(() => { c.style.left = '84%'; c.style.top = '14%'; }, 300);
+        t(() => { c.classList.add('ss-press'); b.classList.add('ss-hit'); mark(1); }, 1500);
+        t(() => { c.classList.remove('ss-press'); b.classList.remove('ss-hit'); }, 1700);
+        t(() => { el.querySelector('.ss-new').classList.add('on'); mark(2); el.querySelector('.ss-wn').textContent = '3'; }, 1900);
+        t(() => { c.style.left = '88%'; c.style.top = '92%'; mark(3); }, 3100);
+        t(() => on(el, '[data-s="loop"]'), 4100);
+        return 4800;
+      } },
+
+    { k:'Record & check',
+      cap:'<p><b>The skill records the demo while it plays and checks every moment, not just the last one.</b> A screenshot taken once the motion stops looks fine. A script reads the frame sheet and flags any text that doesn\'t fit its box and anything that jumps between moments. The agent fixes the biggest problem first, records again, and can\'t hand over until the check passes.</p><small>Benji\'s examples of what only motion shows: a button that jumps slightly as it slides in, or a split second where everything fades out together.</small>',
+      html:() => {
+        const fr = i => `<div class="ss-fr" data-i="${i}"><span class="ss-fi">${String(i + 1).padStart(2, '0')}</span><span class="ss-a"></span><span class="ss-b"></span><span class="ss-c"></span><span class="ss-t">+ Drums</span><span class="ss-flag"></span></div>`;
+        return `<div style="width:100%"><div class="ss-cmp">
+          <div class="vc ss-shot"><div class="ss-fr ss-final"><span class="ss-fi">end</span><span class="ss-a"></span><span class="ss-b"></span><span class="ss-c" style="opacity:1"></span><span class="ss-t">+ Drums</span></div><div class="ss-lbl"><span class="gr">✓</span> screenshot after it stops <div class="mu" style="font-size:11.5px">looks fine, sees no motion</div></div></div>
+          <div class="vc ss-sheet"><div class="mu" style="font-size:12px;margin-bottom:8px">recording → one sheet of 10 moments <span class="ss-take co mono">take 1</span></div><div class="ss-frames">${[...Array(10)].map((_, i) => fr(i)).join('')}</div><div class="ss-scan"></div></div></div>
+          <div class="ss-gate"><span class="pill vi ss-g1" data-s="g">check: <span class="ss-res mono">…</span></span><span class="pill vi ss-g2" data-s="h">fix the biggest problem → record again</span><span class="vc ss-reh vi" data-s="r">rehearsal.md <span class="mu">· started from · changed · checked</span></span></div></div>`;
+      },
+      run:(t, el) => {
+        const F = [...el.querySelectorAll('.ss-sheet .ss-fr')], scan = el.querySelector('.ss-scan'), sheet = el.querySelector('.ss-sheet');
+        // take 1: the new row slides in from the left, but frame 6 jumps and frame 8's label overflows its box
+        const paint = bad => F.forEach((f, i) => {
+          const p = Math.min(1, i / 6), c = f.querySelector('.ss-c'), tx = f.querySelector('.ss-t');
+          let x = (1 - p) * -60, w = 70;
+          if (bad && i === 5) x = 14;                       // jump: overshoots then snaps back
+          c.style.transform = tx.style.transform = `translateX(${x}%)`; c.style.opacity = tx.style.opacity = String(Math.min(1, p * 1.6));
+          tx.textContent = bad && i === 7 ? '+ Drums (new track added)' : '+ Drums';
+          c.style.width = (bad && i === 7 ? 42 : w) + '%';
+          f.classList.remove('ss-bad', 'ss-ok'); f.querySelector('.ss-flag').textContent = '';
+        });
+        const sweep = (at, then) => {
+          t(() => { scan.style.transition = 'none'; scan.style.left = '8px'; scan.style.opacity = '1'; }, at);
+          t(() => { scan.style.transition = 'left 1.6s linear, opacity .3s'; scan.style.left = (sheet.clientWidth - 12) + 'px'; }, at + 50);
+          t(() => { scan.style.opacity = '0'; then(); }, at + 1700);
+        };
+        paint(true);
+        sweep(500, () => {
+          F[5].classList.add('ss-bad'); F[5].querySelector('.ss-flag').textContent = 'jump';
+          F[7].classList.add('ss-bad'); F[7].querySelector('.ss-flag').textContent = 'overflow';
+          const r = el.querySelector('.ss-res'); r.textContent = '2 issues'; el.querySelector('.ss-g1').classList.add('on', 'ss-fail');
+        });
+        t(() => on(el, '[data-s="h"]'), 2600);
+        t(() => { paint(false); el.querySelector('.ss-take').textContent = 'take 2'; }, 3300);
+        sweep(3400, () => {
+          F.forEach(f => f.classList.add('ss-ok'));
+          const g = el.querySelector('.ss-g1'); g.classList.replace('ss-fail', 'ss-pass'); el.querySelector('.ss-res').textContent = 'passed ✓';
+          on(el, '[data-s="r"]');
+        });
+        return 5800;
+      } },
+
+    { k:'You still watch',
+      cap:'<p><b>The check catches mistakes, but it can\'t tell you the idea is boring.</b> Benji says so himself, and his own demos usually take a few rounds of feedback. Tell the agent what\'s wrong in plain words, then have it add the fix to the skill so the next demo doesn\'t repeat it.</p><small>That\'s how written-down taste grows: every review round becomes one more rule.</small>',
+      html:() => `<div style="width:100%"><div class="ss-two">
+          <div class="vc ss-lane2"><h4>The script checks</h4>${['text fits its box', 'nothing jumps between moments', 'loop has no visible restart'].map(x => `<div class="ss-chk vi" data-s="a"><span>${x}</span><span class="gr">✓</span></div>`).join('')}</div>
+          <div class="vc ss-lane2"><h4>Only you can judge</h4>${['is the idea interesting?', 'does it show what the app does?', 'would someone stop scrolling?'].map(x => `<div class="ss-chk vi" data-s="b"><span>${x}</span><span class="co">👁</span></div>`).join('')}</div></div>
+        <div class="ss-loop">${['you: "the track slides in too slowly"', 'agent fixes it', 'agent adds the fix to SKILL.md'].map((x, i) => `${i ? '<span class="mu">→</span>' : ''}<span class="vc ss-ln">${x}</span>`).join('')}</div>
+        <div style="text-align:center;margin-top:12px" class="vi" data-s="r"><span class="ss-rule">+ motion: a new row slides in within 350 ms</span></div></div>`,
+      run:(t, el) => {
+        el.querySelectorAll('[data-s="a"]').forEach((x, i) => t(() => x.classList.add('on'), 200 + i * 250));
+        el.querySelectorAll('[data-s="b"]').forEach((x, i) => t(() => x.classList.add('on'), 1100 + i * 250));
+        const L = el.querySelectorAll('.ss-ln');
+        L.forEach((x, i) => { t(() => x.classList.add('ss-run'), 2100 + i * 700); t(() => x.classList.remove('ss-run'), 2100 + (i + 1) * 700); });
+        t(() => on(el, '[data-s="r"]'), 4100);
+        return 4700;
+      } },
+  ];
+
+  const stage = $('stage'); let cur = 0, auto = false, timers = [];
+  const clear = () => { timers.forEach(clearTimeout); timers = []; };
+  $('steps').innerHTML = SCENES.map((s, i) => `<button type="button" data-i="${i}">${i + 1}. ${s.k}</button>`).join('');
+  function show(i) {
+    clear(); cur = i; const s = SCENES[i];
+    $('steps').querySelectorAll('button').forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
+    stage.innerHTML = s.html(); $('cap').innerHTML = s.cap;
+    const t = (fn, ms) => timers.push(setTimeout(fn, reduced ? 0 : ms));
+    const end = s.run(t, stage);
+    if (auto) t(() => i < SCENES.length - 1 ? show(i + 1) : stop(), end + 2000);
+  }
+  function stop() { auto = false; $('play').textContent = '▶ Play all'; }
+  $('steps').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { stop(); show(+b.dataset.i); } });
+  $('play').addEventListener('click', () => { if (auto) { stop(); clear(); return; } auto = true; $('play').textContent = '❚❚ Pause'; show(cur === SCENES.length - 1 ? 0 : cur); });
+  show(0);
+})();
+</script>
+</html>
