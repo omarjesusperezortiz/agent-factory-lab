@@ -283,5 +283,23 @@
     "page": "2026-11-17-google-fix-agent-distraction-side-quests/",
     "slug": "google-fix-agent-distraction-side-quests",
     "transcript": true
+  },
+  {
+    "id": "M2obvRkNHXw",
+    "channel": "AI LABS",
+    "date": "2026-11-19",
+    "title": "NVIDIA Just Released Something To Fix Claude Skills",
+    "summary": "NVIDIA's open-source Skill Evaluator audits agent skills in three tiers: a deterministic, no-LLM lint of structure, security and description truncation, then LLM-based duplicate-instruction detection, then A/B task runs with and without the skill in a sandbox. The video claims agent-written skills drift from best practice over iterative edits, with long descriptions cut off at the character limit so the 'when to use' text never reaches the model. The idea worth keeping is to score a skill by running the same task with and without it, and to treat scanner findings as triage, since many security flags were false alarms.",
+    "tags": [
+      "agent-skills",
+      "skill-evaluation",
+      "nvidia",
+      "claude-code",
+      "context-budget"
+    ],
+    "score": 4,
+    "page": "2026-11-19-nvidia-skill-evaluator-audit-agent-skills/",
+    "slug": "nvidia-skill-evaluator-audit-agent-skills",
+    "transcript": true
   }
 ]
