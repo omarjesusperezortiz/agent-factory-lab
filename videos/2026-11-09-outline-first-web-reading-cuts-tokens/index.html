@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Outline first: how only-cli cuts what Claude Code pays to read the web</title>
+<style>
+:root { --bg:#f4f4f2; --fg:#151515; --muted:#666; --accent:#b8532f; --line:#ddd; --panel:#fff;
+  --sans:"Inter", ui-sans-serif, system-ui, sans-serif; --mono:"JetBrains Mono", ui-monospace, Menlo, monospace; color-scheme:light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#0b0d0e; --fg:#ececec; --muted:#9a9a9a; --accent:#d97757; --line:#262a2c; --panel:#141719; color-scheme:dark; } }
+:root[data-theme="dark"] { --bg:#0b0d0e; --fg:#ececec; --muted:#9a9a9a; --accent:#d97757; --line:#262a2c; --panel:#141719; color-scheme:dark; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.55 var(--sans); }
+main { max-width:1180px; margin:0 auto; padding:24px 16px 64px; display:grid; gap:18px; }
+.top { display:flex; gap:16px; flex-wrap:wrap; font-size:14px; }
+a { color:var(--accent); }
+h1 { margin:0; font-size:28px; letter-spacing:-.02em; } .lede { color:var(--muted); max-width:76ch; margin:0; }
+h2 { margin:18px 0 0; font-size:19px; }
+code { font-family:var(--mono); font-size:.9em; }
+.ctl { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+.seg { display:inline-flex; flex-wrap:wrap; border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+.seg button { background:var(--panel); border:0; border-right:1px solid var(--line); padding:6px 12px; cursor:pointer; color:var(--muted); font:inherit; font-size:13px; }
+.seg button[aria-pressed="true"] { color:var(--fg); background:color-mix(in srgb, var(--accent) 14%, var(--panel)); }
+.play { font:inherit; font-size:13px; font-weight:600; background:var(--accent); color:var(--bg); border:0; border-radius:8px; padding:7px 13px; cursor:pointer; }
+.cap { border-left:3px solid var(--accent); padding:4px 0 4px 14px; max-width:80ch; min-height:64px; } .cap p { margin:0 0 4px; } .cap small { color:var(--muted); }
+.ol-wrap { overflow-x:auto; }
+.ol-tbl { border-collapse:collapse; width:100%; font-size:14px; }
+.ol-tbl th, .ol-tbl td { text-align:left; vertical-align:top; padding:9px 12px; border-bottom:1px solid var(--line); }
+.ol-tbl th { color:var(--muted); font-weight:600; font-size:13px; }
+.ol-tbl td:first-child { font-weight:600; }
+.ol-src li { margin-bottom:6px; }
+
+/* ---- stage: always dark; every class lives under .ol ---- */
+.ol { --c:#d97757; --card:#1c1c1c; --card2:#232323; --ln:#2e2e2e; --tx:#ececec; --mu:#8d8d8d; --gr:#7bd88f; --yl:#e8c468; --rd:#f0716a;
+  background:#0e0e0e; color:var(--tx); border:1px solid #222; border-radius:14px; min-height:440px; padding:26px; position:relative; overflow:hidden;
+  display:grid; align-content:center; }
+.ol .vc { background:var(--card); border:1px solid var(--ln); border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,.45); }
+.ol .vi { opacity:0; transform:translateY(10px); transition:opacity .5s, transform .5s; } .ol .vi.on { opacity:1; transform:none; }
+.ol .ol-row { display:flex; gap:18px; align-items:center; justify-content:center; flex-wrap:wrap; }
+.ol .ol-mu { color:var(--mu); } .ol .ol-co { color:var(--c); } .ol .ol-gr { color:var(--gr); } .ol .ol-yl { color:var(--yl); } .ol .ol-rd { color:var(--rd); }
+.ol .ol-mono { font-family:var(--mono); }
+.ol .ol-pill { display:inline-flex; align-items:center; gap:8px; background:var(--card2); border:1px solid var(--ln); border-radius:99px; padding:5px 12px; font-weight:600; font-size:13px; white-space:nowrap; }
+.ol .ol-wh { display:flex; align-items:center; gap:6px; padding:8px 12px; border-bottom:1px solid var(--ln); }
+.ol .ol-wh i { width:9px; height:9px; border-radius:50%; background:#ff5f57; } .ol .ol-wh i:nth-child(2) { background:#febc2e; } .ol .ol-wh i:nth-child(3) { background:#28c840; }
+.ol .ol-wh span { margin:0 auto; font:11px var(--mono); color:var(--mu); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ol .ol-arrow { color:var(--mu); font-size:22px; }
+.ol .ol-big { font-size:34px; font-weight:800; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+.ol .ol-lbl { font-size:12px; color:var(--mu); text-transform:uppercase; letter-spacing:.06em; }
+
+/* s1: page code squeezed into tokens */
+.ol .ol-code { width:230px; font:11px/1.7 var(--mono); }
+.ol .ol-code .b { padding:10px 12px; height:150px; overflow:hidden; position:relative; }
+.ol .ol-code .b div { white-space:nowrap; color:#5f5f5f; transition:color .4s; }
+.ol .ol-code .b div.ol-tx { color:var(--tx); }
+.ol .ol-code.ol-sq .b { height:70px; transition:height .9s ease; }
+.ol .ol-tok { padding:16px 20px; min-width:200px; text-align:center; display:grid; gap:4px; }
+.ol .ol-chips { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-top:18px; }
+
+/* s2: stacked bar of what gets read */
+.ol .ol-stack { width:min(760px,100%); margin:0 auto; display:grid; gap:12px; }
+.ol .ol-bar { display:flex; height:46px; border-radius:10px; overflow:hidden; background:#181818; border:1px solid var(--ln); }
+.ol .ol-bar i { width:0; transition:width .8s cubic-bezier(.2,.8,.2,1); display:grid; place-items:center; font:600 12px var(--sans); font-style:normal; color:#0e0e0e; white-space:nowrap; overflow:hidden; }
+.ol .ol-bar .a { background:var(--c); } .ol .ol-bar .h { background:var(--yl); }
+.ol .ol-bar .n { background:repeating-linear-gradient(135deg,#2a2a2a 0 8px,#222 8px 16px); color:var(--mu); }
+.ol .ol-legend { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; font-size:13px; }
+.ol .ol-legend div { padding:10px 12px; }
+.ol .ol-legend b { display:block; font-size:20px; }
+.ol .ol-ruler { position:relative; height:26px; }
+.ol .ol-ruler span { position:absolute; top:0; font-size:12px; white-space:nowrap; }
+.ol .ol-ruler .ol-art { left:13%; right:0; border-top:2px solid var(--gr); padding-top:4px; color:var(--gr); text-align:center; }
+
+/* s3: outline-first terminal */
+.ol .ol-term { width:min(400px,100%); font:12.5px/1.6 var(--mono); }
+.ol .ol-term .b { padding:10px 14px; display:grid; gap:2px; }
+.ol .ol-term .ol-out { padding-left:10px; border-left:2px solid var(--ln); margin:4px 0 6px; }
+.ol .ol-term .ol-hit { color:var(--c); font-weight:700; }
+.ol .ol-sec { max-height:0; overflow:hidden; transition:max-height .7s ease; color:#bdbdbd; font-family:var(--sans); font-size:12.5px; }
+.ol .ol-sec.on { max-height:120px; }
+.ol .ol-moves { font-size:11.5px; color:var(--yl); border-top:1px dashed var(--ln); padding-top:6px; margin-top:4px; }
+.ol .ol-track { width:min(330px,100%); padding:16px 18px; display:grid; gap:12px; }
+.ol .ol-lane { display:grid; gap:4px; font-size:12.5px; }
+.ol .ol-rail { height:10px; background:#202020; border-radius:99px; position:relative; overflow:hidden; }
+.ol .ol-rail i { position:absolute; left:0; top:0; bottom:0; width:0; border-radius:99px; transition:width 1s ease; }
+
+/* s4: doors */
+.ol .ol-doors { display:grid; gap:16px; width:min(820px,100%); margin:0 auto; }
+.ol .ol-door { display:grid; grid-template-columns:130px 1fr 1fr; gap:12px; align-items:stretch; }
+.ol .ol-site { padding:12px; display:grid; align-content:center; gap:2px; font-weight:700; }
+.ol .ol-site small { font-weight:400; color:var(--mu); font-size:12px; }
+.ol .ol-try { padding:12px 14px; font-size:13px; display:grid; gap:6px; align-content:start; }
+.ol .ol-try .ol-res { font-weight:700; }
+.ol .ol-try.ol-no { border-color:#4a2626; } .ol .ol-try.ol-ok { border-color:#2f5a3a; }
+.ol .ol-kv { display:flex; flex-wrap:wrap; gap:6px; }
+
+/* s5: fork */
+.ol .ol-fork { display:grid; grid-template-columns:200px 60px 1fr; gap:0; align-items:center; width:min(820px,100%); margin:0 auto; }
+.ol .ol-q { padding:16px; text-align:center; font-weight:700; }
+.ol .ol-q small { display:block; font-weight:400; color:var(--mu); font-size:12px; margin-top:4px; }
+.ol .ol-br { position:relative; height:170px; }
+.ol .ol-br svg { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
+.ol .ol-br path { fill:none; stroke-width:2; stroke-dasharray:120; stroke-dashoffset:120; transition:stroke-dashoffset .8s ease; }
+.ol .ol-br path.on { stroke-dashoffset:0; }
+.ol .ol-outs { display:grid; gap:22px; }
+.ol .ol-out2 { padding:12px 14px; font-size:13px; display:grid; gap:4px; }
+.ol .ol-out2 b { font-size:14px; }
+
+/* s6: fan-out */
+.ol .ol-fan { display:grid; grid-template-columns:170px 1fr 150px; gap:16px; align-items:center; width:min(880px,100%); margin:0 auto; }
+.ol .ol-src2 { padding:12px; font-size:12.5px; display:grid; gap:6px; }
+.ol .ol-src2 .ol-strk { text-decoration:line-through; color:var(--mu); }
+.ol .ol-readers { display:grid; gap:8px; }
+.ol .ol-rd2 { display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center; padding:8px 12px; font-size:12.5px; transition:border-color .3s; }
+.ol .ol-rd2 .ol-dots { display:flex; gap:3px; }
+.ol .ol-rd2 .ol-dots i { width:7px; height:7px; border-radius:2px; background:#2c2c2c; transition:background .25s; }
+.ol .ol-rd2 .ol-dots i.on { background:var(--c); }
+.ol .ol-rd2.ol-done { border-color:#2f5a3a; }
+.ol .ol-wr { padding:14px; text-align:center; font-size:13px; display:grid; gap:4px; }
+
+/* s7: result bars */
+.ol .ol-cmp { width:min(720px,100%); margin:0 auto; display:grid; gap:16px; }
+.ol .ol-cl { display:grid; grid-template-columns:150px 1fr 70px; gap:12px; align-items:center; font-size:14px; }
+.ol .ol-cl .ol-rail { height:30px; border-radius:8px; }
+.ol .ol-cl .ol-rail i { border-radius:8px; }
+.ol .ol-cl .ol-v { font-weight:800; font-variant-numeric:tabular-nums; text-align:right; }
+.ol .ol-save { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+.ol .ol-claim { text-align:center; font-size:15px; }
+.ol .ol-claim s { color:var(--mu); }
+
+@media (max-width:760px) {
+  .ol { padding:18px 12px; min-height:0; }
+  .ol .ol-big { font-size:26px; }
+  .ol .ol-code { width:100%; } .ol .ol-tok { min-width:0; width:100%; }
+  .ol .ol-arrow { transform:rotate(90deg); }
+  .ol .ol-legend { grid-template-columns:1fr; } .ol .ol-legend b { display:inline; margin-right:6px; font-size:16px; }
+  .ol .ol-bar i { font-size:10px; }
+  .ol .ol-door { grid-template-columns:1fr 1fr; } .ol .ol-site { grid-column:1 / -1; }
+  .ol .ol-fork { grid-template-columns:1fr; gap:10px; } .ol .ol-br { display:none; }
+  .ol .ol-fan { grid-template-columns:1fr; }
+  .ol .ol-cl { grid-template-columns:90px 1fr 56px; font-size:12.5px; }
+  .ol .ol-term { font-size:11px; }
+}
+</style>
+
+<main>
+  <nav class="top"><a href="../../research/#videos">← Video feed</a><a href="https://www.youtube.com/watch?v=6gT2sGrYgHk" target="_blank" rel="noopener">▶ Watch the video (AI LABS, 13:06)</a></nav>
+  <h1>Outline first: how only-cli cuts what Claude Code pays to read the web</h1>
+  <p class="lede">Claude Code's built-in web tool turns a whole page (menus, language lists, layout code) into tokens, reads the top, has Haiku summarize the middle and drops the rest. <code>oc</code> (only-cli) hands back a ~500-token numbered outline instead and lets the agent open only the section it needs. In the channel's head-to-head research run it cut tokens by about a fifth, not the "half" in the title.</p>
+  <div class="ctl"><div class="seg" id="steps"></div><button type="button" class="play" id="play">▶ Play all</button></div>
+  <div class="ol" id="stage"></div>
+  <div class="cap" id="cap" aria-live="polite"></div>
+
+  <h2>What this means for us</h2>
+  <div class="ol-wrap"><table class="ol-tbl">
+    <thead><tr><th>Where</th><th>What to do</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Research workers in the factory</td><td>Try <code>oc open</code> → <code>oc read &lt;n&gt;</code> as the default way a research agent reads a page that has no <code>llms.txt</code>.</td><td>Web pages stay in the context for the rest of the session; a 500-token outline instead of a 74k-token dump keeps long research sessions sharp.</td></tr>
+      <tr><td>Docs sites</td><td>Keep the built-in web tool for sites that publish <code>llms.txt</code> (Claude Code docs, most dev docs).</td><td>The video found Claude's own tool already reads those word for word; <code>oc</code> adds nothing there.</td></tr>
+      <tr><td>Wiring</td><td>Installing isn't enough: add the one-line instruction to <code>CLAUDE.md</code>/<code>AGENTS.md</code>, or install the Claude Code plugin, which ships the skill.</td><td>Without it the agent never knows the tool exists and keeps using its own fetcher.</td></tr>
+      <tr><td>Costs view</td><td>Before rolling out, run one research task both ways and log tokens per run, like the video did (4.9M vs 3.9M).</td><td>One run each is a hint, not a benchmark; our pages and prompts differ.</td></tr>
+      <tr><td>Logins</td><td>Don't give <code>oc login</code> cookies from work accounts to unattended agents.</td><td>The cookie is your session: whatever the agent opens, it opens as you.</td></tr>
+      <tr><td>Answers you can check</td><td>Prefer flows where the agent quotes the page text it read, not a summary of it.</td><td>With <code>oc</code> each reader agent read the real post text; with the web tool much of a long page reaches Claude only as a Haiku summary.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Sources</h2>
+  <ul class="ol-src">
+    <li><a href="https://www.youtube.com/watch?v=6gT2sGrYgHk" target="_blank" rel="noopener">AI LABS: This Finally Cut Claude Code's Token Usage In Half</a> (the Wikipedia 13/34/53 split, the npm and Stack Overflow tests and the 28-post run are the channel's own measurements; the video also contains a sponsor segment, left out here)</li>
+    <li><a href="https://github.com/only-cli/oc" target="_blank" rel="noopener">only-cli/oc on GitHub</a>: "Browse the web in hundreds of tokens, not tens of thousands." Install with <code>npm install -g @only-cli/oc</code>; commands <code>oc open</code>, <code>oc read &lt;n&gt;</code>, <code>oc find</code>, <code>oc next</code>, <code>oc do &lt;n&gt;</code>; default budget 500 tokens</li>
+    <li><a href="https://llmstxt.org/" target="_blank" rel="noopener">llms.txt</a>: the plain-text site copy for models that makes the built-in web tool good enough on docs sites</li>
+    <li><a href="https://en.wikipedia.org/wiki/Large_language_model" target="_blank" rel="noopener">Wikipedia: Large language model</a>, the page used as the running example</li>
+  </ul>
+</main>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const on = (el, sel) => el.querySelectorAll(sel).forEach(n => n.classList.add('on'));
+  const count = (node, to, ms, fmt = v => v) => { if (reduced) { node.textContent = fmt(to); return; } const t0 = performance.now(); const f = now => { const p = Math.min(1, (now - t0) / ms); node.textContent = fmt(Math.round(to * p)); if (p < 1) requestAnimationFrame(f); }; requestAnimationFrame(f); };
+  const win = url => `<div class="ol-wh"><i></i><i></i><i></i><span>${url}</span></div>`;
+  const fmt = v => v.toLocaleString('en-US');
+
+  const codeLines = ['&lt;div class="vector-header"&gt;', '&lt;nav id="p-lang"&gt;', '  &lt;a lang="ar"&gt;العربية&lt;/a&gt;', '  &lt;a lang="de"&gt;Deutsch&lt;/a&gt;', '  &lt;a lang="es"&gt;Español&lt;/a&gt;', '&lt;ul class="vector-menu"&gt;', '&lt;script&gt;RLQ.push(…)', '&lt;p&gt;A large language model…', '&lt;style&gt;.mw-parser…'];
+
+  const SCENES = [
+    { k:'Where tokens go', cap:'<p><b>The web tool pays for the whole page, not the article.</b> Wikipedia\'s LLM article is ~1 MB of page code; converted to text it is still ~295,000 characters, about 74,000 tokens.</p><small>Menus and the list of languages the article comes in all count, and they stay in the session for every later message.</small>',
+      html:() => `<div><div class="ol-row">
+        <div class="vc ol-code vi" data-s="1">${win('en.wikipedia.org/wiki/Large_language_model')}<div class="b">${codeLines.map(l => `<div>${l}</div>`).join('')}</div></div>
+        <span class="ol-arrow vi" data-s="2">→</span>
+        <div class="vc ol-tok vi" data-s="2"><span class="ol-lbl">page code</span><span class="ol-big"><span class="ol-mb">0</span> KB</span><span class="ol-mu" style="font-size:12px">→ <span class="ol-ch">0</span> characters of text</span></div>
+        <span class="ol-arrow vi" data-s="3">→</span>
+        <div class="vc ol-tok vi" data-s="3" style="border-color:#5a3426"><span class="ol-lbl">tokens charged</span><span class="ol-big ol-co"><span class="ol-tk">0</span></span><span class="ol-mu" style="font-size:12px">one page, one fetch</span></div>
+      </div>
+      <div class="ol-chips"><span class="ol-pill vi" data-s="4"><span class="ol-mu">☰</span> menus</span><span class="ol-pill vi" data-s="4"><span class="ol-mu">🌐</span> language list</span><span class="ol-pill vi" data-s="4"><span class="ol-mu">⚙</span> layout code</span><span class="ol-pill vi" data-s="5" style="border-color:#2f5a3a"><span class="ol-gr">¶</span> the article you wanted</span></div></div>`,
+      run:(t, el) => {
+        t(() => on(el, '[data-s="1"]'), 100);
+        t(() => { on(el, '[data-s="2"]'); count(el.querySelector('.ol-mb'), 1000, 900, fmt); count(el.querySelector('.ol-ch'), 295000, 1200, fmt); }, 800);
+        t(() => { on(el, '[data-s="3"]'); count(el.querySelector('.ol-tk'), 74000, 1300, fmt); el.querySelector('.ol-code').classList.add('ol-sq'); }, 1900);
+        t(() => on(el, '[data-s="4"]'), 3300);
+        t(() => { on(el, '[data-s="5"]'); el.querySelectorAll('.ol-code .b div')[7].classList.add('ol-tx'); }, 3900);
+        return 4600;
+      } },
+
+    { k:'What Claude reads', cap:'<p><b>Most of the article reaches Claude only as a Haiku summary.</b> Of the 74k tokens, Claude reads the first 13% word for word, hands the next 34% to Haiku, and never reads the last 53%.</p><small>And that first 13% is mostly menus and language links: the article only starts after them. Answers to questions about the article were right, but came from the summary.</small>',
+      html:() => `<div class="ol-stack">
+        <div class="ol-lbl">The 74,000-token Wikipedia page, top to bottom</div>
+        <div class="ol-bar"><i class="a">13%</i><i class="h">34% → Haiku</i><i class="n">53% never read</i></div>
+        <div class="ol-ruler vi" data-s="4"><span class="ol-art">↑ the actual article starts here and runs past the 13% line</span></div>
+        <div class="ol-legend">
+          <div class="vc vi" data-s="1"><b class="ol-co">13%</b>read word for word, but it's the nav, menus and the languages list</div>
+          <div class="vc vi" data-s="2"><b class="ol-yl">34%</b>summarized by Haiku; Claude answers from the summary</div>
+          <div class="vc vi" data-s="3"><b class="ol-mu">53%</b>never read at all, yet the fetch still sits in your session</div>
+        </div></div>`,
+      run:(t, el) => {
+        const b = el.querySelectorAll('.ol-bar i');
+        t(() => { b[0].style.width = '13%'; on(el, '[data-s="1"]'); }, 300);
+        t(() => { b[1].style.width = '34%'; on(el, '[data-s="2"]'); }, 1200);
+        t(() => { b[2].style.width = '53%'; on(el, '[data-s="3"]'); }, 2100);
+        t(() => on(el, '[data-s="4"]'), 3100);
+        return 3800;
+      } },
+
+    { k:'Outline first', cap:'<p><b>oc returns a map, then the agent pays only for the section it opens.</b> <code>oc open</code> gives a numbered outline of ~500 tokens; <code>oc read 3</code> expands one section. Every reply ends with the moves available next.</p><small>If the whole page is barely longer than the outline, oc just prints the page: one extra tool call would cost more than it saves.</small>',
+      html:() => `<div class="ol-row" style="align-items:stretch">
+        <div class="vc ol-term vi" data-s="1">${win('claude code · oc')}<div class="b">
+          <div><span class="ol-mu">$</span> <span class="ol-typed"></span></div>
+          <div class="ol-out vi" data-s="2">
+            <div>[1] Large language model <span class="ol-mu">· lead</span></div>
+            <div>[2] History</div>
+            <div class="ol-h3">[3] Training and architecture</div>
+            <div>[4] Interpretability</div>
+            <div>[5] Evaluation</div>
+            <div class="ol-mu">… 14 more · page saved</div>
+          </div>
+          <div class="vi" data-s="3"><span class="ol-mu">$</span> oc read 3</div>
+          <div class="ol-sec"><div class="ol-out">Full text of section [3], word for word, up to 2,000 tokens. Nothing else on the page is re-sent.</div></div>
+          <div class="ol-moves vi" data-s="5">next → oc read &lt;n&gt; · oc find &lt;word&gt; · oc next · full page as clean text</div>
+        </div></div>
+        <div class="vc ol-track vi" data-s="1">
+          <div class="ol-lbl">tokens paid for this page</div>
+          <div class="ol-lane"><span>Built-in web tool <span class="ol-mu">· whole page</span></span><div class="ol-rail"><i style="background:var(--rd)" class="ol-w"></i></div><span class="ol-mono ol-rd">74,000</span></div>
+          <div class="ol-lane"><span>oc outline</span><div class="ol-rail"><i style="background:var(--c)" class="ol-o"></i></div><span class="ol-mono ol-co">≈500</span></div>
+          <div class="ol-lane vi" data-s="4"><span>oc outline + one section</span><div class="ol-rail"><i style="background:var(--gr)" class="ol-s"></i></div><span class="ol-mono ol-gr">≤2,500</span></div>
+        </div></div>`,
+      run:(t, el) => {
+        t(() => { on(el, '[data-s="1"]'); el.querySelector('.ol-w').style.width = '100%'; }, 100);
+        const s = 'oc open en.wikipedia.org/wiki/Large_language_model';
+        [...s].forEach((_, i) => t(() => { el.querySelector('.ol-typed').textContent = s.slice(0, i + 1); }, 400 + i * 22));
+        t(() => { on(el, '[data-s="2"]'); el.querySelector('.ol-o').style.width = '0.7%'; }, 1600);
+        t(() => { on(el, '[data-s="3"]'); el.querySelector('.ol-h3').classList.add('ol-hit'); }, 2600);
+        t(() => { el.querySelector('.ol-sec').classList.add('on'); on(el, '[data-s="4"]'); el.querySelector('.ol-s').style.width = '3.4%'; }, 3200);
+        t(() => on(el, '[data-s="5"]'), 4000);
+        return 4700;
+      } },
+
+    { k:'Doors that refused', cap:'<p><b>oc also got into two sites that refused Claude\'s web tool.</b> npm blocked the fetch of React\'s package page; Stack Overflow blocked the question page. oc opened npm directly and read Stack Overflow through the feed the site publishes for other apps.</p><small>The repo says sites with hard bot challenges and JavaScript-only pages are still out of reach; this is two sites, not a guarantee.</small>',
+      html:() => `<div class="ol-doors">
+        <div class="ol-door">
+          <div class="vc ol-site vi" data-s="1">npm<small>react: version, license, weekly downloads</small></div>
+          <div class="vc ol-try ol-no vi" data-s="2"><span class="ol-mu">web tool</span><span class="ol-res ol-rd">✕ request refused</span><span class="ol-mu">no answers</span></div>
+          <div class="vc ol-try ol-ok vi" data-s="3"><span class="ol-mu ol-mono">oc npm pkg react</span><span class="ol-res ol-gr">✓ page read</span><div class="ol-kv"><span class="ol-pill">version ✓</span><span class="ol-pill">license ✓</span><span class="ol-pill">downloads ✓</span></div></div>
+        </div>
+        <div class="ol-door">
+          <div class="vc ol-site vi" data-s="4">Stack Overflow<small>a coding question</small></div>
+          <div class="vc ol-try ol-no vi" data-s="5"><span class="ol-mu">web tool</span><span class="ol-res ol-rd">✕ request refused</span><span class="ol-mu">question page blocked</span></div>
+          <div class="vc ol-try ol-ok vi" data-s="6"><span class="ol-mu">oc Stack Overflow shortcut</span><span class="ol-res ol-gr">✓ via the site's feed</span><span>accepted answer, word for word</span></div>
+        </div></div>`,
+      run:(t, el) => { [1, 2, 3, 4, 5, 6].forEach((n, i) => t(() => on(el, `[data-s="${n}"]`), 200 + i * 650)); return 4400; } },
+
+    { k:'When not to use it', cap:'<p><b>On sites with llms.txt, Claude\'s own tool is already better.</b> Documentation sites increasingly publish a plain-text copy for models; the web tool goes straight to it and reads the real text word for word.</p><small>The video saw this on the Claude Code docs. Wikipedia, blogs, npm and forums mostly have no llms.txt, and that is where oc saves tokens.</small>',
+      html:() => `<div class="ol-fork">
+        <div class="vc ol-q vi" data-s="1">Does the site publish <span class="ol-mono ol-co">llms.txt</span>?</div>
+        <div class="ol-br"><svg viewBox="0 0 60 170" preserveAspectRatio="none"><path d="M0 85 C30 85 30 40 60 40" stroke="#7bd88f" class="ol-p1"/><path d="M0 85 C30 85 30 130 60 130" stroke="#d97757" class="ol-p2"/></svg></div>
+        <div class="ol-outs">
+          <div class="vc ol-out2 vi" data-s="2" style="border-color:#2f5a3a"><b><span class="ol-gr">yes</span> → keep the built-in web tool</b><span class="ol-mu">e.g. Claude Code docs: no page code, no menus, the docs' own text verbatim</span></div>
+          <div class="vc ol-out2 vi" data-s="3" style="border-color:#5a3426"><b><span class="ol-co">no</span> → use oc</b><span class="ol-mu">e.g. Wikipedia: otherwise it's page code and menus again, then 13% read, 34% summarized, 53% dropped</span></div>
+        </div></div>`,
+      run:(t, el) => {
+        t(() => on(el, '[data-s="1"]'), 200);
+        t(() => { el.querySelector('.ol-p1').classList.add('on'); on(el, '[data-s="2"]'); }, 1000);
+        t(() => { el.querySelector('.ol-p2').classList.add('on'); on(el, '[data-s="3"]'); }, 2000);
+        return 3000;
+      } },
+
+    { k:'The research run', cap:'<p><b>The test: research Anthropic\'s whole engineering blog with five reader agents.</b> The blog index shows 24 posts behind a "see more" button, so the agent used oc\'s full-page view and the sitemap to find all 28, split them into five topics, and a sixth agent wrote the report from their notes.</p><small>The CLAUDE.md line is what made the agent pick oc; once, it slipped and ran a plain <code>curl</code> on the sitemap instead.</small>',
+      html:() => `<div class="ol-fan">
+        <div class="vc ol-src2 vi" data-s="1"><b>anthropic.com/engineering</b><span class="ol-strk">24 posts + "see more"</span><span class="vi" data-s="2">+ full-page view + sitemap</span><span class="vi ol-big ol-co" data-s="2" style="font-size:26px">28 posts</span></div>
+        <div class="ol-readers">${['Security', 'Agent design & context', 'Tools, MCP & skills', 'Long-running harnesses', 'Evals & reliability'].map(n => `<div class="vc ol-rd2 vi" data-s="3"><span>${n}</span><span class="ol-dots">${'<i></i>'.repeat(6)}</span></div>`).join('')}</div>
+        <div class="vc ol-wr vi" data-s="5"><span class="ol-lbl">agent 6</span><b>reads the notes,<br>writes the report</b><span class="ol-mu">every claim from the posts' own text</span></div>
+      </div>`,
+      run:(t, el) => {
+        t(() => on(el, '[data-s="1"]'), 100);
+        t(() => on(el, '[data-s="2"]'), 900);
+        t(() => on(el, '[data-s="3"]'), 1700);
+        el.querySelectorAll('.ol-rd2').forEach((r, ri) => { const d = r.querySelectorAll('.ol-dots i'); d.forEach((x, i) => t(() => x.classList.add('on'), 2100 + i * 230 + ri * 60)); t(() => r.classList.add('ol-done'), 2200 + d.length * 230 + ri * 60); });
+        t(() => on(el, '[data-s="5"]'), 4200);
+        return 4900;
+      } },
+
+    { k:'The result', cap:'<p><b>Same prompt, same skill, same 28 posts: 4.9M tokens without oc, 3.9M with it.</b> About 20% less at the same accuracy, and with oc the readers worked from each post\'s actual text, not a summary.</p><small>One run each, judged by the channel. The title says "in half"; the video itself says about 21%. Treat it as a direction, then measure on our own tasks.</small>',
+      html:() => `<div class="ol-cmp">
+        <div class="ol-cl"><span>Built-in web tool</span><div class="ol-rail"><i class="ol-a" style="background:#5a5a5a"></i></div><span class="ol-v"><span class="ol-n1">0.0</span>M</span></div>
+        <div class="ol-cl"><span>With oc</span><div class="ol-rail"><i class="ol-b" style="background:var(--c)"></i></div><span class="ol-v ol-co"><span class="ol-n2">0.0</span>M</span></div>
+        <div class="ol-save vi" data-s="1"><span class="ol-pill ol-gr">−1.0M tokens</span><span class="ol-pill">≈ −20%</span><span class="ol-pill">same accuracy</span><span class="ol-pill">full post text, not summaries</span></div>
+        <div class="ol-claim vi" data-s="2"><s>"cut token usage in half"</s> → about a fifth less, on a research-heavy run</div>
+      </div>`,
+      run:(t, el) => {
+        const f1 = v => (v / 10).toFixed(1);
+        t(() => { el.querySelector('.ol-a').style.width = '100%'; count(el.querySelector('.ol-n1'), 49, 1000, f1); }, 300);
+        t(() => { el.querySelector('.ol-b').style.width = (39 / 49 * 100) + '%'; count(el.querySelector('.ol-n2'), 39, 1000, f1); }, 1300);
+        t(() => on(el, '[data-s="1"]'), 2500);
+        t(() => on(el, '[data-s="2"]'), 3300);
+        return 4000;
+      } },
+  ];
+
+  const stage = $('stage'); let cur = 0, auto = false, timers = [];
+  const clear = () => { timers.forEach(clearTimeout); timers = []; };
+  $('steps').innerHTML = SCENES.map((s, i) => `<button type="button" data-i="${i}">${i + 1}. ${s.k}</button>`).join('');
+  function show(i) {
+    clear(); cur = i; const s = SCENES[i];
+    $('steps').querySelectorAll('button').forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
+    stage.innerHTML = s.html(); $('cap').innerHTML = s.cap;
+    const t = (fn, ms) => timers.push(setTimeout(fn, reduced ? 0 : ms));
+    const end = s.run(t, stage);
+    if (auto) t(() => i < SCENES.length - 1 ? show(i + 1) : stop(), end + 2500);
+  }
+  function stop() { auto = false; $('play').textContent = '▶ Play all'; }
+  $('steps').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { stop(); show(+b.dataset.i); } });
+  $('play').addEventListener('click', () => { if (auto) { stop(); clear(); return; } auto = true; $('play').textContent = '❚❚ Pause'; show(cur === SCENES.length - 1 ? 0 : cur); });
+  show(0);
+})();
+</script>
+</html>
