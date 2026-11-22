@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leon Lin's design loop: references, a target, a numeric bar, and judges that didn't build it</title>
+<style>
+:root { --bg:#f4f4f2; --fg:#151515; --muted:#666; --accent:#b8562f; --line:#ddd; --panel:#fff;
+  --sans:"Inter", ui-sans-serif, system-ui, sans-serif; --mono:"JetBrains Mono", ui-monospace, Menlo, monospace; color-scheme:light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#0b0d0e; --fg:#ececec; --muted:#9a9a9a; --accent:#d97757; --line:#262a2c; --panel:#141719; color-scheme:dark; } }
+:root[data-theme="dark"] { --bg:#0b0d0e; --fg:#ececec; --muted:#9a9a9a; --accent:#d97757; --line:#262a2c; --panel:#141719; color-scheme:dark; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.55 var(--sans); }
+main { max-width:1180px; margin:0 auto; padding:24px 16px 64px; display:grid; gap:18px; }
+.top { display:flex; gap:16px; flex-wrap:wrap; font-size:14px; }
+a { color:var(--accent); }
+h1 { margin:0; font-size:28px; letter-spacing:-.02em; } .lede { color:var(--muted); max-width:76ch; margin:0; }
+h2 { margin:18px 0 0; font-size:19px; }
+code { font-family:var(--mono); font-size:.9em; }
+.ctl { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+.seg { display:inline-flex; flex-wrap:wrap; border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+.seg button { background:var(--panel); border:0; border-right:1px solid var(--line); padding:6px 12px; cursor:pointer; color:var(--muted); font:inherit; font-size:13px; }
+.seg button[aria-pressed="true"] { color:var(--fg); background:color-mix(in srgb, var(--accent) 14%, var(--panel)); }
+.play { font:inherit; font-size:13px; font-weight:600; background:var(--accent); color:var(--bg); border:0; border-radius:8px; padding:7px 13px; cursor:pointer; }
+.cap { border-left:3px solid var(--accent); padding:4px 0 4px 14px; max-width:80ch; min-height:64px; } .cap p { margin:0 0 4px; } .cap small { color:var(--muted); }
+.dw-wrap { overflow-x:auto; }
+.dw-tbl { border-collapse:collapse; width:100%; font-size:14px; }
+.dw-tbl th, .dw-tbl td { text-align:left; vertical-align:top; padding:9px 12px; border-bottom:1px solid var(--line); }
+.dw-tbl th { color:var(--muted); font-weight:600; font-size:13px; }
+.dw-tbl td:first-child { font-weight:600; white-space:nowrap; }
+.dw-src li { margin-bottom:6px; }
+
+/* ---- stage: always dark, its own tokens; every class is prefixed ---- */
+.x { --c:#d97757; --card:#1c1c1c; --card2:#232323; --ln:#2e2e2e; --tx:#ececec; --mu:#8d8d8d; --gr:#7bd88f; --yl:#e8c468; --rd:#f0716a;
+  background:#0e0e0e; color:var(--tx); border:1px solid #222; border-radius:14px; min-height:440px; padding:26px; position:relative; overflow:hidden;
+  display:grid; align-content:center; }
+.x .vc { background:var(--card); border:1px solid var(--ln); border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,.45); }
+.x .vi { opacity:0; transform:translateY(10px); transition:opacity .5s, transform .5s; } .x .vi.on { opacity:1; transform:none; }
+.x .row { display:flex; gap:22px; align-items:center; justify-content:center; flex-wrap:wrap; }
+.x .mu { color:var(--mu); } .x .co { color:var(--c); } .x .gr { color:var(--gr); } .x .yl { color:var(--yl); } .x .mono { font-family:var(--mono); }
+.x .pill { display:inline-flex; align-items:center; gap:8px; background:var(--card2); border:1px solid var(--ln); border-radius:99px; padding:5px 12px; font-weight:600; font-size:13px; white-space:nowrap; }
+.x .win-h { display:flex; align-items:center; gap:6px; padding:8px 11px; border-bottom:1px solid var(--ln); }
+.x .win-h i { width:8px; height:8px; border-radius:50%; background:#ff5f57; } .x .win-h i:nth-child(2) { background:#febc2e; } .x .win-h i:nth-child(3) { background:#28c840; }
+.x .win-h span { margin:0 auto; font:11px var(--mono); color:var(--mu); }
+.x .dw-h { font-size:12px; color:var(--mu); text-transform:uppercase; letter-spacing:.08em; font-weight:600; }
+.x .dw-critter { width:44px; height:30px; display:block; }
+
+/* scene 1: adjectives vs references */
+.x .dw-s1 { display:grid; grid-template-columns:1fr auto 1fr; gap:22px; align-items:center; max-width:900px; margin:0 auto; width:100%; }
+.x .dw-prompt { padding:16px 18px; font-size:15px; line-height:1.8; }
+.x .dw-adj { transition:color .4s, opacity .4s; color:var(--tx); position:relative; }
+.x .dw-adj::after { content:""; position:absolute; left:0; right:0; top:52%; height:2px; background:var(--rd); transform:scaleX(0); transform-origin:left; transition:transform .35s; }
+.x .dw-adj.off { color:var(--mu); opacity:.6; } .x .dw-adj.off::after { transform:scaleX(1); }
+.x .dw-arrow { font-size:26px; color:var(--c); }
+.x .dw-refs { padding:14px 16px; display:grid; gap:10px; }
+.x .dw-typed { font:13px var(--mono); min-height:20px; }
+.x .dw-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; }
+.x .dw-tile { aspect-ratio:4/3; border-radius:6px; border:1px solid #333; position:relative; overflow:hidden; opacity:0; transform:scale(.6); transition:opacity .35s, transform .35s cubic-bezier(.3,1.5,.5,1); }
+.x .dw-tile.on { opacity:1; transform:none; }
+.x .dw-tile b { position:absolute; left:10%; height:7%; background:rgba(255,255,255,.75); border-radius:2px; }
+.x .dw-carry { display:flex; gap:8px; flex-wrap:wrap; }
+
+/* scene 2: three mockups, pick a target */
+.x .dw-s2 { display:grid; gap:20px; justify-items:center; }
+.x .dw-mocks { display:grid; grid-template-columns:repeat(3, minmax(0,230px)); gap:16px; }
+.x .dw-mock { position:relative; transition:opacity .4s, transform .4s, border-color .4s; }
+.x .dw-mock.dim { opacity:.35; transform:scale(.96); }
+.x .dw-mock.pick { border-color:var(--c); transform:translateY(-6px); box-shadow:0 0 0 1px var(--c), 0 18px 40px rgba(217,119,87,.25); }
+.x .dw-mb { height:132px; padding:10px; position:relative; }
+.x .dw-mb i { position:absolute; display:block; border-radius:3px; background:#333; }
+.x .dw-phone { position:absolute; right:8px; bottom:8px; width:34px; height:58px; border:1px solid #444; border-radius:6px; background:#151515; display:grid; gap:3px; padding:5px 4px; align-content:start; opacity:0; transition:opacity .4s; }
+.x .dw-phone.on { opacity:1; } .x .dw-phone u { display:block; height:5px; background:#3a3a3a; border-radius:2px; } .x .dw-phone u:first-child { height:16px; background:#4a3a32; }
+.x .dw-badge { position:absolute; top:-12px; left:50%; transform:translateX(-50%) scale(0); background:var(--c); color:#0e0e0e; font-size:12px; font-weight:700; border-radius:99px; padding:3px 10px; white-space:nowrap; transition:transform .35s cubic-bezier(.3,1.6,.5,1); }
+.x .dw-mock.pick .dw-badge { transform:translateX(-50%) scale(1); }
+.x .dw-lab { font-size:12px; color:var(--mu); padding:6px 10px; border-top:1px solid var(--ln); }
+.x .dw-cost { display:grid; grid-template-columns:auto 1fr; gap:6px 12px; align-items:center; width:min(460px,100%); font-size:13px; }
+.x .dw-cost em { font-style:normal; color:var(--mu); white-space:nowrap; }
+.x .dw-cost span { height:10px; border-radius:99px; width:0; transition:width .9s ease; }
+
+/* scene 3: the numeric bar */
+.x .dw-s3 { width:min(760px,100%); margin:0 auto; display:grid; gap:26px; }
+.x .dw-track { position:relative; height:120px; }
+.x .dw-rail { position:absolute; left:0; right:0; top:70px; height:10px; border-radius:99px; background:#262626; }
+.x .dw-fill { position:absolute; left:0; top:70px; height:10px; width:0; border-radius:99px; background:#888; transition:width 1s cubic-bezier(.4,.1,.2,1), background .4s; }
+.x .dw-rider { position:absolute; top:28px; left:0; transform:translateX(-50%); transition:left 1s cubic-bezier(.4,.1,.2,1); }
+.x .dw-tick { position:absolute; top:58px; height:34px; border-left:2px dashed #555; }
+.x .dw-tick span { position:absolute; top:40px; left:0; transform:translateX(-50%); font-size:12px; white-space:nowrap; color:var(--mu); }
+.x .dw-tick.goal { border-color:var(--c); } .x .dw-tick.goal span { color:var(--c); font-weight:700; }
+.x .dw-tag { position:absolute; top:0; transform:translateX(-50%); font:600 13px var(--mono); padding:3px 9px; border-radius:7px; border:1px solid var(--ln); background:var(--card2); white-space:nowrap; opacity:0; transition:opacity .4s, left 1s cubic-bezier(.4,.1,.2,1); }
+.x .dw-tag.on { opacity:1; }
+.x .dw-says { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+.x .dw-bub { padding:9px 13px; font-size:13.5px; max-width:330px; }
+.x .dw-bub b { display:block; font-size:11px; color:var(--mu); text-transform:uppercase; letter-spacing:.08em; margin-bottom:2px; }
+
+/* scene 4: time and pacing lanes */
+.x .dw-s4 { width:min(820px,100%); margin:0 auto; display:grid; gap:12px; }
+.x .dw-hours { display:grid; grid-template-columns:150px repeat(10,1fr); gap:4px; font:11px var(--mono); color:var(--mu); }
+.x .dw-lane { display:grid; grid-template-columns:150px repeat(10,1fr); gap:4px; align-items:center; }
+.x .dw-lane > b { font-size:13px; font-weight:600; line-height:1.25; }
+.x .dw-lane > b small { display:block; font-weight:400; color:var(--mu); font-size:11.5px; }
+.x .dw-cell { height:30px; border-radius:5px; background:#1b1b1b; border:1px solid #262626; position:relative; }
+.x .dw-cell i { position:absolute; left:0; top:0; bottom:0; width:0; background:var(--c); border-radius:4px; transition:width .35s linear; }
+.x .dw-cell.burn i { background:var(--yl); }
+.x .dw-cell.wait { background:repeating-linear-gradient(45deg,#1b1b1b 0 6px,#2a2414 6px 12px); }
+.x .dw-cell.stop { border-color:transparent; background:transparent; }
+.x .dw-flag { font-size:12px; white-space:nowrap; position:absolute; inset:0; z-index:2; text-shadow:0 0 6px #0e0e0e, 0 0 3px #0e0e0e; display:grid; place-items:center; opacity:0; transition:opacity .3s; }
+.x .dw-flag.on { opacity:1; }
+.x .dw-win { display:grid; grid-template-columns:150px 1fr 1fr; gap:4px; font-size:11.5px; color:var(--mu); }
+.x .dw-win span { border-top:2px solid #333; padding-top:3px; text-align:center; }
+.x .dw-asks { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:8px; }
+
+/* scene 5: whack-a-mole slop, then the detector */
+.x .dw-s5 { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:24px; width:min(860px,100%); margin:0 auto; align-items:start; }
+.x .dw-pg { overflow:hidden; }
+.x .dw-pgb { padding:14px; display:grid; gap:9px; position:relative; min-height:200px; transition:background .5s; }
+.x .dw-slot { font:12.5px var(--mono); padding:6px 10px; border-radius:7px; border:1px dashed #444; display:flex; justify-content:space-between; gap:8px; transition:border-color .3s, background .3s; }
+.x .dw-slot.flag { border-style:solid; border-color:var(--rd); background:rgba(240,113,106,.08); }
+.x .dw-slot em { font-style:normal; color:var(--mu); }
+.x .dw-swap { transition:opacity .25s; }
+.x .dw-scan { position:absolute; left:0; right:0; top:0; height:2px; background:var(--c); box-shadow:0 0 12px var(--c); opacity:0; }
+.x .dw-scan.go { animation:dwscan 1.4s ease-in-out forwards; }
+@keyframes dwscan { 0% { top:0; opacity:1; } 90% { opacity:1; } 100% { top:100%; opacity:0; } }
+.x .dw-ban { padding:14px 16px; display:grid; gap:8px; }
+.x .dw-ban ul { list-style:none; margin:0; padding:0; display:grid; gap:6px; min-height:84px; }
+.x .dw-ban li { font:12.5px var(--mono); color:var(--mu); text-decoration:line-through; text-decoration-color:var(--rd); }
+.x .dw-verdict { padding:12px 14px; font-size:13.5px; }
+.x .dw-meter { display:flex; gap:4px; margin:6px 0; } .x .dw-meter i { flex:1; height:7px; border-radius:99px; background:#2a2a2a; transition:background .3s; } .x .dw-meter i.on { background:var(--rd); }
+
+/* scene 6: design first, then motion, with specific feedback */
+.x .dw-s6 { display:grid; gap:16px; width:min(860px,100%); margin:0 auto; }
+.x .dw-phase { display:grid; grid-template-columns:120px 1fr; gap:14px; align-items:center; }
+.x .dw-phase > b { font-size:13px; line-height:1.3; } .x .dw-phase > b small { display:block; color:var(--mu); font-weight:400; }
+.x .dw-strip { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
+.x .dw-blk { width:66px; height:44px; border-radius:6px; background:#262626; border:1px solid #333; position:relative; transition:background .3s, border-color .3s; }
+.x .dw-blk.on { background:#2c2622; border-color:#5a4033; }
+.x .dw-blk.ok { border-color:#2f5a3a; }
+.x .dw-blk.ok::after { content:"✓"; position:absolute; top:-7px; right:-7px; width:16px; height:16px; border-radius:50%; background:var(--gr); color:#0e0e0e; font-size:10px; display:grid; place-items:center; }
+.x .dw-frame { width:40px; height:30px; border-radius:4px; background:#1b1b1b; border:1px solid #333; position:relative; overflow:hidden; transition:border-color .2s; }
+.x .dw-frame i { position:absolute; left:6px; right:6px; height:5px; background:#555; border-radius:2px; transition:none; }
+.x .dw-frame.on { border-color:var(--c); }
+.x .dw-notes { font:12px var(--mono); color:var(--mu); display:grid; gap:2px; min-width:0; }
+.x .dw-fb { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.x .dw-fb .vc { padding:10px 13px; font-size:13.5px; }
+.x .dw-fb .vc b { display:block; font-size:11px; color:var(--mu); text-transform:uppercase; letter-spacing:.08em; margin-bottom:3px; }
+.x .dw-fb .bad { text-decoration:line-through; text-decoration-color:var(--rd); color:var(--mu); }
+
+/* scene 7: the cook loop with fresh judges */
+.x .dw-s7 { display:grid; grid-template-columns:auto minmax(0,1fr); gap:28px; align-items:center; width:min(900px,100%); margin:0 auto; }
+.x .dw-ring { position:relative; width:360px; height:360px; }
+.x .dw-ring svg { position:absolute; inset:0; }
+.x .dw-rn { position:absolute; width:104px; transform:translate(-50%,-50%); padding:8px 6px; text-align:center; font-size:12px; line-height:1.3; transition:border-color .3s, box-shadow .3s; }
+.x .dw-rn b { display:block; font-size:13px; }
+.x .dw-rn.run { border-color:var(--c); box-shadow:0 0 0 1px var(--c); }
+.x .dw-tok { position:absolute; width:14px; height:14px; border-radius:50%; background:var(--c); box-shadow:0 0 14px var(--c); transform:translate(-50%,-50%); left:50%; top:9%; transition:left .5s ease, top .5s ease; }
+.x .dw-mid { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); text-align:center; }
+.x .dw-score { font:700 38px var(--mono); line-height:1; }
+.x .dw-side { display:grid; gap:10px; min-width:0; }
+.x .dw-judges { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.x .dw-j { padding:8px 10px; font-size:12px; }
+.x .dw-j b { display:block; font-size:13px; }
+.x .dw-ctx { height:5px; border-radius:99px; background:#2a2a2a; margin-top:6px; overflow:hidden; } .x .dw-ctx i { display:block; height:100%; width:0; background:var(--gr); transition:width .6s; }
+.x .dw-ledger { padding:10px 13px; font:12px/1.65 var(--mono); }
+.x .dw-ledger div { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+@media (max-width:760px) {
+  .x { padding:18px 12px; min-height:0; }
+  .x .dw-s1 { grid-template-columns:1fr; } .x .dw-arrow { transform:rotate(90deg); justify-self:center; }
+  .x .dw-mocks { grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px; } .x .dw-mb { height:92px; } .x .dw-phone { display:none; } .x .dw-lab { font-size:10.5px; padding:5px 6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .x .dw-hours, .x .dw-lane, .x .dw-win { grid-template-columns:84px repeat(10,1fr); gap:2px; } .x .dw-win { grid-template-columns:84px 1fr 1fr; }
+  .x .dw-lane > b { font-size:11.5px; } .x .dw-lane > b small { display:none; } .x .dw-cell { height:24px; } .x .dw-flag { font-size:10px; }
+  .x .dw-hours { font-size:9px; }
+  .x .dw-s5, .x .dw-s7 { grid-template-columns:1fr; } .x .dw-fb { grid-template-columns:1fr; }
+  .x .dw-phase { grid-template-columns:1fr; gap:6px; }
+  .x .dw-ring { width:300px; height:300px; justify-self:center; } .x .dw-rn { width:90px; font-size:11px; } .x .dw-rn b { font-size:12px; } .x .dw-score { font-size:30px; }
+  .x .dw-tick span { font-size:10.5px; } .x .dw-tag { font-size:11.5px; }
+}
+</style>
+
+<main>
+  <nav class="top"><a href="../../research/#videos">← Video feed</a><a href="https://www.youtube.com/watch?v=-bv2xKQzZio" target="_blank" rel="noopener">▶ Watch the video (AI LABS, 15:20)</a></nav>
+  <h1>Leon Lin's design loop: references, a target, a numeric bar, and judges that didn't build it</h1>
+  <p class="lede">Leon Lin, the author of the trending <b>Taste Skill</b>, says the wording of a design prompt barely matters. What gets an agent to an unusually good page is a process: show it pictures, give it a target, put a number on "good enough", give it time, ban the defaults, build the layout before the motion, give exact feedback, and let a fresh judge score the result. He packed the loop into a skill called <b>cook</b>. One running example below: a landing page for <i>Corvina</i>, a Lisbon wine bar, which is the site cook built in the video.</p>
+  <div class="ctl"><div class="seg" id="steps"></div><button type="button" class="play" id="play">▶ Play all</button></div>
+  <div class="x" id="stage"></div>
+  <div class="cap" id="cap" aria-live="polite"></div>
+
+  <h2>What this means for us</h2>
+  <div class="dw-wrap"><table class="dw-tbl">
+    <thead><tr><th>Idea</th><th>What to do in the factory</th></tr></thead>
+    <tbody>
+      <tr><td>Pictures over adjectives</td><td>Every UI task's issue carries a <code>refs/</code> folder (9–12 screenshots, or a reference site the agent can screenshot with a browser tool) and a short prompt. A task with no references goes back to the Human inbox before a builder picks it up.</td></tr>
+      <tr><td>Target before build</td><td>Ask for three throwaway HTML mockups on one page first, at desktop and phone widths. A human picks one in the inbox and only then does the real build start. A mockup costs far fewer tokens to change than a built app.</td></tr>
+      <tr><td>A number, not "make it good"</td><td>Every UI eval states a bar per dimension (the cook ledger uses layout, photo mood, colour, components, detail density, each out of 10, with 9 as the bar). Show the bar next to the score on the Evals view.</td></tr>
+      <tr><td>Never trust the self-score</td><td>The builder's own rating is not a gate. Record it, but gate on a judge that runs in a fresh context, and where we can, on a different model. Track the gap between the two as a calibration offset: it shows how much the builder overrates itself.</td></tr>
+      <tr><td>Time floor plus budget pacing</td><td>Long design runs get both a minimum time and a hard cap, and spend the usage window evenly (cook planned for about 20% of a 5-hour window per hour). Always set the cap: cook's default floor for a design build is 8 hours. All questions are asked up front, then the run continues without asking.</td></tr>
+      <tr><td>Slop as clusters</td><td>Run a slop detector as one of the judges. It should flag a page when several default patterns appear together, not when a single gradient does, and the ban list should live in one file, not be repeated in every prompt.</td></tr>
+      <tr><td>Two-phase UI builds</td><td>Split UI issues into "layout, no motion" and "motion" stages, with a human check between them. Motion references are videos, which the agent breaks down frame by frame into timings.</td></tr>
+      <tr><td>Feedback the agent can act on</td><td>Inbox feedback on UI takes a marked-up screenshot or names an exact property ("headline 64→48px"). If the reviewer can't name the problem, the agent first describes what it built so the reviewer has the words.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Sources</h2>
+  <ul class="dw-src">
+    <li><a href="https://www.youtube.com/watch?v=-bv2xKQzZio" target="_blank" rel="noopener">Creator Of The Best Design Skill Just Unveiled His AI Design Workflow</a>, AI LABS (YouTube, 15:20). The source for all eight tips, the 9–12 reference images, the 99.9% target and the 66% result, "20 hours instead of 20 minutes", the 9.2/10 judge bar, and the cook skill's folders (<code>BRIEF.md</code>, <code>ROUNDS.md</code>, <code>SHOTS.md</code>, <code>harness/</code>, <code>refs/</code>, <code>stills/</code>) and ledger.</li>
+    <li>Leon Lin's article on X, "How I prompt AI to build good looking demos", shown in the video at 1:30. Not fetched for this page; quotes come from the video.</li>
+    <li>Tools named in the video, not checked for this page: Taste Skill and cook (Leon Lin, GitHub), Inspo MCP (an archive of 832 sites, from its own homepage at 2:07), an Awwwards MCP, Vercel's Agent Browser, and AI LABS' slop detector skill.</li>
+    <li>The round scores in scene 7 (6.8, 8.1, 9.3) are illustrative. The video shows the 9.2 bar and the loop, but no per-round numbers.</li>
+  </ul>
+</main>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const on = (el, sel) => el.querySelectorAll(sel).forEach(n => n.classList.add('on'));
+  const count = (node, to, ms, fmt = v => Math.round(v), from = 0) => { if (reduced) { node.textContent = fmt(to); return; } const t0 = performance.now(); const f = now => { const p = Math.min(1, (now - t0) / ms); node.textContent = fmt(from + (to - from) * p); if (p < 1) requestAnimationFrame(f); }; requestAnimationFrame(f); };
+  const win = url => `<div class="win-h"><i></i><i></i><i></i><span>${url}</span></div>`;
+  // pixel critter, after the video's own mascot style
+  const critter = (c = '#d97757') => `<svg class="dw-critter" viewBox="0 0 11 7" shape-rendering="crispEdges" aria-hidden="true"><path fill="${c}" d="M2 0h7v1h0v2h2v1H9v1H2V4H0V3h2z"/><rect x="2" y="5" width="1" height="2" fill="${c}"/><rect x="4" y="5" width="1" height="2" fill="${c}"/><rect x="6" y="5" width="1" height="2" fill="${c}"/><rect x="8" y="5" width="1" height="2" fill="${c}"/><rect x="3" y="1" width="1" height="1" fill="#0e0e0e"/><rect x="7" y="1" width="1" height="1" fill="#0e0e0e"/></svg>`;
+
+  const TILE_BG = ['linear-gradient(160deg,#2b1d16,#6b3b26)', 'linear-gradient(200deg,#13161a,#2c3440)', 'linear-gradient(140deg,#3a2f22,#a07a4a)', 'linear-gradient(180deg,#0f0f0f,#2a2a2a)',
+    'linear-gradient(120deg,#1d2b24,#3f6150)', 'linear-gradient(170deg,#2a1414,#7a2f2a)', 'linear-gradient(150deg,#191919,#4b4036)', 'linear-gradient(190deg,#22262e,#55607a)',
+    'linear-gradient(130deg,#2e2418,#5c4630)', 'linear-gradient(210deg,#121212,#3b2a22)', 'linear-gradient(160deg,#1e1a14,#8a6a3e)', 'linear-gradient(140deg,#151a1f,#33424f)'];
+  const tile = (bg, i) => `<div class="dw-tile" style="background:${bg}"><b style="top:${18 + (i * 13) % 30}%;width:${40 + (i * 17) % 40}%"></b><b style="top:${44 + (i * 7) % 20}%;width:${25 + (i * 11) % 25}%;opacity:.5"></b></div>`;
+
+  const ADJ = ['modern', 'clean', 'premium', 'warm', 'elegant', 'bold', 'minimal yet expressive', 'editorial', 'high-end', 'generous spacing', 'beautiful type'];
+
+  const MOCKS = [
+    { lab:'A · split hero', blocks:[[8,10,46,8],[8,24,38,5],[8,34,30,5],[8,48,22,10],[60,10,32,58],[8,74,84,16]] },
+    { lab:'B · candlelit serif', blocks:[[22,14,56,12],[30,32,40,5],[38,44,24,9],[8,62,26,28],[37,62,26,28],[66,62,26,28]] },
+    { lab:'C · menu grid', blocks:[[8,10,30,6],[8,24,84,30],[8,60,40,30],[52,60,40,30]] },
+  ];
+
+  const SCENES = [
+    { k:'Show, don\'t describe',
+      cap:'<p><b>The words in a design prompt barely matter; the pictures do.</b> Leon starts most demos with 9 to 12 reference images and a short prompt, because a picture carries layout, spacing and type that adjectives can\'t.</p><small>The model can\'t see the picture in your head. A long, careful description can still be read as a completely different design.</small>',
+      html:() => `<div class="dw-s1">
+        <div class="vc dw-prompt vi" data-s="1"><div class="dw-h" style="margin-bottom:6px">long prompt</div>Build Corvina a ${ADJ.map(a => `<span class="dw-adj">${a}</span>`).join(', ')} landing page that feels like an experience…</div>
+        <div class="dw-arrow vi" data-s="2">→</div>
+        <div class="vc dw-refs vi" data-s="2">
+          <div class="dw-h">short prompt + <span class="co dw-n">0</span>/12 refs</div>
+          <div class="dw-typed"><span class="mu">›</span> <span class="dw-t"></span></div>
+          <div class="dw-grid">${TILE_BG.map(tile).join('')}</div>
+          <div class="dw-carry">${['layout', 'spacing', 'type', 'mood'].map(p => `<span class="pill vi" data-s="3">✓ ${p}</span>`).join('')}</div>
+        </div></div>`,
+      run:(t, el) => {
+        t(() => on(el, '[data-s="1"]'), 100);
+        el.querySelectorAll('.dw-adj').forEach((a, i) => t(() => a.classList.add('off'), 900 + i * 110));
+        t(() => on(el, '[data-s="2"]'), 2000);
+        const s = 'Corvina, a Lisbon wine bar. Match these.';
+        [...s].forEach((_, i) => t(() => { el.querySelector('.dw-t').textContent = s.slice(0, i + 1); }, 2300 + i * 25));
+        el.querySelectorAll('.dw-tile').forEach((n, i) => t(() => { n.classList.add('on'); el.querySelector('.dw-n').textContent = i + 1; }, 3300 + i * 90));
+        t(() => on(el, '[data-s="3"]'), 4500);
+        return 5200;
+      } },
+
+    { k:'Target first',
+      cap:'<p><b>Give the agent a target before it builds the app.</b> Ask for three HTML mockups on one page, check them at phone width, and pick one. The agent\'s only job after that is to match it.</p><small>Mockups are cheap to change; a built app is not. Ask for the references\' quality in your own style, not a copy of them.</small>',
+      html:() => `<div class="dw-s2">
+        <div class="dw-mocks">${MOCKS.map(m => `<div class="vc dw-mock vi" data-s="1"><span class="dw-badge">◎ target</span>${win('mockups.html')}
+          <div class="dw-mb">${m.blocks.map(([x, y, w, h], j) => `<i style="left:${x}%;top:${y}%;width:${w}%;height:${h}%;${j === 0 ? 'background:#4a3a32' : ''}"></i>`).join('')}
+          <div class="dw-phone"><u></u><u></u><u></u><u></u></div></div>
+          <div class="dw-lab">${m.lab}</div></div>`).join('')}</div>
+        <div class="dw-cost vi" data-s="3"><em>change a mockup</em><span class="dw-c1" style="background:var(--gr)"></span><em>change the built app</em><span class="dw-c2" style="background:var(--yl)"></span></div>
+      </div>`,
+      run:(t, el) => {
+        const ms = el.querySelectorAll('.dw-mock');
+        ms.forEach((m, i) => t(() => m.classList.add('on'), 200 + i * 300));
+        t(() => on(el, '.dw-phone'), 1400);
+        t(() => { ms.forEach((m, i) => m.classList.add(i === 1 ? 'pick' : 'dim')); }, 2500);
+        t(() => { on(el, '[data-s="3"]'); el.querySelector('.dw-c1').style.width = '12%'; el.querySelector('.dw-c2').style.width = '88%'; }, 3300);
+        return 4600;
+      } },
+
+    { k:'Put a number on it',
+      cap:'<p><b>"Make it look good" gives no finish line; "match the references at 99.9%" does.</b> The number tells the agent the job isn\'t done the moment the page works. And because agents grade themselves too kindly, Leon tells it the score it really deserves.</p><small>99.9% is not reachable, and Leon admits it. In the video\'s test the agent was asked for 99% and landed at about 66%: the reference\'s 3D figure, whose head follows the mouse, wasn\'t close.</small>',
+      html:() => `<div class="dw-s3">
+        <div class="dw-track">
+          <div class="dw-rail"></div><div class="dw-fill"></div>
+          <div class="dw-tick" style="left:38%"><span>page works</span></div>
+          <div class="dw-tick goal" style="left:99%"><span>99%</span></div>
+          <div class="dw-tag dw-self" style="left:38%;color:var(--yl)">agent: “90%”</div>
+          <div class="dw-tag dw-real" style="left:66%;color:var(--tx);border-color:var(--c)">honest: 66%</div>
+          <div class="dw-rider">${critter()}</div>
+        </div>
+        <div class="dw-says">
+          <div class="vc dw-bub vi" data-s="1"><b>no number</b>“Make it look really good.” → stops when it works</div>
+          <div class="vc dw-bub vi" data-s="2"><b>with a number</b>“Match the references as closely as you can. Aim for 99.9%.”</div>
+          <div class="vc dw-bub vi" data-s="3"><b>calibrate</b>“You say 90. It's closer to 60–70.”</div>
+        </div></div>`,
+      run:(t, el) => {
+        const f = el.querySelector('.dw-fill'), r = el.querySelector('.dw-rider'), self = el.querySelector('.dw-self');
+        const go = p => { f.style.width = p + '%'; r.style.left = p + '%'; };
+        t(() => { on(el, '[data-s="1"]'); go(38); }, 200);
+        t(() => { on(el, '[data-s="2"]'); f.style.background = 'var(--c)'; go(90); }, 1700);
+        t(() => { self.classList.add('on'); self.style.left = '90%'; }, 2700);
+        t(() => { on(el, '[data-s="3"]'); go(66); }, 3700);
+        t(() => el.querySelector('.dw-real').classList.add('on'), 4600);
+        return 5400;
+      } },
+
+    { k:'Time, paced',
+      cap:'<p><b>Left alone, an agent stops as soon as the page works.</b> Leon tells it to take as long as it needs, and the result after 20 hours looks nothing like the result after 20 minutes. He also has it spread the work evenly across the usage window, and ask every question at the start.</p><small>Set a cap. In the video cook\'s ledger shows "floor 8h" and plans about 20% of a 5-hour window per hour; with no time limit, a design run won\'t stop before 8 hours.</small>',
+      html:() => `<div class="dw-s4">
+        <div class="dw-hours"><span></span>${Array.from({ length:10 }, (_, i) => `<span>${i + 1}h</span>`).join('')}</div>
+        ${[['default', 'stops when it works', 'a'], ['no pacing', 'burns the limit early', 'b'], ['paced (Leon)', 'about 20% of the window per hour', 'c']].map(([n, s, id]) =>
+          `<div class="dw-lane" data-l="${id}"><b>${n}<small>${s}</small></b>${'<div class="dw-cell"><i></i><span class="dw-flag"></span></div>'.repeat(10)}</div>`).join('')}
+        <div class="dw-win"><span></span><span>usage window 1 (5h)</span><span>usage window 2 (5h)</span></div>
+        <div class="dw-asks"><span class="pill vi" data-s="1">“Take as long as you need. I need the highest quality.”</span><span class="pill vi" data-s="1">“Ask questions now, otherwise build.”</span></div>
+      </div>`,
+      run:(t, el) => {
+        const L = id => [...el.querySelectorAll(`[data-l="${id}"] .dw-cell`)];
+        const a = L('a'), b = L('b'), c = L('c');
+        t(() => on(el, '[data-s="1"]'), 100);
+        // default: ~20 min then stop
+        t(() => { a[0].querySelector('i').style.width = '35%'; }, 400);
+        t(() => { a[1].classList.add('stop'); const fl = a[1].querySelector('.dw-flag'); fl.innerHTML = '<span class="gr">✓ works, done</span>'; fl.classList.add('on'); fl.style.placeItems = 'center start'; fl.style.width = '400%'; }, 900);
+        // burn: hours 1-2 full (yellow), 3-5 waiting, 6-7 full, 8-10 waiting
+        b.forEach((cell, i) => {
+          const full = i < 2 || (i >= 5 && i < 7);
+          t(() => { if (full) { cell.classList.add('burn'); cell.querySelector('i').style.width = '100%'; } else { cell.classList.add('wait'); } }, 900 + i * 300);
+        });
+        t(() => { const fl = b[3].querySelector('.dw-flag'); fl.innerHTML = '<span class="yl">limit hit, waiting</span>'; fl.classList.add('on'); fl.style.width = '300%'; fl.style.left = '-100%'; }, 2000);
+        // paced: even fill
+        c.forEach((cell, i) => t(() => { cell.querySelector('i').style.width = '62%'; }, 900 + i * 300));
+        t(() => { const fl = c[7].querySelector('.dw-flag'); fl.innerHTML = '<span>floor 8h ✓</span>'; fl.classList.add('on'); }, 3400);
+        return 4600;
+      } },
+
+    { k:'Ban the slop',
+      cap:'<p><b>A ban list only stops what it names.</b> Ban beige and the model doesn\'t invent something new, it moves to the next default. So keep the patterns in one detector and flag a page when many of them show up together.</p><small>One gradient can be a deliberate choice. Flagging it on its own would punish good design, so the detector looks for a cluster of patterns on the same page.</small>',
+      html:() => `<div class="dw-s5">
+        <div class="vc dw-pg">${win('corvina.local')}<div class="dw-pgb"><div class="dw-scan"></div>
+          <div class="dw-slot" data-k="0"><span class="dw-swap">background: beige</span><em>bg</em></div>
+          <div class="dw-slot" data-k="1"><span class="dw-swap">font: random fancy serif</span><em>type</em></div>
+          <div class="dw-slot" data-k="2"><span class="dw-swap">eyebrow_label</span><em>hero</em></div>
+          <div class="dw-slot" data-k="3"><span class="dw-swap">tinted_pill_pair</span><em>cta</em></div>
+          <div class="dw-slot" data-k="4"><span class="dw-swap">reassurance_microcopy</span><em>copy</em></div>
+        </div></div>
+        <div style="display:grid;gap:12px">
+          <div class="vc dw-ban"><div class="dw-h">ban list in the prompt · <span class="dw-bn">0</span></div><ul></ul></div>
+          <div class="vc dw-verdict vi" data-s="2"><div class="dw-h">slop detector skill</div><div class="dw-meter">${'<i></i>'.repeat(5)}</div><span class="dw-vtxt mu">scanning…</span></div>
+        </div></div>`,
+      run:(t, el) => {
+        const slot0 = el.querySelector('[data-k="0"] .dw-swap'), slot1 = el.querySelector('[data-k="1"] .dw-swap'), ul = el.querySelector('.dw-ban ul'), bn = el.querySelector('.dw-bn');
+        const ban = (txt, n) => { ul.insertAdjacentHTML('beforeend', `<li>${txt}</li>`); bn.textContent = n; };
+        const swap = (node, txt) => { node.style.opacity = 0; t(() => { node.textContent = txt; node.style.opacity = 1; }, 260); };
+        t(() => { ban('beige background', 1); swap(slot0, 'background: cream'); }, 500);
+        t(() => { ban('cream background', 2); swap(slot0, 'background: warm off-white'); }, 1400);
+        t(() => { ban('random fancy serif', 3); swap(slot1, 'font: trendy_default_font'); }, 2300);
+        t(() => { on(el, '[data-s="2"]'); el.querySelector('.dw-scan').classList.add('go'); }, 3200);
+        const slots = el.querySelectorAll('.dw-slot'), m = el.querySelectorAll('.dw-meter i');
+        slots.forEach((s, i) => t(() => { s.classList.add('flag'); m[i].classList.add('on'); }, 3400 + i * 250));
+        t(() => { const v = el.querySelector('.dw-vtxt'); v.className = 'dw-vtxt'; v.innerHTML = '<b style="color:var(--rd)">5 signals on one page → generic template.</b> <span class="mu">Fix these, then re-run.</span>'; }, 4800);
+        return 5600;
+      } },
+
+    { k:'Layout, then motion',
+      cap:'<p><b>Build the page with no animation first, then add motion.</b> Asked for both at once, the agent splits its attention and neither comes out right. For motion, Leon gives reference videos that the agent breaks down frame by frame into small moves and timings.</p><small>Feedback has to be specific. "Make it better" gives the agent nothing to fix. Name the exact property or mark up a screenshot, and if you can\'t name the problem, ask the agent to describe what it built.</small>',
+      html:() => `<div class="dw-s6">
+        <div class="dw-phase"><b>1 · layout<small>no animation</small></b><div class="dw-strip">${['nav', 'hero', 'menu', 'wine', 'visit', 'footer'].map(n => `<div class="dw-blk dw-l" title="${n}"></div>`).join('')}<span class="pill vi" data-s="1">human: balanced ✓</span></div></div>
+        <div class="dw-phase"><b>2 · motion<small>from reference videos</small></b><div class="dw-strip">${Array.from({ length:6 }, (_, i) => `<div class="dw-frame"><i style="top:${22 - i * 3}px;opacity:${.25 + i * .15}"></i></div>`).join('')}
+          <div class="dw-notes"><span class="vi" data-s="2">f1–6: title rises 16px · 420ms</span><span class="vi" data-s="2">cards stagger 80ms · ease-out</span></div></div></div>
+        <div class="dw-fb">
+          <div class="vc vi" data-s="3"><b>vague</b><span class="bad">“The colours feel off. Make it better.”</span></div>
+          <div class="vc vi" data-s="4"><b>specific</b>“Hero headline 64→48px, CTA from tinted pill to solid #d97757, 20px less gap above the menu.”</div>
+        </div></div>`,
+      run:(t, el) => {
+        const bl = el.querySelectorAll('.dw-l');
+        bl.forEach((b, i) => { t(() => b.classList.add('on'), 200 + i * 200); t(() => b.classList.add('ok'), 1500 + i * 80); });
+        t(() => on(el, '[data-s="1"]'), 2000);
+        const fr = el.querySelectorAll('.dw-frame');
+        fr.forEach((f, i) => t(() => f.classList.add('on'), 2400 + i * 160));
+        t(() => on(el, '[data-s="2"]'), 3300);
+        t(() => on(el, '[data-s="3"]'), 3900);
+        t(() => on(el, '[data-s="4"]'), 4600);
+        return 5400;
+      } },
+
+    { k:'Fresh judges, cook loop',
+      cap:'<p><b>The agent that built the page is the worst judge of it.</b> Leon sends judges that start with an empty context, sometimes on a different model, and sets a score they must give, like 9.2/10. His <code>cook</code> skill runs the whole thing as a loop: refs → brief → build → screenshots next to the refs → judges, round after round.</p><small>The round scores here are illustrative. The bar, the loop, the ledger and the files (<code>BRIEF.md</code>, <code>ROUNDS.md</code>, <code>SHOTS.md</code>, <code>harness/</code>) are from the video.</small>',
+      html:() => {
+        const P = [[50, 9, 'refs', 'Inspo MCP'], [89, 38, 'brief', 'BRIEF.md'], [75, 84, 'build', 'round n'], [25, 84, 'stills', 'next to refs'], [11, 38, 'judges', 'fresh context']];
+        return `<div class="dw-s7">
+        <div class="dw-ring">
+          <svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="38" fill="none" stroke="#2e2e2e" stroke-width=".8" stroke-dasharray="2 2"/></svg>
+          ${P.map(([x, y, n, s]) => `<div class="vc dw-rn" style="left:${x}%;top:${y}%"><b>${n}</b><span class="mu">${s}</span></div>`).join('')}
+          <div class="dw-mid"><div class="dw-h">round <span class="dw-rd">1</span></div><div class="dw-score">–</div><div class="mu" style="font-size:12px">bar 9.2</div></div>
+          <div class="dw-tok"></div>
+        </div>
+        <div class="dw-side">
+          <div style="display:flex;align-items:center;gap:10px">${critter('#7a3e2b')}<span class="mu" style="font-size:13px">built it · 🔒 build steps hidden from judges</span></div>
+          <div class="dw-judges">${['Opus', 'other model', 'slop detector'].map(j => `<div class="vc dw-j"><b>⚖ judge</b><span class="mu">${j}</span><div class="dw-ctx"><i></i></div></div>`).join('')}</div>
+          <div class="vc dw-ledger"><div class="co"># Cook ledger: Corvina</div><div class="mu">Bar: layout 9 | photo mood 9 | colour 9 …</div><div class="dw-lg"></div></div>
+        </div></div>`;
+      },
+      run:(t, el) => {
+        const P = [[50, 9], [89, 38], [75, 84], [25, 84], [11, 38]];
+        const tok = el.querySelector('.dw-tok'), rn = el.querySelectorAll('.dw-rn'), sc = el.querySelector('.dw-score'), rd = el.querySelector('.dw-rd'), lg = el.querySelector('.dw-lg');
+        const ctx = [...el.querySelectorAll('.dw-ctx i')];
+        const scores = [6.8, 8.1, 9.3];
+        let at = 200;
+        scores.forEach((s, r) => {
+          const start = r === 0 ? 0 : 2; // later rounds go straight back to build
+          for (let k = start; k < 5; k++) {
+            const [x, y] = P[k];
+            t(() => { rn.forEach(n => n.classList.remove('run')); rn[k].classList.add('run'); tok.style.left = x + '%'; tok.style.top = y + '%'; rd.textContent = r + 1;
+              if (k === 4) ctx.forEach(c => { c.style.transition = 'none'; c.style.width = '0'; void c.offsetWidth; c.style.transition = ''; c.style.width = '70%'; }); }, at);
+            at += 420;
+          }
+          const last = r === scores.length - 1;
+          t(() => { sc.style.color = s >= 9.2 ? 'var(--gr)' : 'var(--yl)'; count(sc, s, 500, v => v.toFixed(1), r ? scores[r - 1] : 0);
+            lg.insertAdjacentHTML('beforeend', `<div>R${r + 1}: judges ${s.toFixed(1)} ${s >= 9.2 ? '<span class="gr">≥ 9.2 ✓ stop</span>' : '<span class="yl">&lt; 9.2 → next round</span>'}</div>`);
+            if (last) rn.forEach(n => n.classList.remove('run')); }, at);
+          at += 450;
+        });
+        return at + 300;
+      } },
+  ];
+
+  const stage = $('stage'); let cur = 0, auto = false, timers = [];
+  const clear = () => { timers.forEach(clearTimeout); timers = []; };
+  $('steps').innerHTML = SCENES.map((s, i) => `<button type="button" data-i="${i}">${i + 1}. ${s.k}</button>`).join('');
+  function show(i) {
+    clear(); cur = i; const s = SCENES[i];
+    $('steps').querySelectorAll('button').forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
+    stage.innerHTML = s.html(); $('cap').innerHTML = s.cap;
+    const t = (fn, ms) => timers.push(setTimeout(fn, reduced ? 0 : ms));
+    const end = s.run(t, stage);
+    if (auto) t(() => i < SCENES.length - 1 ? show(i + 1) : stop(), end + 2500);
+  }
+  function stop() { auto = false; $('play').textContent = '▶ Play all'; }
+  $('steps').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { stop(); show(+b.dataset.i); } });
+  $('play').addEventListener('click', () => { if (auto) { stop(); clear(); return; } auto = true; $('play').textContent = '❚❚ Pause'; show(cur === SCENES.length - 1 ? 0 : cur); });
+  show(0);
+})();
+</script>
+</html>
