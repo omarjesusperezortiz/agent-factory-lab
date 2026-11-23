@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fable 5.2 as the lead agent: nine rules from Anthropic for using it well</title>
+<style>
+:root { --bg:#f4f4f2; --fg:#151515; --muted:#666; --accent:#b85a3a; --line:#ddd; --panel:#fff;
+  --sans:"Inter", ui-sans-serif, system-ui, sans-serif; --mono:"JetBrains Mono", ui-monospace, Menlo, monospace; color-scheme:light; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#0b0d0e; --fg:#ececec; --muted:#9a9a9a; --accent:#d97757; --line:#262a2c; --panel:#141719; color-scheme:dark; } }
+:root[data-theme="dark"] { --bg:#0b0d0e; --fg:#ececec; --muted:#9a9a9a; --accent:#d97757; --line:#262a2c; --panel:#141719; color-scheme:dark; }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.55 var(--sans); }
+main { max-width:1180px; margin:0 auto; padding:24px 16px 64px; display:grid; gap:18px; }
+.top { display:flex; gap:16px; flex-wrap:wrap; font-size:14px; }
+a { color:var(--accent); }
+h1 { margin:0; font-size:28px; letter-spacing:-.02em; } .lede { color:var(--muted); max-width:76ch; margin:0; }
+h2 { margin:18px 0 0; font-size:19px; }
+code { font-family:var(--mono); font-size:.9em; }
+.ctl { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+.seg { display:inline-flex; flex-wrap:wrap; border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+.seg button { background:var(--panel); border:0; border-right:1px solid var(--line); padding:6px 12px; cursor:pointer; color:var(--muted); font:inherit; font-size:13px; }
+.seg button[aria-pressed="true"] { color:var(--fg); background:color-mix(in srgb, var(--accent) 14%, var(--panel)); }
+.play { font:inherit; font-size:13px; font-weight:600; background:var(--accent); color:var(--bg); border:0; border-radius:8px; padding:7px 13px; cursor:pointer; }
+.cap { border-left:3px solid var(--accent); padding:4px 0 4px 14px; max-width:80ch; min-height:64px; } .cap p { margin:0 0 4px; } .cap small { color:var(--muted); }
+.fb-wrap { overflow-x:auto; }
+.fb-tbl { border-collapse:collapse; width:100%; font-size:14px; }
+.fb-tbl th, .fb-tbl td { text-align:left; vertical-align:top; padding:9px 12px; border-bottom:1px solid var(--line); }
+.fb-tbl th { color:var(--muted); font-weight:600; font-size:13px; }
+.fb-tbl td:first-child { font-weight:600; }
+.fb-src li { margin-bottom:6px; }
+
+/* ---- stage: always dark, its own tokens; every class is prefixed ---- */
+.x { --c:#d97757; --card:#1c1c1c; --card2:#232323; --ln:#2e2e2e; --tx:#ececec; --mu:#8d8d8d; --gr:#7bd88f; --yl:#e8c468; --rd:#f0716a;
+  background:#0e0e0e; color:var(--tx); border:1px solid #222; border-radius:14px; min-height:440px; padding:26px; position:relative; overflow:hidden;
+  display:grid; align-content:center; justify-items:center; }
+.x .vc { background:var(--card); border:1px solid var(--ln); border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,.45); }
+.x .vi { opacity:0; transform:translateY(10px); transition:opacity .5s, transform .5s; } .x .vi.on { opacity:1; transform:none; }
+.x .mu { color:var(--mu); } .x .co { color:var(--c); } .x .gr { color:var(--gr); } .x .yl { color:var(--yl); } .x .mono { font-family:var(--mono); }
+.x .pill { display:inline-flex; align-items:center; gap:8px; background:var(--card2); border:1px solid var(--ln); border-radius:99px; padding:5px 12px; font-weight:600; font-size:13px; white-space:nowrap; transition:border-color .3s, color .3s, background .3s; }
+.x .win-h { display:flex; align-items:center; gap:6px; padding:9px 12px; border-bottom:1px solid var(--ln); }
+.x .win-h i { width:9px; height:9px; border-radius:50%; background:#ff5f57; } .x .win-h i:nth-child(2) { background:#febc2e; } .x .win-h i:nth-child(3) { background:#28c840; }
+.x .win-h span { margin:0 auto; font:11px var(--mono); color:var(--mu); }
+.x .fb-col { display:grid; gap:18px; justify-items:center; width:100%; }
+.x .fb-k { font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--mu); }
+.x .fb-strike { position:relative; color:var(--mu); transition:color .3s; }
+.x .fb-strike::after { content:""; position:absolute; left:0; top:52%; height:2px; width:0; background:var(--rd); transition:width .45s ease; }
+.x .fb-strike.on::after { width:100%; }
+
+/* scene 1: race */
+.x .fb-race { width:min(640px,100%); padding:18px 20px; display:grid; gap:14px; }
+.x .fb-lane { display:grid; grid-template-columns:86px 1fr 74px; gap:12px; align-items:center; font-size:13px; }
+.x .fb-trk { position:relative; height:14px; border-radius:99px; background:#262626; }
+.x .fb-trk .fb-dot { position:absolute; left:0; top:1px; width:12px; height:12px; border-radius:50%; background:var(--c); transition-property:left; transition-timing-function:linear; }
+.x .fb-trk .fb-flag { position:absolute; right:-2px; top:-4px; font-size:13px; }
+.x .fb-sub { display:grid; grid-template-columns:86px 1fr 74px; gap:12px; align-items:center; font-size:12px; color:var(--mu); margin-top:-6px; }
+.x .fb-tbar { height:6px; border-radius:99px; background:#262626; overflow:hidden; } .x .fb-tbar i { display:block; height:100%; width:0; background:var(--yl); transition:width 1.4s ease; }
+.x .fb-path { display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:center; }
+.x .fb-path .pill.on { border-color:var(--c); color:var(--c); }
+
+/* scene 2: finish line */
+.x .fb-fin { display:flex; gap:22px; align-items:center; justify-content:center; flex-wrap:wrap; width:100%; }
+.x .fb-prompt { width:min(300px,100%); padding:14px 16px; font-size:14px; }
+.x .fb-tests { width:min(420px,100%); overflow:hidden; }
+.x .fb-tests ul { list-style:none; margin:0; padding:10px 14px; display:grid; gap:8px; font-size:13px; }
+.x .fb-tests li { display:grid; grid-template-columns:1fr 54px; gap:10px; align-items:center; }
+.x .fb-res { font:600 11px var(--mono); text-align:center; border-radius:6px; padding:2px 0; background:#262626; color:var(--mu); transition:background .3s, color .3s; }
+.x .fb-res.ok { background:#1f3a27; color:var(--gr); } .x .fb-res.no { background:#3d1f1d; color:var(--rd); }
+.x .fb-barbox { display:flex; gap:10px; align-items:center; font-size:13px; }
+.x .fb-barbox .fb-tbar { width:160px; } .x .fb-barbox .fb-tbar i { background:var(--c); }
+
+/* scene 3: reviewer */
+.x .fb-rev { display:flex; gap:16px; align-items:stretch; justify-content:center; flex-wrap:wrap; width:100%; }
+.x .fb-sess { width:min(300px,100%); padding:14px 16px; display:grid; gap:8px; align-content:start; font-size:13px; }
+.x .fb-sess h4 { margin:0; font-size:14px; }
+.x .fb-hist { display:flex; gap:4px; flex-wrap:wrap; } .x .fb-hist i { width:18px; height:8px; border-radius:3px; background:#333; }
+.x .fb-find { display:grid; gap:6px; } .x .fb-find div { font-size:12.5px; }
+.x .fb-chat { width:min(620px,100%); display:grid; gap:8px; font-size:13px; }
+.x .fb-bub { padding:8px 12px; border-radius:12px; max-width:78%; }
+.x .fb-bub.fb-you { justify-self:end; background:#2b2b2b; }
+.x .fb-bub.fb-fab { justify-self:start; background:#2a1d18; border:1px solid #4a2d22; }
+
+/* scene 4: sorter */
+.x .fb-sort { display:grid; gap:16px; width:min(760px,100%); justify-items:center; }
+.x .fb-now { min-height:38px; padding:8px 16px; font-size:14px; font-weight:600; transition:opacity .25s; text-align:center; }
+.x .fb-lanes { display:grid; grid-template-columns:1fr 1fr; gap:14px; width:100%; }
+.x .fb-ln { padding:12px; display:grid; gap:8px; align-content:start; min-height:210px; }
+.x .fb-ln h4 { margin:0 0 2px; font-size:13px; display:flex; justify-content:space-between; gap:8px; }
+.x .fb-job { background:var(--card2); border:1px solid var(--ln); border-radius:8px; padding:7px 10px; font-size:12.5px; display:flex; justify-content:space-between; gap:8px; }
+.x .fb-job small { color:var(--c); white-space:nowrap; font-size:11px; }
+
+/* scene 5: lead + workers */
+.x .fb-org { display:grid; justify-items:center; width:min(780px,100%); }
+.x .fb-lead { padding:12px 18px; text-align:center; font-size:13px; border-color:#5a3426; }
+.x .fb-lead b { font-size:15px; }
+.x .fb-wk3 { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; width:100%; }
+.x .fb-wcol { display:grid; justify-items:center; }
+.x .fb-wire { position:relative; width:2px; height:54px; background:#333; }
+.x .fb-pk { position:absolute; left:-4px; top:0; width:10px; height:10px; border-radius:50%; background:var(--c); opacity:0; transition:top .8s ease, background .3s, opacity .2s; }
+.x .fb-wk { width:100%; padding:10px 12px; font-size:12.5px; display:grid; gap:4px; transition:border-color .3s; }
+.x .fb-wk b { font-size:13.5px; } .x .fb-wk.on { border-color:#2f5a3a; }
+.x .fb-cost { display:flex; gap:18px; flex-wrap:wrap; justify-content:center; margin-top:18px; font-size:13px; }
+
+/* scene 6: effort */
+.x .fb-eff { width:min(640px,100%); padding:22px 26px 18px; display:grid; gap:20px; }
+.x .fb-etrk { position:relative; height:6px; border-radius:99px; background:#2a2a2a; margin:6px 8px 26px; }
+.x .fb-etrk .fb-over { position:absolute; left:75%; right:0; top:0; bottom:0; background:var(--yl); border-radius:99px; opacity:0; transition:opacity .5s; }
+.x .fb-etrk .fb-tick { position:absolute; top:-4px; width:2px; height:14px; background:#444; }
+.x .fb-etrk .fb-tl { position:absolute; top:16px; transform:translateX(-50%); font:11px var(--mono); color:var(--mu); white-space:nowrap; }
+.x .fb-etrk .fb-mk { position:absolute; top:-9px; left:0; width:24px; height:24px; margin-left:-12px; border-radius:50%; background:var(--c); border:3px solid #0e0e0e; transition:left 1s cubic-bezier(.3,.8,.3,1); }
+.x .fb-stops { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.x .fb-stop { padding:10px 12px; font-size:12.5px; display:grid; gap:6px; }
+.x .fb-fix { font:600 11px var(--mono); }
+
+/* scene 7: gate + report */
+.x .fb-gate { display:flex; gap:18px; flex-wrap:wrap; justify-content:center; align-items:flex-start; width:100%; }
+.x .fb-acts { width:min(440px,100%); padding:12px 14px; display:grid; gap:8px; }
+.x .fb-act { display:grid; grid-template-columns:1fr 112px; gap:10px; align-items:center; font-size:12.5px; }
+.x .fb-v { font:600 11px var(--mono); text-align:center; border-radius:6px; padding:3px 0; opacity:0; transform:scale(.6); transition:opacity .3s, transform .3s cubic-bezier(.3,1.6,.5,1); white-space:nowrap; }
+.x .fb-v.on { opacity:1; transform:none; } .x .fb-v.fb-go { background:#1f3a27; color:var(--gr); } .x .fb-v.fb-wait { background:#3a261d; color:var(--c); }
+.x .fb-rep { width:min(290px,100%); overflow:hidden; font-size:12.5px; }
+.x .fb-rep .fb-rb { padding:10px 14px; display:grid; gap:7px; }
+.x .fb-shots { display:flex; gap:6px; } .x .fb-shots i { flex:1; height:40px; border-radius:5px; background:linear-gradient(135deg,#2c2c2c,#1f1f1f); border:1px solid var(--ln); }
+
+/* scene 8: setup + switching */
+.x .fb-set { display:flex; gap:18px; flex-wrap:wrap; justify-content:center; align-items:flex-start; width:100%; }
+.x .fb-ed { width:min(380px,100%); overflow:hidden; font:12.5px var(--mono); }
+.x .fb-ed ol { margin:0; padding:10px 14px 12px 38px; display:grid; gap:4px; color:#cfcfcf; }
+.x .fb-ed li::marker { color:#555; }
+.x .fb-ed .fb-new { color:var(--gr); }
+.x .fb-sw { width:min(360px,100%); padding:14px 16px; display:grid; gap:12px; font-size:12.5px; }
+.x .fb-sw .fb-tbar { height:10px; } .x .fb-sw .fb-tbar i { transition:width 1.2s ease; }
+@media (max-width:760px) {
+  .x { padding:18px 12px; min-height:0; }
+  .x .fb-lane, .x .fb-sub { grid-template-columns:70px 1fr 58px; gap:8px; font-size:12px; }
+  .x .fb-lanes, .x .fb-stops { grid-template-columns:1fr; } .x .fb-ln { min-height:0; }
+  .x .fb-wk3 { gap:6px; } .x .fb-wk { padding:8px; font-size:11px; } .x .fb-wk b { font-size:12px; }
+  .x .fb-act { grid-template-columns:1fr 96px; font-size:12px; }
+  .x .fb-bub { max-width:92%; }
+}
+</style>
+
+<main>
+  <nav class="top"><a href="../../research/#videos">← Video feed</a><a href="https://www.youtube.com/watch?v=EFGvVCpW9zc" target="_blank" rel="noopener">▶ Watch the video (AI LABS, 16:02)</a></nav>
+  <h1>Fable 5.2 as the lead agent: nine rules from Anthropic for using it well</h1>
+  <p class="lede">Fable 5.2 is Anthropic's strongest model, 20% cheaper than 5.1, but still twice Opus 5.5 per token, and it burns plan limits fast. AI LABS boiled Anthropic's launch guide, Lydia Hallie's Claude Code talk and Addy Osmani's model guide down to nine rules. Most are about <b>setup, not prompting</b>: start on Opus, give Fable a checkable finish line, and use it as the <b>lead</b> that plans and judges while cheaper models build. Running example: a <b>job board app</b>, the project in the video's own <code>CLAUDE.md</code>.</p>
+  <div class="ctl"><div class="seg" id="steps"></div><button type="button" class="play" id="play">▶ Play all</button></div>
+  <div class="x" id="stage"></div>
+  <div class="cap" id="cap" aria-live="polite"></div>
+
+  <h2>What this means for us</h2>
+  <div class="fb-wrap"><table class="fb-tbl">
+    <thead><tr><th>Rule</th><th>What to do in the factory</th></tr></thead>
+    <tbody>
+      <tr><td>1. Don't start on Fable</td><td>Default every role to Opus 5.5 on medium. Escalate a task to Opus on high, then to Fable, only when the cheaper run fails its checks. Log each escalation on the Costs view so we learn which task types really need Fable.</td></tr>
+      <tr><td>2. Define done first</td><td>No issue enters the factory without a list of pass/fail checks (tests, commands, screenshots to compare). "Make it good" is not a spec. Set the bar high: Fable works until it meets it.</td></tr>
+      <tr><td>Fresh-session review</td><td>Build with Opus on medium; review with a separate Fable agent that never saw the build. Record its findings in Evals, and don't let a human "it's fine" overwrite a finding that has a failing test behind it.</td></tr>
+      <tr><td>3. Three Fable jobs</td><td>Route only big multi-part jobs (rewrites, architecture), 3D/game work and the hardest bugs to Fable. On those, Fable on high matched Opus on max for about half the cost per task.</td></tr>
+      <tr><td>4. Fable leads, others build</td><td>The orchestrator is a Fable lead on high that only plans, splits and judges. Put the routing table in <code>CLAUDE.md</code>: simple and clear → Sonnet, needs thinking → Opus 5.5, search and logs → Haiku. Also state what a sub-agent costs and "start one only for work that can run in parallel": in Anthropic's test that cut sub-agents started by about half. Skip the lead for small features (1.7× the cost of Opus alone).</td></tr>
+      <tr><td>5. Lead on high</td><td>Long unattended runs use high effort. On medium, Anthropic's "don't stop while you still owe work" block halves unfinished runs but only fixes the "want me to continue?" stop, not the "here's what's left" stop. Never go past high by default.</td></tr>
+      <tr><td>6. Run without asking</td><td>List every place the lead may work (repos, folders, the staging site) in <code>CLAUDE.md</code>. Steps that can be undone go ahead; steps that can't go to the Human inbox. Approve with the exact scope ("yes, run this migration on staging") so the same question doesn't come back.</td></tr>
+      <tr><td>7. Report for the absent reader</td><td>Lead's final report: most important points first, plain words, screenshots and test results attached, every small change listed. Render it as a page the Human inbox can open.</td></tr>
+      <tr><td>8–9. Tidy setup, switch cleanly</td><td>Run <code>/prompt-audit</code> on <code>CLAUDE.md</code> and skills; turn "NEVER X" into "ask before X". Don't switch models mid-task: the prompt cache belongs to the model that read it, and Fable's thinking doesn't carry over. <code>/compact</code> or start fresh, then switch.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Sources</h2>
+  <ul class="fb-src">
+    <li><a href="https://www.youtube.com/watch?v=EFGvVCpW9zc" target="_blank" rel="noopener">Fable 5.2 Is Insane... Only If You Use It Anthropic's Way</a>, AI LABS (YouTube, 16:02). Source for every number on this page: prices ($10/$50 → $8/$40 per million tokens), Frontier Code (5.1 32.4%, 5.2 49.1%, Opus 5.5 on max 45.5%), the one-prompt 3D race (Opus 27 min vs Fable 58 min, ~7× tokens), AI LABS' own tests (+58% cost for equal work; 1.7× for the lead setup on a small feature) and Anthropic's figures (sub-agents halved, unfinished sessions halved).</li>
+    <li>Anthropic's Fable 5.2 launch post and usage guide, as quoted in the video: start on Opus 5.5, high effort for unattended long jobs, the "finishing work" and "final report" <code>CLAUDE.md</code> blocks, and the sub-agent cost note. Not read directly for this page.</li>
+    <li>Lydia Hallie (Claude Code team), talk on Claude Code best practices, as quoted in the video: finish lines with tests, Fable as the lead her team talks to, the reversible/irreversible test, "never" lines in <code>CLAUDE.md</code>. Not read directly.</li>
+    <li>Addy Osmani (Anthropic), guide on which Claude model to use for each job, as quoted in the video: the Sonnet/Opus/Haiku routing and "past high, one more level can cost as much as a bigger model". Not read directly.</li>
+    <li><a href="https://code.claude.com/docs/en/sub-agents" target="_blank" rel="noopener">Claude Code docs: sub-agents</a> and <a href="https://code.claude.com/docs/en/memory" target="_blank" rel="noopener">CLAUDE.md memory</a>: where the routing table and the notes above live</li>
+    <li><a href="https://docs.claude.com/en/docs/build-with-claude/prompt-caching" target="_blank" rel="noopener">Prompt caching</a>: why a model switch re-reads the whole conversation at full price</li>
+  </ul>
+</main>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const on = (el, sel) => el.querySelectorAll(sel).forEach(n => n.classList.add('on'));
+  const count = (node, to, ms, fmt = v => v) => { if (reduced) { node.textContent = fmt(to); return; } const t0 = performance.now(); const f = now => { const p = Math.min(1, (now - t0) / ms); node.textContent = fmt(Math.round(to * p)); if (p < 1) requestAnimationFrame(f); }; requestAnimationFrame(f); };
+  const win = url => `<div class="win-h"><i></i><i></i><i></i><span>${url}</span></div>`;
+
+  const SCENES = [
+    /* 1. Don't start on Fable */
+    { k:'Start on Opus',
+      cap:'<p><b>Start every session on Opus 5.5; move to Fable only when Opus on a higher effort still can\'t do the job.</b> Same one-line 3D prompt: Opus done in 27 minutes, Fable in 58, with about 7× the tokens and the same result.</p><small>One builder\'s test on X. In AI LABS\' own feature test both did equally good work and Fable cost ~58% more. Fable is 2× Opus per token even after the price cut.</small>',
+      html:() => `<div class="fb-col">
+        <div class="vc fb-race">
+          <div class="fb-k">same prompt: "build a 3D model"</div>
+          ${[['Opus 5.5', 'o'], ['Fable 5.2', 'f']].map(([n, id]) => `
+          <div class="fb-lane"><b>${n}</b><div class="fb-trk"><i class="fb-dot" data-r="${id}"></i><span class="fb-flag">🏁</span></div><span class="mono"><b data-m="${id}">0</b> min</span></div>
+          <div class="fb-sub"><span>tokens</span><div class="fb-tbar"><i data-t="${id}"></i></div><span class="vi gr" data-d="${id}">✓ same</span></div>`).join('')}
+        </div>
+        <div class="fb-path vi" data-s="2"><span class="pill">Opus 5.5 · medium</span><span class="mu">›</span><span class="pill">Opus 5.5 · high</span><span class="mu">›</span><span class="pill">Fable 5.2</span></div></div>`,
+      run:(t, el) => {
+        const go = (id, mins, ms, tok) => {
+          const d = el.querySelector(`[data-r="${id}"]`); d.style.transitionDuration = ms + 'ms';
+          t(() => { d.style.left = 'calc(100% - 12px)'; count(el.querySelector(`[data-m="${id}"]`), mins, ms); el.querySelector(`[data-t="${id}"]`).style.width = tok; }, 200);
+          t(() => on(el, `[data-d="${id}"]`), 200 + ms);
+        };
+        go('o', 27, 1300, '13%'); go('f', 58, 2800, '92%');
+        t(() => on(el, '[data-s="2"]'), 3200);
+        el.querySelectorAll('.fb-path .pill').forEach((p, i) => t(() => p.classList.add('on'), 3500 + i * 450));
+        return 5000;
+      } },
+
+    /* 2. Finish line */
+    { k:'Write the finish line',
+      cap:'<p><b>Tell Fable what "done" looks like before it starts, as checks that come back pass or fail.</b> It makes many small choices over hours and its report won\'t list them all; the checks are what it measures them against.</p><small>Set the bar as high as you can: Fable keeps working until it reaches the bar you give it, so a low bar gets a normal result.</small>',
+      html:() => `<div class="fb-fin">
+        <div class="vc fb-prompt"><div class="fb-k" style="margin-bottom:6px">prompt</div><span class="fb-strike" data-s="1">"Make the job board good."</span>
+          <div class="vi mu" data-s="1" style="margin-top:8px;font-size:12.5px">nothing to check → nothing to aim at</div></div>
+        <div class="vc fb-tests vi" data-s="2">${win('done means…')}<ul>
+          ${['Search by city returns only that city\'s jobs', 'Apply form rejects an empty email', 'Double-click on Apply sends one application', 'Listing page loads in under 1 s', 'All tests pass, no console errors'].map(x => `<li><span>${x}</span><span class="fb-res">…</span></li>`).join('')}
+        </ul></div>
+        <div class="fb-barbox vi" data-s="3"><span class="mu">bar</span><div class="fb-tbar"><i></i></div><b class="co">high</b></div></div>`,
+      run:(t, el) => {
+        t(() => on(el, '[data-s="1"]'), 300);
+        t(() => on(el, '[data-s="2"]'), 1100);
+        const r = el.querySelectorAll('.fb-res');
+        r.forEach((n, i) => t(() => { if (i === 2) { n.textContent = 'FAIL'; n.classList.add('no'); } else { n.textContent = 'PASS'; n.classList.add('ok'); } }, 1700 + i * 380));
+        t(() => { r[2].textContent = 'PASS'; r[2].classList.replace('no', 'ok'); }, 3900);
+        t(() => { on(el, '[data-s="3"]'); el.querySelector('.fb-barbox .fb-tbar i').style.width = '92%'; }, 4100);
+        return 5200;
+      } },
+
+    /* 2b. Fresh-session review */
+    { k:'Review in a fresh session',
+      cap:'<p><b>Let Opus build and a separate Fable agent review, in a session that never saw the build.</b> Its reviews were strict, caught problems Opus usually misses, and held up when AI LABS pushed back.</p><small>Fable sticks to what it can prove: it rarely makes up problems, and in Anthropic\'s tests it was less likely to claim unfinished work was done.</small>',
+      html:() => `<div class="fb-col">
+        <div class="fb-rev">
+          <div class="vc fb-sess vi" data-s="1"><h4>Builder <span class="mu">· Opus 5.5 · medium</span></h4><div class="fb-hist">${'<i></i>'.repeat(16)}</div><div class="mu">session A: 3 h of history</div><div class="gr">✓ "Job board done"</div></div>
+          <div class="vc fb-sess vi" data-s="2" style="border-color:#5a3426"><h4>Reviewer <span class="co">· Fable 5.2</span></h4><div class="fb-hist"><i style="background:var(--c)"></i></div><div class="mu">session B: only the diff and the checks</div>
+            <div class="fb-find">${['✗ Apply posts twice on double-click', '✗ Salary filter ignores "80k"', '✗ Empty state has no text for screen readers'].map(x => `<div class="vi" data-f style="color:var(--rd)">${x}</div>`).join('')}</div></div>
+        </div>
+        <div class="fb-chat">
+          <div class="fb-bub fb-you vi" data-s="3">Those look fine to me, just approve it.</div>
+          <div class="fb-bub fb-fab vi" data-s="4"><b class="co">Fable:</b> Still failing: the double-submit reproduces in <span class="mono">apply.spec.ts:31</span>. Not approving.</div>
+        </div></div>`,
+      run:(t, el) => {
+        t(() => on(el, '[data-s="1"]'), 200);
+        t(() => on(el, '[data-s="2"]'), 1000);
+        el.querySelectorAll('[data-f]').forEach((f, i) => t(() => f.classList.add('on'), 1600 + i * 450));
+        t(() => on(el, '[data-s="3"]'), 3200);
+        t(() => on(el, '[data-s="4"]'), 4200);
+        return 5200;
+      } },
+
+    /* 3. Three jobs */
+    { k:'Three Fable jobs',
+      cap:'<p><b>Fable earns its price on three kinds of jobs: big ones, 3D and games, and the hardest problems.</b> Everything else stays on Opus.</p><small>On the hardest coding tasks, Fable on high scored about the same as Opus on its highest effort for about half the cost per task, so there Fable is the cheaper choice.</small>',
+      html:() => `<div class="fb-sort">
+        <div class="vc fb-now" id="fbNow">incoming jobs…</div>
+        <div class="fb-lanes">
+          <div class="vc fb-ln"><h4><span>Opus 5.5</span><span class="mu">everyday</span></h4><div data-lane="o"></div></div>
+          <div class="vc fb-ln" style="border-color:#5a3426"><h4><span class="co">Fable 5.2</span><span class="mu">worth 2×</span></h4><div data-lane="f"></div></div>
+        </div></div>`,
+      run:(t, el) => {
+        const jobs = [['Add a "remote only" toggle', 'o', ''], ['Rewrite the whole data layer', 'f', 'big job'], ['3D hero scene for the landing', 'f', '3D / game'], ['Fix the footer link', 'o', ''], ['Race condition nobody could fix', 'f', 'hardest']];
+        const now = el.querySelector('#fbNow');
+        jobs.forEach(([j, l, why], i) => {
+          t(() => { now.style.opacity = 1; now.textContent = j; }, 300 + i * 850);
+          t(() => { now.style.opacity = .3; const d = document.createElement('div'); d.className = 'fb-job vi'; d.style.marginBottom = '8px'; d.innerHTML = `<span>${j}</span>${why ? `<small>${why}</small>` : ''}`; el.querySelector(`[data-lane="${l}"]`).appendChild(d); requestAnimationFrame(() => requestAnimationFrame(() => d.classList.add('on'))); }, 800 + i * 850);
+        });
+        t(() => { now.style.opacity = 1; now.innerHTML = '<span class="gr">3 of 5 go to Fable, by kind, not by habit</span>'; }, 5000);
+        return 5400;
+      } },
+
+    /* 4. Fable leads */
+    { k:'Fable leads, others build',
+      cap:'<p><b>Use Fable as the lead: it only decides what to do and judges what comes back, while each sub-agent gets the model its task needs.</b> You talk to one lead instead of eight sessions.</p><small>Fable starts sub-agents eagerly. Writing their cost into <code>CLAUDE.md</code> cut how many it started by about half in Anthropic\'s test. Only for big jobs: on a small feature this setup cost 1.7× Opus alone.</small>',
+      html:() => `<div class="fb-org">
+        <div class="vc fb-lead vi" data-s="1"><b>Fable 5.2 <span class="co">· lead · high</span></b><div class="mu">plans · splits · judges · asks you only for decisions</div><div class="mono" style="margin-top:4px">checked <b class="gr" id="fbChk">0</b>/3</div></div>
+        <div class="fb-wk3">${[['Sonnet', 'Salary filter UI', 'simple and clear'], ['Opus 5.5', 'Rewrite job matching', 'needs thinking'], ['Haiku', 'Grep logs for 500s', 'search and read']].map(([m, task, why]) => `
+          <div class="fb-wcol"><div class="fb-wire"><i class="fb-pk"></i></div><div class="vc fb-wk vi" data-s="2"><b>${m}</b><span>${task}</span><span class="mu">${why}</span></div></div>`).join('')}</div>
+        <div class="fb-cost">
+          <span class="pill vi" data-s="3">sub-agents started: <span class="fb-strike mono" id="fbEight">8</span> <b class="co vi mono" data-s="4">4</b></span>
+          <span class="pill vi mu" data-s="4">CLAUDE.md: "a sub-agent costs X; start one only for parallel work"</span>
+        </div></div>`,
+      run:(t, el) => {
+        t(() => on(el, '[data-s="1"]'), 200);
+        const pk = el.querySelectorAll('.fb-pk'), wk = el.querySelectorAll('.fb-wk');
+        t(() => { on(el, '[data-s="2"]'); pk.forEach(p => { p.style.opacity = 1; p.style.top = 'calc(100% - 10px)'; }); }, 800);
+        [0, 2, 1].forEach((i, n) => {
+          t(() => { pk[i].style.background = 'var(--gr)'; pk[i].style.top = '0'; wk[i].classList.add('on'); }, 2000 + n * 500);
+          t(() => { el.querySelector('#fbChk').textContent = n + 1; }, 2800 + n * 500);
+        });
+        t(() => on(el, '[data-s="3"]'), 3900);
+        t(() => { el.querySelector('#fbEight').classList.add('on'); on(el, '[data-s="4"]'); }, 4600);
+        return 5400;
+      } },
+
+    /* 5. Effort */
+    { k:'Lead on high',
+      cap:'<p><b>Run the lead on high effort: on low and medium, Fable sometimes stops a long job before it\'s done.</b> High is Anthropic\'s setting for long jobs nobody is watching.</p><small>Staying on medium? Anthropic\'s "don\'t stop while you still owe work" block halved unfinished sessions, but only fixes "want me to continue?", not "here\'s what\'s left" (then stops). Above high, scores rose a little for a lot more tokens.</small>',
+      html:() => `<div class="vc fb-eff">
+        <div class="fb-k">lead effort</div>
+        <div class="fb-etrk"><div class="fb-over"></div>${['low', 'medium', 'high', 'xhigh', 'max'].map((l, i) => `<i class="fb-tick" style="left:${i * 25}%"></i><span class="fb-tl" style="left:${i * 25}%">${l}</span>`).join('')}<i class="fb-mk"></i></div>
+        <div class="fb-stops">
+          <div class="vc fb-stop vi" data-s="1"><span class="mu">early stop A</span><span class="fb-strike" data-a>"Done with 4 of 7. Want me to keep going?"</span><span class="fb-fix gr vi" data-s="2">fixed by the CLAUDE.md block</span></div>
+          <div class="vc fb-stop vi" data-s="1"><span class="mu">early stop B</span><span class="fb-strike" data-b>"Remaining: 3 tasks." <span class="mu">(stops)</span></span><span class="fb-fix vi" data-s="2" style="color:var(--rd)">block doesn't help</span><span class="fb-fix gr vi" data-s="3">fixed by high effort</span></div>
+        </div>
+        <div class="yl vi" data-s="4" style="font-size:12.5px;text-align:right">xhigh / max: a little more score, a lot more tokens</div></div>`,
+      run:(t, el) => {
+        const mk = el.querySelector('.fb-mk');
+        t(() => { mk.style.left = '25%'; }, 200);
+        t(() => on(el, '[data-s="1"]'), 1000);
+        t(() => { on(el, '[data-s="2"]'); el.querySelector('[data-a]').classList.add('on'); }, 2000);
+        t(() => { mk.style.left = '50%'; }, 3000);
+        t(() => { on(el, '[data-s="3"]'); el.querySelector('[data-b]').classList.add('on'); }, 3800);
+        t(() => { on(el, '[data-s="4"]'); el.querySelector('.fb-over').style.opacity = .45; }, 4400);
+        return 5200;
+      } },
+
+    /* 6 + 7. Unattended + report */
+    { k:'Leave it running',
+      cap:'<p><b>Before a long job, set Claude Code up so it can keep going without you: if a step can be undone, Fable goes ahead; if it can\'t, Fable waits.</b> Then make the final report readable by someone who never watched.</p><small>Auto mode only trusts the current repo, so list every place Fable may work (repos, folders, the staging site) in <code>CLAUDE.md</code>. When it asks, say exactly what you approve, not just "go".</small>',
+      html:() => `<div class="fb-gate">
+        <div class="vc fb-acts"><div class="fb-k">can it be undone?</div>
+          ${[['Edit files in job-board/', 1], ['Deploy to staging.jobboard.dev', 1], ['Run the test suite', 1], ['Migrate the production database', 0], ['Email 2,000 applicants', 0]].map(([a, ok]) => `<div class="fb-act vi"><span>${a}</span><span class="fb-v ${ok ? 'fb-go">✓ goes ahead' : 'fb-wait">⏸ waits for you'}</span></div>`).join('')}
+        </div>
+        <div class="vc fb-rep vi" data-s="2">${win('final-report.html')}<div class="fb-rb">
+          <b>1. Search ships. 42/42 tests pass.</b>
+          <div class="fb-shots"><i></i><i></i><i></i></div>
+          <span>2. Waiting on you: prod migration, applicant email</span>
+          <span class="mu">3. Small changes: renamed <span class="mono">jobCard</span>, new index on city</span>
+          <span class="mu" style="font-size:11px">plain words · screenshots · every small change</span></div></div></div>`,
+      run:(t, el) => {
+        el.querySelectorAll('.fb-act').forEach((a, i) => { t(() => a.classList.add('on'), 200 + i * 650); t(() => a.querySelector('.fb-v').classList.add('on'), 550 + i * 650); });
+        t(() => on(el, '[data-s="2"]'), 3700);
+        return 4800;
+      } },
+
+    /* 8 + 9. Setup + switching */
+    { k:'Tidy setup, switch cleanly',
+      cap:'<p><b>Rewrite old "NEVER" and "IMPORTANT" lines, and don\'t switch models mid-task.</b> Fable treats every "never" as a rule it can\'t break; the prompt cache and Fable\'s thinking stay behind when you switch.</p><small><code>/prompt-audit</code> checks <code>CLAUDE.md</code> and skills against the model you\'re on. Finish the task, then <code>/compact</code> or start fresh, then switch. Bars are illustrative.</small>',
+      html:() => `<div class="fb-set">
+        <div class="vc fb-ed">${win('CLAUDE.md')}<ol>
+          <li># job-board</li>
+          <li><span class="fb-strike" data-l>IMPORTANT: always run the tests</span></li>
+          <li class="fb-new vi" data-n>Run the tests before calling a task done</li>
+          <li><span class="fb-strike" data-l>NEVER delete files</span></li>
+          <li class="fb-new vi" data-n>Ask before deleting files</li>
+          <li><span class="fb-strike" data-l>NEVER push to main</span></li>
+          <li class="fb-new vi" data-n>Ask before pushing to main</li>
+        </ol></div>
+        <div class="vc fb-sw vi" data-s="2"><div class="fb-k">next message costs…</div>
+          <div>Stay on Fable <span class="mu">· cached copy, read cheaply</span><div class="fb-tbar" style="margin-top:5px"><i data-c="a" style="background:var(--gr)"></i></div></div>
+          <div>Switch to Opus mid-task <span class="mu">· whole conversation at full price</span><div class="fb-tbar" style="margin-top:5px"><i data-c="b" style="background:var(--rd)"></i></div></div>
+          <div><span class="fb-strike" id="fbThink">Fable's thinking: why it chose what it chose</span> <span class="mu">not carried over</span></div>
+          <span class="pill vi gr" data-s="3">finish → /compact or new session → switch</span></div></div>`,
+      run:(t, el) => {
+        el.querySelectorAll('[data-l]').forEach((l, i) => { t(() => l.classList.add('on'), 400 + i * 700); t(() => el.querySelectorAll('[data-n]')[i].classList.add('on'), 750 + i * 700); });
+        t(() => on(el, '[data-s="2"]'), 2700);
+        t(() => { el.querySelector('[data-c="a"]').style.width = '12%'; el.querySelector('[data-c="b"]').style.width = '100%'; }, 3000);
+        t(() => el.querySelector('#fbThink').classList.add('on'), 4100);
+        t(() => on(el, '[data-s="3"]'), 4600);
+        return 5400;
+      } },
+  ];
+
+  const stage = $('stage'); let cur = 0, auto = false, timers = [];
+  const clear = () => { timers.forEach(clearTimeout); timers = []; };
+  $('steps').innerHTML = SCENES.map((s, i) => `<button type="button" data-i="${i}">${i + 1}. ${s.k}</button>`).join('');
+  function show(i) {
+    clear(); cur = i; const s = SCENES[i];
+    $('steps').querySelectorAll('button').forEach((b, j) => b.setAttribute('aria-pressed', String(j === i)));
+    stage.innerHTML = s.html(); $('cap').innerHTML = s.cap;
+    const t = (fn, ms) => timers.push(setTimeout(fn, reduced ? 0 : ms));
+    const end = s.run(t, stage);
+    if (auto) t(() => i < SCENES.length - 1 ? show(i + 1) : stop(), end + 2000);
+  }
+  function stop() { auto = false; $('play').textContent = '▶ Play all'; }
+  $('steps').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { stop(); show(+b.dataset.i); } });
+  $('play').addEventListener('click', () => { if (auto) { stop(); clear(); return; } auto = true; $('play').textContent = '❚❚ Pause'; show(cur === SCENES.length - 1 ? 0 : cur); });
+  show(0);
+})();
+</script>
