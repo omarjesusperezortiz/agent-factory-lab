@@ -301,5 +301,23 @@
     "page": "2026-11-19-nvidia-skill-evaluator-audit-agent-skills/",
     "slug": "nvidia-skill-evaluator-audit-agent-skills",
     "transcript": true
+  },
+  {
+    "id": "eFog2ttK95g",
+    "channel": "AI LABS",
+    "date": "2026-11-23",
+    "title": "How To Make Claude Motion Graphics Better Than 90% Of People",
+    "summary": "The video shows a three-skill Claude Code workflow for making motion-graphics videos cheaply: a brief skill writes a self-contained video.md plan, a build skill writes code without rendering, and a review skill lets you batch timestamped notes so cheap Sonnet fixer agents handle small edits. It claims most token waste comes from unclear briefs and from rebuilding everything for each change. The idea worth keeping is to put the full plan in a spec file so a fresh session can build without the planning chatter, then batch review notes and route small fixes to a cheaper model agent.",
+    "tags": [
+      "claude-code",
+      "skills",
+      "spec-driven",
+      "review-loops",
+      "token-cost"
+    ],
+    "score": 3,
+    "page": null,
+    "slug": "claude-video-workflow-brief-build-review",
+    "transcript": true
   }
 ]
