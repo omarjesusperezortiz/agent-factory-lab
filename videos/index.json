@@ -319,5 +319,23 @@
     "page": null,
     "slug": "claude-video-workflow-brief-build-review",
     "transcript": true
+  },
+  {
+    "id": "1mdFSbyKEB4",
+    "channel": "AI LABS",
+    "date": "2026-11-25",
+    "title": "Vercel Just Fixed Claude Code's Greatest Flaw",
+    "summary": "Vercel's Agent Desktop drives desktop apps through the OS accessibility tree (labelled elements, delivery-status retries, background operation, per-agent cursors, sandbox) instead of screenshots and the user's mouse. In the presenters' test of the same app it used about 18% fewer tokens (15M vs 18M) and went through real system steps like file pickers and permission pop-ups that Claude Code's built-in computer use had to bypass with code, though it can't see visual problems like an overlapping pop-up. The idea worth keeping: for agent QA, structured accessibility data is cheaper and more reliable than pixels, and pairing it with a screenshot-based check covers the visual gaps.",
+    "tags": [
+      "computer-use",
+      "agent-desktop",
+      "accessibility-tree",
+      "agent-testing",
+      "claude-code"
+    ],
+    "score": 4,
+    "page": "2026-11-25-agent-desktop-accessibility-tree-computer-use/",
+    "slug": "agent-desktop-accessibility-tree-computer-use",
+    "transcript": true
   }
 ]
